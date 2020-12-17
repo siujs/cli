@@ -140,7 +140,7 @@ export class SiuPlugin {
 	}
 
 	hasCommandHooks(cmd: PluginCommand) {
-		return Object.keys(this._hooks).reduce((prev, key) => prev || key.startsWith(cmd), false);
+		return Object.keys(this._hooks).reduce((prev, key) => prev || (key.startsWith(cmd) && !key.endsWith("cli")), false);
 	}
 
 	/**
