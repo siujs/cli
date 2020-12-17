@@ -122,7 +122,7 @@ export async function initCLI(isStrict?: boolean) {
 			}),
 		test: program
 			.command("test [pkg]")
-			.description("Test single of multiple monorepo's package")
+			.description("Test single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "test")),
 		doc: program
@@ -142,12 +142,12 @@ export async function initCLI(isStrict?: boolean) {
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "demo")),
 		build: program
 			.command("build [pkg]")
-			.description("Build single of multiple monorepo's package")
+			.description("Build single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "build")),
 		publish: program
 			.command("publish [pkg]")
-			.description("publish single of multiple monorepo's package")
+			.description("Publish single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "publish"))
 	};
