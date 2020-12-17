@@ -88,12 +88,16 @@ export interface CLIOption {
 	defaultValue?: any;
 	fn?: ((arg1: any, arg2: any) => void) | RegExp;
 }
+export type CLIOptionHandler = (
+	option: (
+		flags: string,
+		description?: string,
+		defaultValue?: any,
+		fn?: ((arg1: any, arg2: any) => void) | RegExp
+	) => void
+) => Promise<void> | void;
 
-export type CLIOptionHandlerParams =
-	| ((flags: string, description?: string, fn?: ((arg1: any, arg2: any) => void) | RegExp, defaultValue?: any) => void)
-	| ((flags: string, description?: string, defaultValue?: any) => void);
-
-export type CLIOptionHandler = (option: CLIOptionHandlerParams) => Promise<void> | void;
+export type CLIOptionHandlerParams = ParamTypeOf<CLIOptionHandler>;
 
 export type HookHandlerFunc = (fn: HookHandler | CLIOptionHandler) => void;
 

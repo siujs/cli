@@ -273,27 +273,19 @@ export class SiuPlugin {
 	private option(
 		flags: string,
 		description?: string,
-		fn?: ((arg1: any, arg2: any) => void) | RegExp,
-		defaultValue?: any
+		defaultValue?: any,
+		fn?: ((arg1: any, arg2: any) => void) | RegExp
 	) {
 		this.CliOptions[this._cmd] = this.CliOptions[this._cmd] || [];
 
 		description = description + `-- support by ${this.id}`;
 
-		if (typeof fn === "boolean") {
-			this.CliOptions[this._cmd].push({
-				flags,
-				description,
-				defaultValue: fn as boolean
-			});
-		} else {
-			this.CliOptions[this._cmd].push({
-				flags,
-				description,
-				fn,
-				defaultValue
-			});
-		}
+		this.CliOptions[this._cmd].push({
+			flags,
+			description,
+			fn,
+			defaultValue
+		});
 	}
 
 	async processCLIOptions() {
