@@ -405,7 +405,7 @@ export async function applyPlugins(
 				pkgMetas[dirs[dirs.length - 1]] = { name: pkg };
 			});
 		} else {
-			dirs = await sortPkgs(config.pkgsOrder, pkg);
+			dirs = await sortPkgs(config?.pkgsOrder ?? "priority", pkg);
 		}
 
 		const isPkgExclude = validPkgIsExclude(config);

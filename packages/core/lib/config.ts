@@ -172,6 +172,10 @@ export async function resolveConfig() {
 
 export function validPkgIsExclude(config?: SiuConfig) {
 	return (pkg: string, plugId: string, cmd: PluginCommand) => {
+		config = config || siuConfig;
+
+		if (!config) return false;
+
 		const { excludePkgs, plugins } = config || siuConfig;
 
 		if (!plugins || !plugins.length) return false;
