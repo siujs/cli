@@ -278,7 +278,9 @@ export class SiuPlugin {
 	) {
 		this.CliOptions[this._cmd] = this.CliOptions[this._cmd] || [];
 
-		description = description + `-- support by ${this.id}`;
+		if (this.id !== DEFAULT_PLUGIN_ID) {
+			description = description + ` [support by ${this.id}]`;
+		}
 
 		this.CliOptions[this._cmd].push({
 			flags,
