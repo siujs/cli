@@ -14,13 +14,16 @@ const HostMap = {
 export function getGitInfo(template: string, source?: "github" | "gitee") {
 	const tmplArr = template.split("#");
 
-	const branch = tmplArr.length > 1 ? tmplArr[tmplArr.length - 1] : source === "github" ? "main" : "master";
+	const branch = tmplArr.length > 1 ? tmplArr[tmplArr.length - 1] : source !== "gitee" ? "main" : "master";
 
 	const isGitStylePath = template.startsWith("git@");
 
 	const isHttpPath = template.startsWith("http://") || template.startsWith("https://");
 
-	const gitPath = isGitStylePath || isHttpPath ? tmplArr[0] : `https://${HostMap[source || "github"]}/${tmplArr[0]}`;
+	const gitPath =
+		isGitStylePath || isHttpPath
+			? tmplArr[0]
+			: `https://${HostMap[source || "github"]}/${tmplArr[0].replace(/^@/g, "")}`;
 
 	return {
 		gitPath,
@@ -79,6 +82,7 @@ export async function downloadTpl(opts: InitAppOptios) {
 	);
 }
 
+/* istanbul ignore next */
 export async function installDeps() {
 	const startTime = Date.now();
 
