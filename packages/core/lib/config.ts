@@ -23,11 +23,15 @@ export async function resolveConfig() {
 
 	let exists = await fs.pathExists(configFile);
 
+	let isTS = false;
+
 	if (exists) {
+		isTS = true;
 		await esbuild.build({
 			entryPoints: [configFile],
 			bundle: true,
-			outfile: path.resolve(cwd, "siu.config.js")
+			outfile: path.resolve(cwd, "siu.config.js"),
+			format: "cjs"
 		});
 	}
 
@@ -36,8 +40,13 @@ export async function resolveConfig() {
 	exists = await fs.pathExists(configFile);
 
 	if (exists) {
-		siuConfig = require(configFile) as SiuConfig;
+		const content = require(configFile);
+		siuConfig = (content.default || content) as SiuConfig;
 		siuConfig.pkgsOrder = siuConfig.pkgsOrder || "priority";
+	}
+
+	if (isTS) {
+		await fs.unlink(configFile);
 	}
 
 	return siuConfig;
