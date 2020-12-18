@@ -27,5 +27,5 @@ module.exports = {
 	},
 	coverageDirectory: path.resolve(rootDir, "./coverage"),
 	coverageReporters: ["html"],
-	testMatch: utMdus.map(mdu => `<rootDir>/packages/${mdu}/__tests__/*.(test|spec).(ts|js)`)
+	testMatch: utMdus.map(mdu => `<rootDir>/packages/${mdu}/__tests__/**/*.(test|spec).(ts|js)`)
 };
