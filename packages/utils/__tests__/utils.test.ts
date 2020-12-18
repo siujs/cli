@@ -1,7 +1,9 @@
 import fs from "fs-extra";
 import path from "path";
+import sh from "shelljs";
 
-import { camelize, decodeCamelizeStr, deepFreezeObject, downloadGit, sortObject } from "../lib";
+import { camelize, decodeCamelizeStr, deepFreezeObject, sortObject } from "../lib";
+import { downloadGit } from "../lib/download-git";
 import { isOfficalPlugin, isSiuPlugin, resolvePluginId } from "../lib/plugin-id-resolve";
 
 test("str:camelize", () => {
@@ -137,7 +139,6 @@ test("resolvePluginId: short id", () => {
 
 test("download Git", async done => {
 	const dest = path.resolve(__dirname, "./tpls");
-
 	await downloadGit("https://github.com/siujs/tpls", "master", dest);
 
 	let exists = fs.pathExistsSync(path.resolve(dest, "siu.config.js"));
@@ -146,5 +147,7 @@ test("download Git", async done => {
 	exists = fs.pathExistsSync(path.resolve(dest, ".git"));
 	expect(exists).toBe(false);
 
+	sh.rm("-rf", dest);
+
 	done();
-});
+}, 30000);

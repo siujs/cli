@@ -1,12 +1,15 @@
 import path from "path";
 
 import {
+	filterUnExistsPkgs,
 	getMetasOfPackages,
 	getPackageDirs,
+	getPackagePath,
 	getPackagePaths,
 	getPkgData,
 	getPkgDirName,
-	getSortedPkgByPriority
+	getSortedPkgByPriority,
+	isPkgExists
 } from "../lib/pkg";
 
 let cwd = "";
@@ -37,6 +40,16 @@ test("getPackagePaths", async done => {
 	const dirs = await getPackagePaths(cwd);
 
 	expect(JSON.stringify(dirs)).toBe(JSON.stringify(sortedPkgDirNames.map(it => path.resolve(cwd, "packages", it))));
+
+	done();
+});
+
+test("getPackagePath", async done => {
+	let pkgPath = await getPackagePath("test", cwd);
+	expect(pkgPath).toBe(path.resolve(__dirname, "../../test"));
+
+	pkgPath = await getPackagePath("@foo/bar", cwd);
+	expect(pkgPath).toBe(path.resolve(__dirname, "../../bar"));
 
 	done();
 });
@@ -102,6 +115,37 @@ test("getSortedPkgByPriority", async done => {
 			"cli"
 		])
 	);
+
+	done();
+});
+
+test(" isPkgExists ", async done => {
+	let exists = await isPkgExists("test");
+	expect(exists).toBe(false);
+
+	exists = await isPkgExists("utils");
+	expect(exists).toBe(true);
+
+	exists = await isPkgExists("@siujs/utils");
+	expect(exists).toBe(true);
+
+	done();
+});
+
+test(" filterUnExistsPkgs ", async done => {
+	process.chdir(path.resolve(__dirname, "../../../"));
+
+	let pkgs = await filterUnExistsPkgs("");
+	expect(pkgs.join(",")).toBe("");
+
+	pkgs = await filterUnExistsPkgs("foo,bar");
+	expect(pkgs.join(",")).toBe("bar,foo");
+
+	pkgs = await filterUnExistsPkgs("foo,utils");
+	expect(pkgs.join(",")).toBe("foo");
+
+	pkgs = await filterUnExistsPkgs("core,utils");
+	expect(pkgs.join(",")).toBe("");
 
 	done();
 });
