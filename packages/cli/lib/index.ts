@@ -76,7 +76,7 @@ export async function initCLI(isStrict?: boolean) {
 		create: program
 			.command("create <pkg>")
 			.description("Create monorepo's package")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.action(async (pkg, cmd) => {
 				validPkgName(pkg);
 				const exists = await isPkgExists(pkg);
@@ -90,7 +90,7 @@ export async function initCLI(isStrict?: boolean) {
 			.command("deps <deps>")
 			.option("-p, --pkg <pkg>", "target package name,e.g. foo、@foo/bar")
 			.option("-r, --rm", "is remove deps from package")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.description("Add deps to target monorepo's package, e.g. add foo,foo@1.2.2,foo:D,foo@1.2.2:D ")
 			.action(async (deps, cmd) => {
 				if (cmd.pkg) {
@@ -112,7 +112,7 @@ export async function initCLI(isStrict?: boolean) {
 		glint: program
 			.command("glint")
 			.description("Lint for git action")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option(
 				"-h, --hook <hook>",
 				"Git lifecycle hook: pre-commit、prepare-commit-msg、commit-msg、post-commit、post-merge"
@@ -123,32 +123,32 @@ export async function initCLI(isStrict?: boolean) {
 		test: program
 			.command("test [pkg]")
 			.description("Test single or multiple monorepo's package")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "test")),
 		doc: program
 			.command("doc [pkg]")
 			.description("Generate docs of target monorepo's package")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "doc")),
 		serve: program
 			.command("serve [pkg]")
 			.description("Local developement of target monorepo's package")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "serve")),
 		demo: program
 			.command("demo [pkg]")
 			.description("Local demo of target monorepo's package")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "demo")),
 		build: program
 			.command("build [pkg]")
 			.description("Build single or multiple monorepo's package")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "build")),
 		publish: program
 			.command("publish [pkg]")
 			.description("Publish single or multiple monorepo's package")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", 1)
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "publish"))
 	};
 
@@ -160,7 +160,7 @@ export async function initCLI(isStrict?: boolean) {
 		const command = DEFAULT_COMMAND[key];
 
 		opts.forEach(opt => {
-			command.option(opt.flags, opt.description, opt.fn, opt.defaultValue);
+			command.option(opt.flags, opt.description, opt.defaultValue, opt.fn);
 		});
 	});
 
