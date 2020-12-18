@@ -150,4 +150,4 @@ test("download Git", async done => {
 	sh.rm("-rf", dest);
 
 	done();
-}, 30000);
+}, 600000);

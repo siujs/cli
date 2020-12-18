@@ -48,6 +48,7 @@ export async function adjustSiuConfigCWD() {
  * @param action 操作名称
  * @param lifeCycle 操作周期
  */
+/* istanbul ignore next */
 export function getHookId(action: PluginCommand, lifeCycle: PluginCommandLifecycle) {
 	return `${action}.${lifeCycle}` as PluginHookKey;
 }
