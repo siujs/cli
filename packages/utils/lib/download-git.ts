@@ -9,7 +9,7 @@ import shell from "shelljs";
  * @param branch branch name
  * @param dest dest path
  */
-export async function downloadGit(gitUrl: string, branch: string, dest: string) {
+export function downloadGit(gitUrl: string, branch: string, dest: string) {
 	return new Promise((resolve, reject) => {
 		shell.exec(`git clone -b ${branch} ${gitUrl} ${dest}`, { silent: true }, (code, stdout, stderr) => {
 			if (code === 0) {
@@ -19,6 +19,7 @@ export async function downloadGit(gitUrl: string, branch: string, dest: string) 
 				shell.rm("-rf", path.resolve(dest, "./.git"));
 				resolve(stdout);
 			} else {
+				/* istanbul ignore next */
 				reject(stderr);
 			}
 		});
