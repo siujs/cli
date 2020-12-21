@@ -3,7 +3,7 @@ import path from "path";
 import sh from "shelljs";
 
 import { camelize, decodeCamelizeStr, deepFreezeObject, sortObject } from "../lib";
-import { downloadGit } from "../lib/download-git";
+import { downloadGit } from "../lib/git";
 import { isOfficalPlugin, isSiuPlugin, resolvePluginId } from "../lib/plugin-id-resolve";
 
 test("str:camelize", () => {

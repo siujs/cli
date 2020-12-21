@@ -2,8 +2,6 @@ import { GitClientHooks } from "./hooks";
 import { GitClientHooksHandlers } from "./types";
 
 export * from "./types";
-export * from "./utils";
-
 /**
  *
  * invoke default githooks handle

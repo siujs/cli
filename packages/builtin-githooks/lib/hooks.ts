@@ -3,10 +3,9 @@ import fs from "fs";
 import path from "path";
 import shell from "shelljs";
 
-import { isWindows } from "@siujs/utils";
+import { getCommitedFilePaths, getStagedFiles, isWindows } from "@siujs/utils";
 
 import { GitClientHooksHandlers } from "./types";
-import { getChangedFilePaths, getLatestCommitFilePaths } from "./utils";
 
 const ConfigPathsPLaceHolder = [
 	".__T__rc.js",
@@ -93,7 +92,7 @@ export class GitClientHooks {
 	}
 
 	async preCommit() {
-		const files = await getChangedFilePaths(this.cwd);
+		const files = await getStagedFiles(this.cwd);
 
 		if (this.hnds.preCommit && typeof this.hnds.preCommit === "function") {
 			const rslt = await this.hnds.preCommit(files, this.cwd);
@@ -171,7 +170,7 @@ export class GitClientHooks {
 			files: [] as string[]
 		};
 
-		const files = await getLatestCommitFilePaths(this.cwd);
+		const files = await getCommitedFilePaths("HEAD^", this.cwd);
 		commitKV.files = files;
 
 		if (this.hnds.postCommit && typeof this.hnds.postCommit === "function") {
@@ -180,7 +179,7 @@ export class GitClientHooks {
 	}
 
 	async postMerge() {
-		const mergedFiles = await getLatestCommitFilePaths(this.cwd);
+		const mergedFiles = await getCommitedFilePaths("HEAD^", this.cwd);
 
 		if (this.hnds.postMerge && typeof this.hnds.postMerge === "function") {
 			const rslt = await this.hnds.postMerge(mergedFiles, this.cwd);
