@@ -34,10 +34,12 @@
   },
   "dependencies": {
     "cli-spinner": "^0.2.10",
+    "conventional-commits-parser": "^3.2.0",
     "fs-extra": "^9.0.1",
     "shelljs": "^0.8.4"
   },
   "devDependencies": {
+    "@types/conventional-commits-parser": "^3.0.1",
     "@types/shelljs": "0.8.8"
   }
 }

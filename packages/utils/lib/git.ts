@@ -1,3 +1,4 @@
+import parser, { Commit } from "conventional-commits-parser";
 import path from "path";
 import sh from "shelljs";
 
@@ -99,5 +100,77 @@ export function getCommitedFilePaths(prevCommitId: string, cwd: string): Promise
 			}
 			reject(stderr);
 		});
+	});
+}
+
+export type CommitsMsgInfo = Commit & {
+	extra: {
+		hash: string;
+		userName: string;
+		userEmail: string;
+		time: string;
+	};
+	breaking: boolean;
+};
+
+/**
+ *
+ * get commit info between `preCommitId` and `HEAD`
+ *
+ * @param preCommitId prev commit id
+ *
+ */
+export function getCommitsMsgInfos(
+	preCommitId: string
+): Promise<Record<"breaking" | "fixed" | "features" | "others", CommitsMsgInfo[]>> {
+	return new Promise((resolve, reject) => {
+		sh.exec(
+			`git --no-pager log ${preCommitId}..HEAD --format=%B%n-extra-%n%H%n%an%n%ae%n%ci💨💨💨`,
+			(code, stdout, stderr) => {
+				if (code !== 0) {
+					return reject(stderr);
+				}
+				const commits = stdout
+					.split("💨💨💨")
+					.filter(commit => commit.trim())
+					.reduce(
+						(prev, commit) => {
+							const node = parser.sync(commit);
+							const extra = node.extra.split("\n");
+
+							const breaking =
+								/(BREAKING CHANGE)|(Breaking Change)/.test(node.body || node.footer) || /!:/.test(node.header);
+
+							const kv = {
+								...node,
+								extra: {
+									hash: extra[0],
+									userName: extra[1],
+									userEmail: extra[2],
+									time: extra[3]
+								},
+								breaking
+							} as CommitsMsgInfo;
+
+							if (breaking) {
+								prev.breaking.push(kv);
+							} else if (node.type === "fix") {
+								prev.fixed.push(kv);
+							} else if (node.type === "feat") {
+								prev.features.push(kv);
+							} else {
+								prev.others.push(kv);
+							}
+							return prev;
+						},
+						{ breaking: [], fixed: [], features: [], others: [] } as Record<
+							"breaking" | "fixed" | "features" | "others",
+							CommitsMsgInfo[]
+						>
+					);
+
+				resolve(commits);
+			}
+		);
 	});
 }
