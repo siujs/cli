@@ -1,52 +1,149 @@
-import { PublishContext, PublishContextOptions } from "./ctx";
-import { build } from "./steps/build";
-import { commitChanges } from "./steps/commitChanges";
-import { confirmVersion } from "./steps/confirmVersion";
-import { lint } from "./steps/lint";
-import { publish } from "./steps/publish";
-import { pushToGit } from "./steps/pushToGit";
-import { updateCrossDeps } from "./steps/updateCrossDeps";
+import chalk from "chalk";
+import fs from "fs-extra";
+import path from "path";
+import semver from "semver";
 
-export interface PublishHooks {
-	confirmVersion: (ctx: PublishContext) => Promise<void>;
-	lint: (ctx: PublishContext) => Promise<void>;
-	updateCrossDeps: (ctx: PublishContext) => Promise<void>;
-	build: (ctx: PublishContext) => Promise<void>;
-	commitChanges: (ctx: PublishContext) => Promise<void>;
-	publish: (ctx: PublishContext) => Promise<void>;
-	pushToGit: (ctx: PublishContext) => Promise<void>;
+import {
+	addGitTag,
+	addGitTagOfPackage,
+	chooseVersion,
+	commitChanges,
+	commitChangesOfPackage,
+	gitPush,
+	npmPublish,
+	runWhetherDry,
+	updateCrossDeps,
+	updatePkgVersion
+} from "./utils";
+
+const { log } = console;
+
+export interface ReleaseHookArgs {
+	/**
+	 * current workspace directory
+	 */
+	cwd: string;
+	/**
+	 * current package directory name
+	 */
+	pkg?: string;
 }
 
-export const DEFAULT_HOOKS = {
-	confirmVersion,
-	lint,
-	updateCrossDeps,
-	build,
-	commitChanges,
-	publish,
-	pushToGit
-} as Partial<PublishHooks>;
+export interface ReleaseChangelogHookArgs extends ReleaseHookArgs {
+	commits: any[];
+}
+export interface ReleaseOptions {
+	/**
+	 *
+	 * Target version need to release
+	 *
+	 *  "independent": Get the package to be updated through diff commits
+	 *  default: All packages in one version
+	 */
+	version?: "independent" | string;
+	/**
+	 * Whether dry run
+	 */
+	dryRun?: boolean;
+	/**
+	 * special repository one or more
+	 */
+	repo?: string;
+	/**
+	 * Whether skip step: lint
+	 */
+	skipLint?: boolean;
+	/**
+	 * Whether skip step: build
+	 */
+	skipBuild?: boolean;
 
-export async function release(opts: PublishContextOptions = {}, hooks = DEFAULT_HOOKS) {
-	const ctx = new PublishContext(process.cwd(), opts);
+	hooks?: {
+		lint?: () => Promise<void>;
+		build?: (cwd: string, pkg?: string) => Promise<void>;
+		changelog?: (cwd: string, pkg?: string) => Promise<void>;
+	};
+}
 
-	const skipStep = ctx.opts("skipStep") || [];
+const officalNpmRepo = "https://registry.npmjs.org";
 
-	try {
-		hooks.confirmVersion && (await hooks.confirmVersion(ctx));
+export async function releasePackage(
+	pkg: string,
+	version: string,
+	opts = {
+		dryRun: false,
+		repo: officalNpmRepo
+	}
+) {
+	const cwd = path.resolve(process.cwd(), "packages", pkg);
 
-		!skipStep.includes("lint") && hooks.lint && (await hooks.lint(ctx));
+	const targetVersion = version || (await chooseVersion(cwd));
 
-		hooks.updateCrossDeps && (await hooks.updateCrossDeps(ctx));
+	if (!semver.valid(targetVersion)) {
+		throw new Error(`invalid target version: ${targetVersion}`);
+	}
 
-		!skipStep.includes("build") && hooks.build && (await hooks.build(ctx));
+	if (opts.dryRun) {
+		log(chalk`{yellow [update ${pkg} version]}: Updating package(${pkg}) version to \`${version}\``);
+	} else {
+		await updatePkgVersion(targetVersion, cwd);
+	}
 
-		hooks.commitChanges && (await hooks.commitChanges(ctx));
+	await commitChangesOfPackage(targetVersion, cwd, opts.dryRun);
 
-		hooks.publish && (await hooks.publish(ctx));
+	await npmPublish(cwd, opts.repo, opts.dryRun);
 
-		!skipStep.includes("pushToGit") && hooks.pushToGit && (await hooks.pushToGit(ctx));
-	} catch (ex) {
-		throw ex;
+	await addGitTagOfPackage(targetVersion, cwd, opts.dryRun);
+
+	await gitPush(opts.dryRun);
+
+	log(chalk.green(`Successfully publish package(${pkg}) version:\`${targetVersion}\`!`));
+}
+
+export async function release(opts: ReleaseOptions) {
+	const { skipBuild = false, skipLint = false, version, dryRun = false, repo = officalNpmRepo } = opts;
+
+	const cwd = process.cwd();
+	const pkgsRoot = path.resolve(cwd, "packages");
+
+	const run = runWhetherDry(dryRun);
+
+	if (!skipLint) {
+		await run("yarn", ["lint"]);
+	}
+
+	if (!skipBuild) {
+		await run("yarn", ["build"]);
+	}
+
+	if (version === "independent") {
+		// 每个包的独立部署
+	} else {
+		const targetVersion = version || (await chooseVersion(cwd));
+
+		if (!semver.valid(targetVersion)) {
+			throw new Error(`invalid target version: ${targetVersion}`);
+		}
+
+		if (dryRun) {
+			log(chalk`{yellow [update version]}: Updating all package version to \`${version}\``);
+		} else {
+			await updatePkgVersion(targetVersion, cwd);
+			await updateCrossDeps(targetVersion, cwd);
+		}
+
+		await commitChanges(targetVersion, cwd, dryRun);
+
+		const pkgs = await fs.readdir(pkgsRoot);
+
+		for (let l = pkgs.length; l--; ) {
+			await npmPublish(path.resolve(pkgsRoot, pkgs[l]), repo, dryRun);
+		}
+
+		await addGitTag(targetVersion, cwd, dryRun);
+
+		await gitPush(dryRun);
+
+		log(chalk.green(`Successfully publish version:\`${targetVersion}\`!`));
 	}
 }
