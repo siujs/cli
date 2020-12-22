@@ -25,13 +25,13 @@
 	},
 	"homepage": "https://github.com/siujs/siu#readme",
 	"peerDependencies": {
-		"esbuild": "^0.8.21",
+		"esbuild": "^0.8.26",
 		"@siujs/utils": "*"
 	},
 	"dependencies": {
 		"@siujs/utils": "file:../utils",
 		"chalk": "^4.1.0",
-		"esbuild": "^0.8.21",
+		"esbuild": "^0.8.26",
 		"fs-extra": "^9.0.1"
 	},
 	"devDependencies": {
