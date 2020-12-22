@@ -404,6 +404,7 @@ export async function applyPlugins(
 		const pkgMetas = await getMetasOfPackages();
 
 		if (args.cmd === "create" && pkg) {
+			dirs = [];
 			pkg.split(",").forEach(pkg => {
 				dirs.push(getPkgDirName(pkg));
 				pkgMetas[dirs[dirs.length - 1]] = { name: pkg };
