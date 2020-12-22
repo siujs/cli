@@ -5,6 +5,7 @@ import { PluginCommand, PluginCommandLifecycle } from "./types";
 export const pluginCommands = [
 	"create",
 	"glint",
+	"deps",
 	"doc",
 	"demo",
 	"serve",
