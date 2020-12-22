@@ -51,13 +51,12 @@ export async function resolveConfig() {
 	return siuConfig;
 }
 
-export function validPkgIsExclude(config?: SiuConfig) {
+export function validPkgIsExclude(config: SiuConfig) {
 	return (pkg: string, plugId: string, cmd: PluginCommand) => {
-		config = config || siuConfig;
 		/* istanbul ignore if */
 		if (!config) return false;
 
-		const { excludePkgs, plugins } = config || siuConfig;
+		const { excludePkgs, plugins } = config;
 
 		/* istanbul ignore if */
 		if (!plugins || !plugins.length) return false;
@@ -94,12 +93,10 @@ let isResolved = false;
  *
  * @param config Config Data in `siu.config.js` or `siu.config.ts`
  */
-export function analysisPlugins(config?: SiuConfig) {
-	config = config || siuConfig;
-
+export function analysisPlugins(config: SiuConfig) {
 	if (isResolved || !config) return getPlugins();
 
-	const { plugins = [] } = config || siuConfig;
+	const { plugins = [] } = config;
 
 	if (plugins && plugins.length) {
 		const nmPath = path.resolve(process.cwd(), "node_modules");
@@ -129,7 +126,7 @@ export function analysisPlugins(config?: SiuConfig) {
  *
  * @param fallback [option] when plugins is empty,we will use the fallback
  */
-export async function resolvePlugins(config?: SiuConfig, fallback?: (api: PluginApi) => void) {
+export async function resolvePlugins(config: SiuConfig, fallback?: (api: PluginApi) => void) {
 	const plugs = analysisPlugins(config);
 
 	if (!plugs || !plugs.length) {
