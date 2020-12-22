@@ -86,3 +86,6 @@ yarn.*
 *.tsbuildinfo
 
 tsbuildinfo
+
+
+!packages/**/__tests__/node_modules/

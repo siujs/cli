@@ -1,4 +1,16 @@
-import { findUpSiuConfigCwd, sortPkgs } from "../lib/utils";
+import { adjustSiuConfigCWD, findUpSiuConfigCwd, sortPkgs } from "../lib/utils";
+
+test("adjustSiuConfigCWD", async done => {
+	let hasErr = false;
+	try {
+		await adjustSiuConfigCWD();
+	} catch {
+		hasErr = true;
+	}
+	expect(hasErr).toBe(true);
+
+	done();
+});
 
 test("findUpSiuConfigCwd", async done => {
 	const targetCWD = await findUpSiuConfigCwd(__dirname);
