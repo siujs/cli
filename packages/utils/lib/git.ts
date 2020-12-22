@@ -56,7 +56,7 @@ export function getStagedFiles(cwd: string): Promise<string[]> {
  *
  * @param versionPrefix tag version prefix
  */
-export async function getPreTag(versionPrefix?: string) {
+export function getPreTag(versionPrefix?: string): Promise<string> {
 	return new Promise((resolve, reject) => {
 		const child = sh.exec(`git tags --list ${versionPrefix ? `${versionPrefix}v*` : "v*"} --sort --v:refname`, {
 			async: true
@@ -175,5 +175,19 @@ export function getGroupedCommits(
 				resolve(commits);
 			}
 		);
+	});
+}
+
+/**
+ * Get first commit id
+ */
+export function getFirstCommitId(isShort?: boolean): Promise<string> {
+	return new Promise((resolve, reject) => {
+		sh.exec(`git log --format=%${isShort ? "h" : "H"} --reverse`, (code, stdout, stderr) => {
+			if (stderr) return reject(stderr);
+
+			const ids = stdout.split("\n").filter(Boolean);
+			resolve(ids[0]);
+		});
 	});
 }
