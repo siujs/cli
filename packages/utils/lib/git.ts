@@ -104,7 +104,7 @@ export function getCommittedFiles(startHash: string, endHash = "HEAD", cwd: stri
 	});
 }
 
-export type CommitsMsgInfo = Commit & {
+export type GroupedCommitsItem = Commit & {
 	extra: {
 		hash: string;
 		userName: string;
@@ -116,17 +116,19 @@ export type CommitsMsgInfo = Commit & {
 
 /**
  *
- * get commit info between `preCommitId` and `HEAD`
+ * get commit info between `startHash` and `HEAD`
  *
- * @param preCommitId prev commit id
+ * @param startHash - start commit id
+ * @param endHash - end commit id ,default: HEAD
  *
  */
-export function getCommitsMsgInfos(
-	preCommitId: string
-): Promise<Record<"breaking" | "fixed" | "features" | "others", CommitsMsgInfo[]>> {
+export function getGroupedCommits(
+	startHash: string,
+	endHash = "HEAD"
+): Promise<Record<"breaking" | "fixed" | "features" | "others", GroupedCommitsItem[]>> {
 	return new Promise((resolve, reject) => {
 		sh.exec(
-			`git --no-pager log ${preCommitId}..HEAD --format=%B%n-extra-%n%H%n%an%n%ae%n%ci💨💨💨`,
+			`git --no-pager log ${startHash}..${endHash} --format=%B%n-extra-%n%H%n%an%n%ae%n%ci💨💨💨`,
 			(code, stdout, stderr) => {
 				if (code !== 0) {
 					return reject(stderr);
@@ -151,7 +153,7 @@ export function getCommitsMsgInfos(
 									time: extra[3]
 								},
 								breaking
-							} as CommitsMsgInfo;
+							} as GroupedCommitsItem;
 
 							if (breaking) {
 								prev.breaking.push(kv);
@@ -166,7 +168,7 @@ export function getCommitsMsgInfos(
 						},
 						{ breaking: [], fixed: [], features: [], others: [] } as Record<
 							"breaking" | "fixed" | "features" | "others",
-							CommitsMsgInfo[]
+							GroupedCommitsItem[]
 						>
 					);
 
