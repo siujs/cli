@@ -82,14 +82,15 @@ export async function getPreTag(versionPrefix?: string) {
 /**
  * get changed file paths which is commited
  *
- * @param prevCommitId - prev commit id
- * @param cwd - current workspace directory
+ * @param startHash - start commit id
+ * @param endHash - end commit id, default: HEAD
+ * @param cwd - current workspace directory, default: process.cwd()
  *
  * @return {Promise<string[]} commited file paths
  */
-export function getCommitedFilePaths(prevCommitId: string, cwd: string): Promise<string[]> {
+export function getCommittedFiles(startHash: string, endHash = "HEAD", cwd: string = process.cwd()): Promise<string[]> {
 	return new Promise((resolve, reject) => {
-		sh.exec(`git diff --name-only ${prevCommitId} HEAD`, { silent: true }, (code, stdout, stderr) => {
+		sh.exec(`git diff --name-only ${startHash} ${endHash}`, { silent: true }, (code, stdout, stderr) => {
 			if (code === 0) {
 				return resolve(
 					stdout
