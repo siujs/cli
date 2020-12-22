@@ -103,7 +103,7 @@ export type HookHandlerFunc = (fn: HookHandler | CLIOptionHandler) => void;
 
 export type PluginApi = Record<PluginCommand, Record<PluginCommandLifecycle, HookHandlerFunc>>;
 
-export type SiuConfigExcludePkgs = string[] | Record<PluginCommand, string[]>;
+export type SiuConfigExcludePkgs = string[] | Partial<Record<PluginCommand, string[]>>;
 
 export interface SiuConfig {
 	/**
