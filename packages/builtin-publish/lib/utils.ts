@@ -5,6 +5,8 @@ import inquirer from "inquirer";
 import path from "path";
 import semver from "semver";
 
+import { getGroupedCommits, getPreTag } from "@siujs/utils";
+
 const execFnCache = {} as Record<"dryRun" | "run", (bin: string, args: string[], opts?: Record<string, any>) => any>;
 
 export function runWhetherDry(isDryRun?: boolean) {
@@ -138,4 +140,41 @@ export async function chooseVersion(cwd: string) {
 	}
 
 	return targetVersion;
+}
+
+export async function updateChangelog(version: string, cwd: string, isDryRun?: boolean) {
+	const tag = await getPreTag();
+
+	const groupedCommits = await getGroupedCommits(tag);
+
+	const [date] = new Date().toISOString().split("T");
+
+	const newLog = [
+		`## v${version}`,
+		`_${date}_`,
+		groupedCommits.breaking.length ? `### Breaking Changes\n\n- ${groupedCommits.breaking.join("\n- ")}`.trim() : "",
+		groupedCommits.features.length ? `### Features\n\n- ${groupedCommits.features.join("\n- ")}`.trim() : "",
+		groupedCommits.fixed.length ? `### Bug Fixs\n\n- ${groupedCommits.fixed.join("\n- ")}`.trim() : "",
+		groupedCommits.others.length ? `### Others\n\n- ${groupedCommits.others.join("\n- ")}`.trim() : ""
+	]
+		.filter(Boolean)
+		.join("\n\n");
+
+	if (isDryRun) return newLog;
+
+	// eslint-disable-next-line @typescript-eslint/no-var-requires
+	const meta = require(path.resolve(cwd, "package.json"));
+
+	const title = `# ${meta.name} ChangeLog`;
+
+	const logPath = path.resolve(cwd, "CHANGELOG.md");
+	const logFile = (await fs.readFile(logPath)).toString();
+	const oldLog = logFile.startsWith(title) ? logFile.slice(title.length).trim() : logFile;
+
+	const content = [title, newLog, oldLog].filter(Boolean).join("\n\n");
+
+	await fs.writeFile(logPath, content, {
+		encoding: "utf-8"
+	});
+	return content;
 }
