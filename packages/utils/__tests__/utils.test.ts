@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import sh from "shelljs";
 
-import { camelize, decodeCamelizeStr, deepFreezeObject, sortObject } from "../lib";
+import { camelize, deepFreezeObject, sortObject } from "../lib";
 import { downloadGit } from "../lib/git";
 import { isOfficalPlugin, isSiuPlugin, resolvePluginId } from "../lib/plugin-id-resolve";
 
@@ -14,15 +14,6 @@ test("str:camelize", () => {
 	expect(camelize("-a-b")).toBe("AB");
 	expect(camelize("a--b")).toBe("a-B");
 	expect(camelize("a-b", true)).toBe("AB");
-});
-
-test("str:decodeCamelizeStr", () => {
-	expect(decodeCamelizeStr("A")).toBe("a");
-	expect(decodeCamelizeStr("Ab")).toBe("ab");
-	expect(decodeCamelizeStr("aB")).toBe("a-b");
-	expect(decodeCamelizeStr("a-B")).toBe("a--b");
-	expect(decodeCamelizeStr("abCD")).toBe("ab-c-d");
-	expect(decodeCamelizeStr("-a")).toBe("-a");
 });
 
 test("sort-object:not keyOrder", () => {
