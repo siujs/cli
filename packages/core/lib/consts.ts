@@ -20,6 +20,7 @@ export const GlobalKeyValues = {} as Record<string, any>;
 
 export const PkgCaches = {} as Record<string, PkgData>;
 
+/* istanbul ignore next */
 export const noop = () => {};
 
 export const DEFAULT_PLUGIN_ID = "__SIU_PLUGIN__";

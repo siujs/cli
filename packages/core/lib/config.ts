@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import esbuild from "esbuild";
 import fs from "fs-extra";
 import path from "path";
@@ -55,11 +54,12 @@ export async function resolveConfig() {
 export function validPkgIsExclude(config?: SiuConfig) {
 	return (pkg: string, plugId: string, cmd: PluginCommand) => {
 		config = config || siuConfig;
-
+		/* istanbul ignore if */
 		if (!config) return false;
 
 		const { excludePkgs, plugins } = config || siuConfig;
 
+		/* istanbul ignore if */
 		if (!plugins || !plugins.length) return false;
 
 		function validFromExcludePkgs(excludePkgs: SiuConfigExcludePkgs) {
@@ -133,6 +133,7 @@ export async function resolvePlugins(config?: SiuConfig, fallback?: (api: Plugin
 	const plugs = analysisPlugins(config);
 
 	if (!plugs || !plugs.length) {
+		/* istanbul ignore if */
 		if (!fallback || typeof fallback !== "function") return;
 		fallback(definePlugin(DEFAULT_PLUGIN_ID));
 	}

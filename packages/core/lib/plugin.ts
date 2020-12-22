@@ -302,6 +302,7 @@ export class SiuPlugin {
 
 			const handlers = this._hooks[hookKey] as CLIOptionHandler[];
 
+			/* istanbul ignore if */
 			if (!handlers || !handlers.length) continue;
 
 			this._cmd = cmd;
@@ -379,6 +380,7 @@ export async function applyPlugins(
 ) {
 	const plugs = analysisPlugins(config);
 
+	/* istanbul ignore if */
 	if (!plugs || !plugs.length) return;
 
 	const hasHooks = plugs.reduce((prev, plug) => prev || plug.hasCommandHooks(args.cmd), false);
@@ -436,6 +438,7 @@ export async function applyPlugins(
 export async function resolveCLIOptions(plugs: SiuPlugin[]) {
 	const kv = {} as Partial<Record<PluginCommand, CLIOption[]>>;
 
+	/* istanbul ignore if */
 	if (!plugs || !plugs.length) return kv;
 
 	for (let l = plugs.length; l--; ) {
