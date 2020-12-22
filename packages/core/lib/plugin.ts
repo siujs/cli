@@ -365,6 +365,19 @@ export function getPlugins() {
 	return Object.values(PluginCaches);
 }
 
+/**
+ *
+ * Clear all plugins
+ *
+ *  for watching `siu.config.(ts|js)` change action
+ *
+ */
+export function clearPlugins() {
+	Object.keys(PluginCaches).forEach(key => {
+		delete PluginCaches[key];
+	});
+}
+
 const noPkgEffectCmds = ["glint", "deps", "publish"];
 
 export async function applyPlugins(
