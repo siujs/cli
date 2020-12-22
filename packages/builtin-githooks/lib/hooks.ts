@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import shell from "shelljs";
 
-import { getCommitedFilePaths, getStagedFiles, isWindows } from "@siujs/utils";
+import { getCommittedFiles, getStagedFiles, isWindows } from "@siujs/utils";
 
 import { GitClientHooksHandlers } from "./types";
 
@@ -170,7 +170,7 @@ export class GitClientHooks {
 			files: [] as string[]
 		};
 
-		const files = await getCommitedFilePaths("HEAD^", this.cwd);
+		const files = await getCommittedFiles("HEAD^", "HEAD", this.cwd);
 		commitKV.files = files;
 
 		if (this.hnds.postCommit && typeof this.hnds.postCommit === "function") {
@@ -179,7 +179,7 @@ export class GitClientHooks {
 	}
 
 	async postMerge() {
-		const mergedFiles = await getCommitedFilePaths("HEAD^", this.cwd);
+		const mergedFiles = await getCommittedFiles("HEAD^", "HEAD", this.cwd);
 
 		if (this.hnds.postMerge && typeof this.hnds.postMerge === "function") {
 			const rslt = await this.hnds.postMerge(mergedFiles, this.cwd);
