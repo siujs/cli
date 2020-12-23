@@ -45,6 +45,14 @@ export interface ReleaseOptions {
 	 */
 	version?: "independent" | string;
 	/**
+	 *
+	 * Target packages need to release
+	 *
+	 *  e.g : foo、foo,bar
+	 *
+	 */
+	pkg?: string;
+	/**
 	 * Whether dry run
 	 */
 	dryRun?: boolean;
@@ -151,6 +159,7 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 
 export async function release(opts: ReleaseOptions) {
 	const {
+		pkg = "",
 		skipBuild = false,
 		skipLint = false,
 		skipPush = false,
@@ -175,12 +184,17 @@ export async function release(opts: ReleaseOptions) {
 		hooks && hooks.build && (await hooks.build({ cwd, dryRun }));
 	}
 
-	if (version === "independent") {
-		// 每个包独立部署
-		const pkgDirs = await fs.readdir(pkgsRoot);
+	if (version === "independent" || (!version && pkg)) {
+		let dirs: string[];
 
-		for (let l = pkgDirs.length; l--; ) {
-			await releasePackage(pkgDirs[l], opts);
+		if (!pkg) {
+			dirs = await fs.readdir(pkgsRoot);
+		} else {
+			dirs = pkg.split(",");
+		}
+
+		for (let l = dirs.length; l--; ) {
+			await releasePackage(dirs[l], opts);
 		}
 	} else {
 		const targetVersion = version || (await chooseVersion(cwd));
