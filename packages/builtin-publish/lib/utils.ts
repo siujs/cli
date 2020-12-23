@@ -145,13 +145,13 @@ export async function chooseVersion(cwd: string) {
 	return targetVersion;
 }
 
-function getCommitMessage(item: GroupedCommitsItem) {
-	const ref = /\(#\d+\)/.test(item.header) ? "" : ` (${item.extra.hash.substring(0, 7)})`;
+export async function getNewChangedLog(version: string, pkg?: string, needShowOthers?: boolean) {
+	const getCommitMessage = (item: GroupedCommitsItem) => {
+		if (pkg && item.scope !== pkg) return "";
+		const ref = /\(#\d+\)/.test(item.header) ? "" : ` (${item.extra.hash.substring(0, 7)})`;
+		return item.header.trim() + ref;
+	};
 
-	return item.header.trim() + ref;
-}
-
-export async function getNewChangedLog(version: string, needShowOthers?: boolean) {
 	let tag = await getPreTag();
 
 	if (!tag) {
@@ -162,27 +162,43 @@ export async function getNewChangedLog(version: string, needShowOthers?: boolean
 
 	const [date] = new Date().toISOString().split("T");
 
-	const newLog = [
-		`## v${version}`,
-		`_${date}_`,
-		groupedCommits.breaking.length &&
-			`### Breaking Changes\n\n- ${groupedCommits.breaking.map(getCommitMessage).join("\n- ")}`.trim(),
-		groupedCommits.features.length &&
-			`### Features\n\n- ${groupedCommits.features.map(getCommitMessage).join("\n- ")}`.trim(),
-		groupedCommits.fixed.length &&
-			`### Bug Fixs\n\n- ${groupedCommits.fixed.map(getCommitMessage).join("\n- ")}`.trim(),
-		needShowOthers &&
-			groupedCommits.others.length &&
-			`### Others\n\n- ${groupedCommits.others.map(getCommitMessage).join("\n- ")}`.trim()
-	]
-		.filter(Boolean)
-		.join("\n\n");
+	const newLog = [`## v${version}`, `_${date}_`];
 
-	return newLog;
+	let arr: string[];
+
+	if (groupedCommits.breaking.length) {
+		arr = groupedCommits.breaking.map(getCommitMessage).filter(Boolean);
+		if (arr.length) {
+			newLog.push(`### Breaking Changes\n\n- ${arr.join("\n- ")}`.trim());
+		}
+	}
+
+	if (groupedCommits.features.length) {
+		arr = groupedCommits.features.map(getCommitMessage).filter(Boolean);
+		if (arr.length) {
+			newLog.push(`### Features\n\n- ${arr.join("\n- ")}`.trim());
+		}
+	}
+
+	if (groupedCommits.fixed.length) {
+		arr = groupedCommits.fixed.map(getCommitMessage).filter(Boolean);
+		if (arr.length) {
+			newLog.push(`### Bug Fixs\n\n- ${arr.join("\n- ")}`.trim());
+		}
+	}
+
+	if (needShowOthers && groupedCommits.others.length) {
+		arr = groupedCommits.others.map(getCommitMessage).filter(Boolean);
+		if (arr.length) {
+			newLog.push(`### Others\n\n- ${arr.join("\n- ")}`.trim());
+		}
+	}
+
+	return newLog.filter(Boolean).join("\n\n");
 }
 
-export async function updateChangelog(version: string, cwd: string, isDryRun?: boolean) {
-	const newLog = await getNewChangedLog(version);
+export async function updateChangelog(version: string, cwd: string, pkg?: string, isDryRun?: boolean) {
+	const newLog = await getNewChangedLog(version, pkg);
 
 	if (isDryRun) return newLog;
 

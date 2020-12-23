@@ -78,7 +78,7 @@ export interface ReleaseOptions {
 	hooks?: {
 		lint?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
 		build?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
-		changelog?: (opts: { cwd: string; version: string; dryRun?: boolean }) => Promise<void>;
+		changelog?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
 		publish?: (opts: { cwd: string; repo: string; dryRun?: boolean }) => Promise<void>;
 	};
 }
@@ -90,8 +90,8 @@ const DEFAULT_HOOKS = {
 	async build({ cwd, dryRun }: { cwd: string; dryRun?: boolean }) {
 		await runWhetherDry(dryRun)("yarn", ["build"], { cwd });
 	},
-	async changelog({ cwd, version, dryRun }: { cwd: string; version: string; dryRun?: boolean }) {
-		const content = await updateChangelog(version, cwd, dryRun);
+	async changelog({ cwd, version, pkg, dryRun }: { cwd: string; version: string; pkg?: string; dryRun?: boolean }) {
+		const content = await updateChangelog(version, cwd, pkg, dryRun);
 		if (dryRun) {
 			log(chalk`{yellow [dryrun] New ChangeLog}: \n ${content}`);
 		}
@@ -102,7 +102,7 @@ const DEFAULT_HOOKS = {
 } as {
 	lint?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
 	build?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
-	changelog?: (opts: { cwd: string; version: string; dryRun?: boolean }) => Promise<void>;
+	changelog?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
 	publish?: (opts: { cwd: string; repo: string; dryRun?: boolean }) => Promise<void>;
 };
 
@@ -153,7 +153,7 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 
 	opts.hooks &&
 		opts.hooks.changelog &&
-		(await opts.hooks.changelog({ cwd, version: targetVersion, dryRun: opts.dryRun }));
+		(await opts.hooks.changelog({ cwd, version: targetVersion, dryRun: opts.dryRun, pkg }));
 
 	await commitChangesOfPackage(targetVersion, cwd, opts.dryRun);
 
