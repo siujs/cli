@@ -5,7 +5,7 @@ import inquirer from "inquirer";
 import path from "path";
 import semver from "semver";
 
-import { getGroupedCommits, getPreTag } from "@siujs/utils";
+import { getFirstCommitId, getGroupedCommits, getPreTag, GroupedCommitsItem } from "@siujs/utils";
 
 const execFnCache = {} as Record<"dryRun" | "run", (bin: string, args: string[], opts?: Record<string, any>) => any>;
 
@@ -142,8 +142,18 @@ export async function chooseVersion(cwd: string) {
 	return targetVersion;
 }
 
+function getCommitMessage(item: GroupedCommitsItem) {
+	const ref = /\(#\d+\)/.test(item.header) ? "" : ` (${item.extra.hash.substring(0, 7)})`;
+
+	return item.header.trim() + ref;
+}
+
 export async function updateChangelog(version: string, cwd: string, isDryRun?: boolean) {
-	const tag = await getPreTag();
+	let tag = await getPreTag();
+
+	if (!tag) {
+		tag = await getFirstCommitId(false);
+	}
 
 	const groupedCommits = await getGroupedCommits(tag);
 
@@ -152,10 +162,18 @@ export async function updateChangelog(version: string, cwd: string, isDryRun?: b
 	const newLog = [
 		`## v${version}`,
 		`_${date}_`,
-		groupedCommits.breaking.length ? `### Breaking Changes\n\n- ${groupedCommits.breaking.join("\n- ")}`.trim() : "",
-		groupedCommits.features.length ? `### Features\n\n- ${groupedCommits.features.join("\n- ")}`.trim() : "",
-		groupedCommits.fixed.length ? `### Bug Fixs\n\n- ${groupedCommits.fixed.join("\n- ")}`.trim() : "",
-		groupedCommits.others.length ? `### Others\n\n- ${groupedCommits.others.join("\n- ")}`.trim() : ""
+		groupedCommits.breaking.length
+			? `### Breaking Changes\n\n- ${groupedCommits.breaking.map(getCommitMessage).join("\n- ")}`.trim()
+			: "",
+		groupedCommits.features.length
+			? `### Features\n\n- ${groupedCommits.features.map(getCommitMessage).join("\n- ")}`.trim()
+			: "",
+		groupedCommits.fixed.length
+			? `### Bug Fixs\n\n- ${groupedCommits.fixed.map(getCommitMessage).join("\n- ")}`.trim()
+			: "",
+		groupedCommits.others.length
+			? `### Others\n\n- ${groupedCommits.others.map(getCommitMessage).join("\n- ")}`.trim()
+			: ""
 	]
 		.filter(Boolean)
 		.join("\n\n");
