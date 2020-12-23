@@ -21,7 +21,7 @@ export interface HookHandlerContext {
 	 *
 	 * @param key 配置key
 	 */
-	opts<T>(key: string): T;
+	opts<T extends any>(key: string): T;
 	/**
 	 *
 	 * 当前插件全局临时缓存设置/获取
@@ -36,7 +36,7 @@ export interface HookHandlerContext {
 	 *
 	 * @param key 目标键
 	 */
-	keys<T>(key: string): T;
+	keys<T extends any>(key: string): T;
 	/**
 	 *
 	 * 当前插件在当前生命周期/当前pkg下的缓存设置
@@ -51,7 +51,7 @@ export interface HookHandlerContext {
 	 *
 	 * @param key 目标键
 	 */
-	scopedKeys<T>(key: string): T;
+	scopedKeys<T extends any>(key: string): T;
 	/**
 	 *
 	 * 当前插件在当前生命周期/当前pkg下的异常设置
