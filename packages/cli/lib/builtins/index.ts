@@ -14,6 +14,10 @@ export function cliFallback(api: PluginApi) {
 	api.build.cli((option: CLIOptionHandlerParams) => {
 		option("-f, --format <format>", "Output format: es、cjs、umd、umd-min");
 	});
+
+	api.publish.cli((option: CLIOptionHandlerParams) => {
+		option("-s, --skip <skip>", "Will skip steps, e.g: 'lint'、'lint,build'、'lint,build,push'");
+	});
 }
 
 export function cmdFallback(cmd: PluginCommand) {

@@ -78,11 +78,15 @@ export async function initCLI(isStrict?: boolean) {
 			.description("Create monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.action(async (pkg, cmd) => {
-				validPkgName(pkg);
-				const exists = await isPkgExists(pkg);
-				if (exists) {
-					console.log(chalk.red.bold(`[siu] ERROR: \`${pkg}\` already exists! `));
-					return;
+				const pkgs = pkg ? pkg.split(",") : [];
+
+				for (let l = pkgs.length; l--; ) {
+					validPkgName(pkgs[l]);
+					const exists = await isPkgExists(pkgs[l]);
+					if (exists) {
+						console.log(chalk.red.bold(`[siu] ERROR: \`${pkgs[l]}\` already exists! `));
+						return;
+					}
 				}
 				await runCmd("create", { pkg, ...cmd.opts() });
 			}),
@@ -147,8 +151,11 @@ export async function initCLI(isStrict?: boolean) {
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "build")),
 		publish: program
 			.command("publish [pkg]")
-			.description("Publish single or multiple monorepo's package")
+			.description("Publish all packages or target monorepo's packages")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-n, --dry-run", "Whether dry run")
+			.option("-v, --ver <version>", "Target version: independent or x.x.x or auto choice")
+			.option("-r, --repo <repo>", "Target npm repository url")
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "publish"))
 	};
 
