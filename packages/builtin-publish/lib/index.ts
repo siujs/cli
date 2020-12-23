@@ -81,7 +81,7 @@ const DEFAULT_HOOKS = {
 	async changelog({ cwd, version, dryRun }: { cwd: string; version: string; dryRun?: boolean }) {
 		const content = await updateChangelog(version, cwd, dryRun);
 		if (dryRun) {
-			log(chalk`{yellow New ChangeLog}: \n ${content}`);
+			log(chalk`{yellow [dryrun] New ChangeLog}: \n ${content}`);
 		}
 	},
 	async publish({ cwd, repo, dryRun }: { cwd: string; repo: string; dryRun?: boolean }) {
@@ -124,7 +124,7 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 	}
 
 	if (opts.dryRun) {
-		log(chalk`{yellow [update ${pkg} version]}: Updating package(${pkg}) version to \`${targetVersion}\``);
+		log(chalk`{yellow [dryrun] update ${pkg} version}: Updating package(${pkg}) version to \`${targetVersion}\``);
 	} else {
 		await updatePkgVersion(targetVersion, cwd);
 	}
@@ -184,7 +184,7 @@ export async function release(opts: ReleaseOptions) {
 		}
 
 		if (dryRun) {
-			log(chalk`{yellow [update version]}: Updating all package version to \`${version}\``);
+			log(chalk`{yellow [dryrun] update version}: Updating all package version to \`${targetVersion}\``);
 		} else {
 			await updatePkgVersion(targetVersion, cwd);
 			await updateCrossDeps(targetVersion, cwd);
