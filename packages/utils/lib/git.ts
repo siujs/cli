@@ -58,8 +58,9 @@ export function getStagedFiles(cwd: string): Promise<string[]> {
  */
 export function getPreTag(versionPrefix?: string): Promise<string> {
 	return new Promise((resolve, reject) => {
-		const child = sh.exec(`git tags --list ${versionPrefix ? `${versionPrefix}v*` : "v*"} --sort --v:refname`, {
-			async: true
+		const child = sh.exec(`git tag --list ${versionPrefix ? `${versionPrefix}v*` : "v*"} --sort --v:refname`, {
+			async: true,
+			silent: true
 		});
 
 		let tags = "";
@@ -129,6 +130,7 @@ export function getGroupedCommits(
 	return new Promise((resolve, reject) => {
 		sh.exec(
 			`git --no-pager log ${startHash}..${endHash} --format=%B%n-extra-%n%H%n%an%n%ae%n%ci💨💨💨`,
+			{ silent: true },
 			(code, stdout, stderr) => {
 				if (code !== 0) {
 					return reject(stderr);
@@ -183,7 +185,7 @@ export function getGroupedCommits(
  */
 export function getFirstCommitId(isShort?: boolean): Promise<string> {
 	return new Promise((resolve, reject) => {
-		sh.exec(`git log --format=%${isShort ? "h" : "H"} --reverse`, (code, stdout, stderr) => {
+		sh.exec(`git log --format=%${isShort ? "h" : "H"} --reverse`, { silent: true }, (code, stdout, stderr) => {
 			if (stderr) return reject(stderr);
 
 			const ids = stdout.split("\n").filter(Boolean);
