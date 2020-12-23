@@ -85,7 +85,7 @@ export async function updateCrossDeps(version: string, cwd: string) {
 			if (!meta[depType]) return;
 
 			Object.keys(meta[depType]).forEach(key => {
-				if (pkgMetas[key] && !pkgMetas[key].startsWith("file:")) {
+				if (pkgMetas[depType] && pkgMetas[depType][key]) {
 					meta[depType][key] = version;
 				}
 			});
@@ -189,7 +189,7 @@ export async function updateChangelog(version: string, cwd: string, isDryRun?: b
 	const title = `# ${meta.name} ChangeLog`;
 
 	const logPath = path.resolve(cwd, "CHANGELOG.md");
-	const logFile = (await fs.readFile(logPath)).toString();
+	const logFile = (await fs.readFile(logPath).catch(() => "")).toString();
 	const oldLog = logFile.startsWith(title) ? logFile.slice(title.length).trim() : logFile;
 
 	const content = [title, newLog, oldLog].filter(Boolean).join("\n\n");
