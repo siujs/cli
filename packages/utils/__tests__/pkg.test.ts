@@ -120,6 +120,8 @@ test("getSortedPkgByPriority", async done => {
 });
 
 test(" isPkgExists ", async done => {
+	process.chdir(path.resolve(__dirname, "../../../"));
+
 	let exists = await isPkgExists("test");
 	expect(exists).toBe(false);
 
