@@ -108,6 +108,16 @@ const DEFAULT_HOOKS = {
 
 const officalNpmRepo = "https://registry.npmjs.org";
 
+const DEFAULT_OPTIONS = {
+	pkg: "",
+	skipBuild: false,
+	skipLint: false,
+	skipPush: false,
+	dryRun: false,
+	repo: officalNpmRepo,
+	hooks: DEFAULT_HOOKS
+};
+
 export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "version">) {
 	const cwd = path.resolve(process.cwd(), "packages", pkg);
 
@@ -158,16 +168,16 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 }
 
 export async function release(opts: ReleaseOptions) {
-	const {
-		pkg = "",
-		skipBuild = false,
-		skipLint = false,
-		skipPush = false,
-		version,
-		dryRun = false,
-		repo = officalNpmRepo,
-		hooks = DEFAULT_HOOKS
-	} = opts;
+	opts = {
+		...DEFAULT_OPTIONS,
+		...opts,
+		hooks: {
+			...DEFAULT_HOOKS,
+			...(opts.hooks || {})
+		}
+	};
+
+	const { pkg, skipBuild, skipLint, skipPush, version, dryRun, repo = officalNpmRepo, hooks } = opts;
 
 	if (dryRun) {
 		log(chalk`{magenta DRY RUN}: No files will be modified`);
