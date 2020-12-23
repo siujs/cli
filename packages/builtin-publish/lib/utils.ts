@@ -26,7 +26,10 @@ export async function gitPush(isDryRun: boolean) {
 
 export async function npmPublish(cwd: string, registry: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
-	await run("npm", ["publish", "--access", "public", registry].filter(Boolean), { cwd, stdio: "inherit" });
+	await run("npm", ["publish", "--access", "public", "--registry", registry].filter(Boolean), {
+		cwd,
+		stdio: "inherit"
+	});
 }
 
 export async function addGitTag(version: string, cwd: string, isDryRun?: boolean) {
