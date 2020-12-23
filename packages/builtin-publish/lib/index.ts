@@ -61,6 +61,10 @@ export interface ReleaseOptions {
 	 */
 	skipBuild?: boolean;
 	/**
+	 * Whether skip step: push
+	 */
+	skipPush?: boolean;
+	/**
 	 * custom hooks
 	 */
 	hooks?: {
@@ -137,9 +141,10 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 
 	opts.hooks && opts.hooks.publish && (await opts.hooks.publish({ cwd, repo: opts.repo, dryRun: opts.dryRun }));
 
-	await addGitTagOfPackage(targetVersion, cwd, opts.dryRun);
-
-	await gitPush(opts.dryRun);
+	if (!opts.skipPush) {
+		await addGitTagOfPackage(targetVersion, cwd, opts.dryRun);
+		await gitPush(opts.dryRun);
+	}
 
 	log(chalk.green(`Successfully publish package(${pkg}) version:\`${targetVersion}\`!`));
 }
@@ -148,6 +153,7 @@ export async function release(opts: ReleaseOptions) {
 	const {
 		skipBuild = false,
 		skipLint = false,
+		skipPush = false,
 		version,
 		dryRun = false,
 		repo = officalNpmRepo,
@@ -200,9 +206,10 @@ export async function release(opts: ReleaseOptions) {
 			hooks && hooks.publish && (await hooks.publish({ repo, cwd: path.resolve(pkgsRoot, pkgs[l]), dryRun }));
 		}
 
-		await addGitTag(targetVersion, cwd, dryRun);
-
-		await gitPush(dryRun);
+		if (!skipPush) {
+			await addGitTag(targetVersion, cwd, dryRun);
+			await gitPush(dryRun);
+		}
 
 		log(chalk.green(`Successfully publish version:\`${targetVersion}\`!`));
 	}
