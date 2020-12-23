@@ -148,7 +148,7 @@ function getCommitMessage(item: GroupedCommitsItem) {
 	return item.header.trim() + ref;
 }
 
-export async function updateChangelog(version: string, cwd: string, isDryRun?: boolean) {
+export async function getNewChangedLog(version: string, needShowOthers?: boolean) {
 	let tag = await getPreTag();
 
 	if (!tag) {
@@ -162,21 +162,24 @@ export async function updateChangelog(version: string, cwd: string, isDryRun?: b
 	const newLog = [
 		`## v${version}`,
 		`_${date}_`,
-		groupedCommits.breaking.length
-			? `### Breaking Changes\n\n- ${groupedCommits.breaking.map(getCommitMessage).join("\n- ")}`.trim()
-			: "",
-		groupedCommits.features.length
-			? `### Features\n\n- ${groupedCommits.features.map(getCommitMessage).join("\n- ")}`.trim()
-			: "",
-		groupedCommits.fixed.length
-			? `### Bug Fixs\n\n- ${groupedCommits.fixed.map(getCommitMessage).join("\n- ")}`.trim()
-			: "",
-		groupedCommits.others.length
-			? `### Others\n\n- ${groupedCommits.others.map(getCommitMessage).join("\n- ")}`.trim()
-			: ""
+		groupedCommits.breaking.length &&
+			`### Breaking Changes\n\n- ${groupedCommits.breaking.map(getCommitMessage).join("\n- ")}`.trim(),
+		groupedCommits.features.length &&
+			`### Features\n\n- ${groupedCommits.features.map(getCommitMessage).join("\n- ")}`.trim(),
+		groupedCommits.fixed.length &&
+			`### Bug Fixs\n\n- ${groupedCommits.fixed.map(getCommitMessage).join("\n- ")}`.trim(),
+		needShowOthers &&
+			groupedCommits.others.length &&
+			`### Others\n\n- ${groupedCommits.others.map(getCommitMessage).join("\n- ")}`.trim()
 	]
 		.filter(Boolean)
 		.join("\n\n");
+
+	return newLog;
+}
+
+export async function updateChangelog(version: string, cwd: string, isDryRun?: boolean) {
+	const newLog = await getNewChangedLog(version);
 
 	if (isDryRun) return newLog;
 
