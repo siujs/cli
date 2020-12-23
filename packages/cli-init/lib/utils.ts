@@ -40,6 +40,7 @@ export interface InitAppOptios {
 }
 
 export async function downloadTpl(opts: InitAppOptios) {
+	/* istanbul ignore if */
 	if (!shell.which("git")) {
 		shell.echo(chalk.redBright("Sorry, you need install `git`"));
 		shell.exit(1);
@@ -51,19 +52,22 @@ export async function downloadTpl(opts: InitAppOptios) {
 
 	const { gitPath, branch } = getGitInfo(opts.template, opts.source);
 
+	const dest = path.resolve(opts.cwd, opts.appName);
+
 	await new Promise((resolve, reject) => {
-		shell.exec(`git clone -b ${branch} ${gitPath} ${opts.cwd}`, { silent: true }, (code, stdout, stderr) => {
+		shell.exec(`git clone -b ${branch} ${gitPath} ${dest}`, { silent: true }, (code, stdout, stderr) => {
 			if (code !== 0) {
 				shell.echo("Err: Failed clone template files, reason: " + stderr);
 				shell.exit(1);
 			}
-			shell.rm("-rf", "./.git").exec("git init", { silent: true }, (code, stdout, stderr) => {
+			shell.cd(dest);
+			shell.rm("-rf", "./.git").exec("git init", { silent: true, cwd: dest }, (code, stdout, stderr) => {
 				code !== 0 ? reject(stderr) : resolve(stdout);
 			});
 		});
 	});
 
-	const siuConfigPath = path.resolve(opts.cwd, "./siu.config.js");
+	const siuConfigPath = path.resolve(dest, "./siu.config.js");
 
 	const hasSiuConfig = await fs.pathExists(siuConfigPath);
 
