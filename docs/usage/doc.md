@@ -10,7 +10,7 @@
 Generate docs of target monorepo's package
 
 选项:
-  -S, --no-strict  No need to force chdir to `siu.config.(ts|js)`'s root
+  -S, --no-strict  非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录
   -h, --help       output usage information
 ```
 

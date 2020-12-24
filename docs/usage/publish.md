@@ -1,19 +1,29 @@
 # siu publish
 
-> 整包或特定包的发布
+> 整包发布或者特定`package`的发布
 
 ##### 命令
 
 ```bash
 用法: publish [options] [pkg]
 
-Publish single or multiple monorepo's package
-
 选项:
-  -S, --no-strict  No need to force chdir to `siu.config.(ts|js)`'s root
-  -h, --help       output usage information
-
+	-S, --no-strict     非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录
+	-n, --dry-run       是否执行干跑
+	-v, --ver <verson>  指定发布的版本号，例如: 'independent'、'1.0.0'等
+	-r, --repo <repo>   指定发布的远程npm repository地址
+	-s, --skip <skip>   发布过程中可以跳过的步骤: lint、build、push
 ```
+
+##### 案例
+
+- `siu publish -n`: 干炮模式下的整包发布
+
+- `siu publish -n --repo=xxxx`: 指定干跑模式下的发布的远端`npm repository`
+
+- `siu publish -n --skip=lint`: 跳过`lint`步骤来执行发布
+
+- `siu publish -n --skip=lint,build`: 跳过`lint`和`build`步骤来执行发布
 
 ##### <span style="color:red">\*\*注意\*\*</span>
 

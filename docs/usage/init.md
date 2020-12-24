@@ -1,13 +1,13 @@
 # siu init
 
-> 初始化应用程序
+> 创建`monorepo`风格项目
 
 > 依赖于`@siujs/cli-init`
 
 ##### 命令
 
 ```bash
-用法: siu init [options] <template> <app>
+用法: init [options] <template> <app>
 
 选项:
 
@@ -15,13 +15,13 @@
 
 ```
 
-`siu init`命令会默认通过远端 git repo 的形式去下载对应的项目模板，然后再对对应的一些内部处理;
+`siu init`命令会默认通过远端 git repo 的形式去下载对应的项目模板，然后再对应的进行一些内部处理;
 
 ##### 使用
 
-- `siu init @foo/bar` : will download from `https://github.com/foo/bar`
-- `siu init bar` : will download from `https://github.com/bar`
-- `siu init foo#dev`: will download from `https://github.com/foo` and branch `dev`
-- `siu init git@foo`: will download from `git@foo`
-- `siu init https://xxx/foo`: will download from `https://xxx/foo`;
-- `siu init foo --source=gitee`: will download from `https://gitee.com/foo`
+- `siu init @foo/bar` : will download template files from `https://github.com/foo/bar`
+- `siu init bar` : will download template files from `https://github.com/bar`
+- `siu init foo#dev`: will download template files from `https://github.com/foo` and branch `dev`
+- `siu init git@foo`: will download template files from `git@foo`
+- `siu init https://xxx/foo`: will download template files from `https://xxx/foo`;
+- `siu init foo --source=gitee`: will download template files from `https://gitee.com/foo`

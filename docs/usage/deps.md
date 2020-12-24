@@ -1,18 +1,16 @@
 # siu deps
 
-> 给指定的包新增或删除 npm 依赖
+> 针对`package`执行`add/remove dev/dependencies`操作
 
 ##### 命令
 
 ```bash
-用法: siu deps [options] <deps>
-
-Add deps to target monorepo's package, e.g. add foo,foo@1.2.2,foo:D,foo@1.2.2:D
+用法: deps [options] <deps>
 
 选项:
-  -S, --no-strict  No need to force chdir to `siu.config.(ts|js)`'s root
-  -t, --target <target>  target package name,e.g. foo、@foo/bar
-  -r, --rm               is remove deps from package
+  -S, --no-strict  			 非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录）
+  -t, --target <target>  安装deps依赖的目标package名称,支持批量(逗号分隔）
+  -r, --rm               是否是执行删除依赖的操作
 ```
 
 ##### 案例
@@ -24,4 +22,6 @@ Add deps to target monorepo's package, e.g. add foo,foo@1.2.2,foo:D,foo@1.2.2:D
 
 ##### <span style="color:red">\*\*注意\*\*</span>
 
-当前命令行用法是基础内置用法, 可以通过自定义插件来专门扩展对应的控制台选项
+- `siu deps`此命令会优先从`siu.config.(js|ts)`中去找到对应具备`deps`hook 的插件并执行, 如果没有的话则默认走内置`deps`逻辑(依赖`@siujs/builtin-deps`)
+
+- 当前命令行用法是基础内置用法, 可以通过自定义插件来专门扩展对应的控制台选项

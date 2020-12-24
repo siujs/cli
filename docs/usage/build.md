@@ -1,18 +1,15 @@
 # siu build
 
-> 执行指定包的打包操作，可批量
+> 批量处理`package`的代码构建输出, 默认提供`rollup`的支持
 
 ##### 命令
 
 ```bash
 用法: build [options] [pkg]
 
-Build single or multiple monorepo's package
-
 选项:
-  -S, --no-strict        No need to force chdir to `siu.config.(ts|js)`'s root
-  -f, --format <format>  Output format: es、cjs、umd、umd-min
-  -h, --help             output usage information
+  -S, --no-strict        非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录
+  -f, --format <format>  输出模式: es、cjs、umd、umd-min
 ```
 
 ##### <span style="color:red">\*\*注意\*\*</span>
@@ -21,9 +18,9 @@ Build single or multiple monorepo's package
 
 - `@siujs/builtin-build` 内置默认构建是基于`rollup`+`esbuild`来打包基于`typescript`的无 UI 类库项目
 
-- `@siujs/builtin-build`除了作为`siu build`的垫片, 还提供了关于自定义`rollup`、`webpack`配置的构建器，主要服务于 siu 插件开发
+- `@siujs/builtin-build`除了作为`siu build`的垫片, 还提供了关于自定义`rollup`、`webpack`配置的构建器，主要服务于`siu`插件开发
 
-- 命令选项中如果`pkg`没有设置，那么默认会去执行全模块打包
+- 命令行选项中如果`pkg`没有设置，那么默认会去执行全模块打包
 
 - `pkgs`支持的名称有两种
 

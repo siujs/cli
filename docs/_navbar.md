@@ -1,7 +1,6 @@
-- 插件
+- [配置](/config/)
 
-  - [使用](/plugin/)
-  - [jssdk](/plugin/officials/jssdk)
+- 官方插件列表
 
 - 国内源
 

@@ -1,6 +1,6 @@
 # siu test
 
-> 执行指定包的单元测试或者端测等其他测试案例
+> 批量处理`package`的单测、端测等
 
 ##### 命令
 
@@ -8,11 +8,8 @@
 
 用法: test [options] [pkg]
 
-Test single or multiple monorepo's package
-
 选项:
-  -S, --no-strict  No need to force chdir to `siu.config.(ts|js)`'s root
-  -h, --help       output usage information
+  -S, --no-strict  非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录
 ```
 
 ##### <span style="color:red">\*\*注意\*\*</span>

@@ -1,6 +1,8 @@
-- [介绍](/)
-- [安装](/install)
-- 使用
+- [**介绍**](/)
+
+- [**安装**](/install)
+
+- [**使用**](/usage/init)
 
   - [siu init](/usage/init)
   - [siu create](/usage/create)
@@ -13,5 +15,5 @@
 
 - 插件
 
-  - [开始使用](/plugin)
-  - [Api](/plugin/api)
+  - [使用插件](/plugin/)
+  - [定义插件](/plugin/define)
