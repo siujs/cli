@@ -92,7 +92,7 @@ export function validPkgIsExclude(config: SiuConfig) {
  *
  * @param config Config Data in `siu.config.js` or `siu.config.ts`
  */
-export function analysisPlugins(config?: SiuConfig) {
+export function analysisPlugins(config: SiuConfig) {
 	if (!config) return getPlugins();
 
 	const { plugins = [] } = config;
