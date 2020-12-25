@@ -5,4 +5,4 @@
 - 国内源
 
   - [代码仓库](https://gitee.com/siujs/siu)
-  - [文档](https://gitee.com/siujs/siu)
+  - [文档](https://siujs.gitee.io/cli)
