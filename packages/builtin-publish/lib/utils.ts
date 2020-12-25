@@ -88,7 +88,7 @@ export async function updateCrossDeps(version: string, cwd: string) {
 			if (!meta[depType]) return;
 
 			Object.keys(meta[depType]).forEach(key => {
-				if (pkgMetas[depType] && pkgMetas[depType][key]) {
+				if (pkgMetas[key]) {
 					meta[depType][key] = version;
 				}
 			});
