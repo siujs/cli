@@ -1,9 +1,8 @@
 import chalk from "chalk";
-import fs from "fs-extra";
 import path from "path";
 import semver from "semver";
 
-import { getCommittedFiles, getPreTag } from "@siujs/utils";
+import { getCommittedFiles, getPreTag, getSortedPkgByPriority } from "@siujs/utils";
 
 import {
 	addGitTag,
@@ -198,7 +197,7 @@ export async function release(opts: ReleaseOptions) {
 		let dirs: string[];
 
 		if (!pkg) {
-			dirs = await fs.readdir(pkgsRoot);
+			dirs = await getSortedPkgByPriority();
 		} else {
 			dirs = pkg.split(",");
 		}
@@ -224,9 +223,9 @@ export async function release(opts: ReleaseOptions) {
 
 		await commitChanges(targetVersion, cwd, dryRun);
 
-		const pkgs = await fs.readdir(pkgsRoot);
+		const pkgs = await getSortedPkgByPriority();
 
-		for (let l = pkgs.length; l--; ) {
+		for (let l = 0; l < pkgs.length; l++) {
 			hooks && hooks.publish && (await hooks.publish({ repo, cwd: path.resolve(pkgsRoot, pkgs[l]), dryRun }));
 		}
 
