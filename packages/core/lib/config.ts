@@ -39,8 +39,8 @@ export async function resolveConfig() {
 	exists = await fs.pathExists(configFile);
 
 	if (exists) {
-		const content = require(configFile);
-		siuConfig = (content.default || content) as SiuConfig;
+		const raw = require(configFile);
+		siuConfig = (raw.__esModule ? raw.default : raw) as SiuConfig;
 		siuConfig.pkgsOrder = siuConfig.pkgsOrder || "priority";
 	}
 
