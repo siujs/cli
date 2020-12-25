@@ -22,6 +22,11 @@ export async function findUpSiuConfigCwd(cwd: string, deep = 3): Promise<string>
 	).then(result => result.reduce((prev, cur) => prev || cur, false));
 
 	if (!hasSiuConfig) {
+		const hasPkgJSON = await fs.pathExists(path.resolve(cwd, "package.json"));
+		if (hasPkgJSON) {
+			const meta = await fs.readJSON(path.resolve(cwd, "package.json"));
+			if (meta.siu) return cwd;
+		}
 		return await findUpSiuConfigCwd(path.resolve(cwd, "../"), deep - 1);
 	}
 
