@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import sh from "shelljs";
 
-import { downloadGit, getFirstCommitId } from "../lib/git";
+import { downloadGit, getFirstCommitId, getGitRemote } from "../lib/git";
 
 test(" getFirstCommitId ", async done => {
 	const expectedId = "289e90072966ebc2c549a01aab426ffd8b0940b3";
@@ -30,3 +30,11 @@ test("download Git", async done => {
 
 	done();
 }, 600000);
+
+test(" getGitRemote ", async done => {
+	const url = await getGitRemote(process.cwd());
+
+	expect(url).toBe("https://github.com/siujs/cli");
+
+	done();
+});
