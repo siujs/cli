@@ -187,3 +187,20 @@ export function getFirstCommitId(isShort?: boolean): Promise<string> {
 		});
 	});
 }
+
+/**
+ *
+ * Get current remote url
+ *
+ * @param cwd current workspace directory
+ * @param originName  git origin name ,default: origin
+ */
+export async function getGitRemoteUrl(cwd: string, originName = "origin"): Promise<string> {
+	return new Promise((resolve, reject) => {
+		sh.exec(`git remote get-url ${originName}`, { silent: true, cwd }, (code, stdout, stderr) => {
+			if (stderr) return reject(stderr);
+			const urls = stdout.split("\n").filter(Boolean);
+			resolve(urls[0]);
+		});
+	});
+}
