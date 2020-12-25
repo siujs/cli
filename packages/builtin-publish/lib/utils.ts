@@ -34,23 +34,23 @@ export async function npmPublish(cwd: string, registry: string, isDryRun?: boole
 
 export async function addGitTag(version: string, cwd: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
-	await run("git", ["tag", version], { cwd, stdio: "inherit" });
+	await run("git", ["tag", `v${version}`], { cwd, stdio: "inherit" });
 }
 export async function addGitTagOfPackage(version: string, pkgCwd: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
-	await run("git", ["tag", `${path.basename(pkgCwd)}-${version}`], { cwd: pkgCwd, stdio: "inherit" });
+	await run("git", ["tag", `${path.basename(pkgCwd)}-v${version}`], { cwd: pkgCwd, stdio: "inherit" });
 }
 
 export async function commitChanges(version: string, cwd: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
 	await run("git", ["add", cwd]);
-	await run("git", ["commit", "-m", `release: ${version}`]);
+	await run("git", ["commit", "-m", `release: v${version}`]);
 }
 
 export async function commitChangesOfPackage(version: string, pkgCwd: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
 	await run("git", ["add", pkgCwd]);
-	await run("git", ["commit", "-m", `chore(release): ${path.basename(pkgCwd)} ${version}`]);
+	await run("git", ["commit", "-m", `chore(release): ${path.basename(pkgCwd)}-v${version}`]);
 }
 
 export async function updatePkgVersion(version: string, cwd: string) {
