@@ -238,3 +238,5 @@ export async function release(opts: ReleaseOptions) {
 		log(chalk.green(`Successfully publish version:\`${targetVersion}\`!`));
 	}
 }
+
+export * from "./utils";
