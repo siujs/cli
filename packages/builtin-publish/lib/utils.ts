@@ -5,7 +5,7 @@ import inquirer from "inquirer";
 import path from "path";
 import semver from "semver";
 
-import { getFirstCommitId, getGroupedCommits, getPreTag, GroupedCommitsItem } from "@siujs/utils";
+import { getFirstCommitId, getGitRemoteUrl, getGroupedCommits, getPreTag, GroupedCommitsItem } from "@siujs/utils";
 
 const execFnCache = {} as Record<"dryRun" | "run", (bin: string, args: string[], opts?: Record<string, any>) => any>;
 
@@ -145,60 +145,76 @@ export async function chooseVersion(cwd: string) {
 	return targetVersion;
 }
 
-export async function getNewChangedLog(version: string, pkg?: string, needShowOthers?: boolean) {
-	const getCommitMessage = (item: GroupedCommitsItem) => {
-		if (pkg && item.scope !== pkg) return "";
-		const ref = /\(#\d+\)/.test(item.header) ? "" : ` (${item.extra.hash.substring(0, 7)})`;
-		return item.header.trim() + ref;
-	};
+function changelogMsgNormalize(item: GroupedCommitsItem, remoteUrl?: string) {
+	const ref = /\(#\d+\)/.test(item.header)
+		? ""
+		: ` ([${item.extra.hash.substring(0, 7)}](${remoteUrl}/commit/${item.extra.hash}))`;
+	return (item.scope ? ` **${item.scope}**: ` : "") + item.subject.trim() + ref;
+}
 
+export async function getNewChangedLog(
+	version: string,
+	opts: {
+		allowTypes?: string[];
+		type2Title?: Record<string, string>;
+		normalizeCommitMsg?: (item: GroupedCommitsItem, remoteUrl?: string) => string;
+	} = {}
+) {
 	let tag = await getPreTag();
 
-	if (!tag) {
-		tag = await getFirstCommitId(false);
-	}
+	!tag && (tag = await getFirstCommitId(false));
 
-	const groupedCommits = await getGroupedCommits(tag);
+	const remoteUrl = await getGitRemoteUrl(process.cwd());
 
 	const [date] = new Date().toISOString().split("T");
 
-	const newLog = [`## v${version}`, `_${date}_`];
+	const newLog = [`## [v${version}](${remoteUrl}/compare/${tag}...v${version}) (${date})`];
+
+	const groupedCommits = await getGroupedCommits(tag);
+
+	const {
+		allowTypes = ["feat", "fix", "perf", "refactor"],
+		type2Title = {
+			feat: "Features",
+			fix: "Bug Fixes",
+			perf: "Performance Improvements",
+			refactor: "Code Refactoring"
+		},
+		normalizeCommitMsg = changelogMsgNormalize
+	} = opts;
 
 	let arr: string[];
 
 	if (groupedCommits.breaking.length) {
-		arr = groupedCommits.breaking.map(getCommitMessage).filter(Boolean);
+		arr = groupedCommits.breaking.map(item => normalizeCommitMsg(item, remoteUrl)).filter(Boolean);
 		if (arr.length) {
-			newLog.push(`### Breaking Changes\n\n- ${arr.join("\n- ")}`.trim());
+			newLog.push(`### BREAKING CHANGES\n\n- ${arr.join("\n- ")}`.trim());
 		}
 	}
 
-	if (groupedCommits.features.length) {
-		arr = groupedCommits.features.map(getCommitMessage).filter(Boolean);
-		if (arr.length) {
-			newLog.push(`### Features\n\n- ${arr.join("\n- ")}`.trim());
-		}
-	}
-
-	if (groupedCommits.fixed.length) {
-		arr = groupedCommits.fixed.map(getCommitMessage).filter(Boolean);
-		if (arr.length) {
-			newLog.push(`### Bug Fixs\n\n- ${arr.join("\n- ")}`.trim());
-		}
-	}
-
-	if (needShowOthers && groupedCommits.others.length) {
-		arr = groupedCommits.others.map(getCommitMessage).filter(Boolean);
-		if (arr.length) {
-			newLog.push(`### Others\n\n- ${arr.join("\n- ")}`.trim());
-		}
-	}
-
-	return newLog.filter(Boolean).join("\n\n");
+	return Object.keys(groupedCommits)
+		.filter(key => allowTypes.includes(key))
+		.reduce((prev, type) => {
+			arr = groupedCommits[type].map(item => normalizeCommitMsg(item, remoteUrl)).filter(Boolean);
+			arr.length && prev.push(`### ${type2Title[type] || type}\n\n- ${arr.join("\n- ")}`.trim());
+			return prev;
+		}, newLog)
+		.filter(Boolean)
+		.join("\n\n");
 }
 
 export async function updateChangelog(version: string, cwd: string, pkg?: string, isDryRun?: boolean) {
-	const newLog = await getNewChangedLog(version, pkg);
+	const newLog = await getNewChangedLog(
+		version,
+		pkg
+			? {
+					normalizeCommitMsg(item: GroupedCommitsItem, remoteUrl?: string) {
+						if (pkg && item.scope !== pkg) return "";
+						return changelogMsgNormalize(item, remoteUrl);
+					}
+			  }
+			: {}
+	);
 
 	if (isDryRun) return newLog;
 
