@@ -126,7 +126,7 @@ export type GroupedCommitsItem = Commit & {
 export function getGroupedCommits(
 	startHash: string,
 	endHash = "HEAD"
-): Promise<Record<"breaking" | "fixed" | "features" | "others", GroupedCommitsItem[]>> {
+): Promise<Record<"breaking" | string, GroupedCommitsItem[]>> {
 	return new Promise((resolve, reject) => {
 		sh.exec(
 			`git --no-pager log ${startHash}..${endHash} --format=%B%n-extra-%n%H%n%an%n%ae%n%ci💨💨💨`,
@@ -159,19 +159,13 @@ export function getGroupedCommits(
 
 							if (breaking) {
 								prev.breaking.push(kv);
-							} else if (node.type === "fix") {
-								prev.fixed.push(kv);
-							} else if (node.type === "feat") {
-								prev.features.push(kv);
 							} else {
-								prev.others.push(kv);
+								prev[node.type] = prev[node.type] || [];
+								prev[node.type].push(kv);
 							}
 							return prev;
 						},
-						{ breaking: [], fixed: [], features: [], others: [] } as Record<
-							"breaking" | "fixed" | "features" | "others",
-							GroupedCommitsItem[]
-						>
+						{ breaking: [] } as Record<"breaking" | string, GroupedCommitsItem[]>
 					);
 
 				resolve(commits);
