@@ -160,7 +160,6 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 
 	if (!opts.skipPush) {
 		await addGitTagOfPackage(targetVersion, cwd, opts.dryRun);
-		await gitPush(opts.dryRun);
 	}
 
 	log(chalk.green(`Successfully publish package(${pkg}) version:\`${targetVersion}\`!`));
@@ -204,6 +203,10 @@ export async function release(opts: ReleaseOptions) {
 
 		for (let l = dirs.length; l--; ) {
 			await releasePackage(dirs[l], opts);
+		}
+
+		if (!skipPush) {
+			await gitPush(dryRun);
 		}
 	} else {
 		const targetVersion = version || (await chooseVersion(cwd));
