@@ -1,5 +1,11 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.3](https://github.com/siujs/cli/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2020-12-28)
+
+### Bug Fixes
+
+-  **utils**: can't get prev tag ([5657c56](https://github.com/siujs/cli/commit/5657c564901154e213b08915b31922675f839792))
+
 ## [v1.0.0-beta.2](https://github.com/siujs/cli/compare/289e90072966ebc2c549a01aab426ffd8b0940b3...v1.0.0-beta.2) (2020-12-28)
 
 ### Bug Fixes
