@@ -110,7 +110,7 @@ const officalNpmRepo = "https://registry.npmjs.org";
 const DEFAULT_OPTIONS = {
 	pkg: "",
 	skipBuild: false,
-	skipLint: false,
+	skipLint: true,
 	skipPush: false,
 	dryRun: false,
 	repo: officalNpmRepo,
