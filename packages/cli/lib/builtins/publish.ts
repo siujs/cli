@@ -4,7 +4,7 @@ import { HookHandlerContext, PluginApi, ValueOf } from "@siujs/core";
 export function asPublishFallback(api: ValueOf<PluginApi>) {
 	api.process(async (ctx: HookHandlerContext) => {
 		const pkg = ctx.opts<string>("pkg");
-		const version = ctx.opts<string>("version");
+		const version = ctx.opts<string>("ver");
 		const repo = ctx.opts<string>("repo");
 		const dryRun = ctx.opts<boolean>("dryRun") || ctx.opts<boolean>("dry-run");
 

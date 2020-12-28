@@ -154,7 +154,7 @@ export async function initCLI(isStrict?: boolean) {
 			.description("Publish all packages or target monorepo's packages")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option("-n, --dry-run", "Whether dry run")
-			.option("-v, --ver <version>", "Target version: independent or x.x.x or auto choice")
+			.option("-v, --ver <ver>", "Target version: independent or x.x.x or auto choice")
 			.option("-r, --repo <repo>", "Target npm repository url")
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "publish"))
 	};
