@@ -2,7 +2,7 @@ import chalk from "chalk";
 
 import { deepFreezeObject, getMetasOfPackages, getPkgData, getPkgDirName } from "@siujs/utils";
 
-import { analysisPlugins, validPkgIsExclude } from "./config";
+import { validPkgIsExclude } from "./config";
 import { DEFAULT_PLUGIN_ID, GlobalKeyValues, lifecycles, noop, PkgCaches, pluginCommands } from "./consts";
 import {
 	CLIOption,
@@ -391,7 +391,7 @@ export async function applyPlugins(
 	config: SiuConfig,
 	fallback?: (api: ValueOf<PluginApi>) => void
 ) {
-	const plugs = analysisPlugins(config);
+	const plugs = getPlugins();
 
 	/* istanbul ignore if */
 	if (!plugs || !plugs.length) return;
