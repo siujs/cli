@@ -58,7 +58,7 @@ export function getStagedFiles(cwd: string): Promise<string[]> {
  */
 export function getPreTag(versionPrefix?: string): Promise<string> {
 	return new Promise((resolve, reject) => {
-		const child = sh.exec(`git tag --list ${versionPrefix ? `${versionPrefix}v*` : "v*"} --sort --v:refname`, {
+		const child = sh.exec(`git tag --list ${versionPrefix ? `${versionPrefix}v*` : "v*"} --sort -v:refname`, {
 			async: true,
 			silent: true
 		});
