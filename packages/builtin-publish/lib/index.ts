@@ -34,6 +34,7 @@ export interface ReleaseHookArgs {
 export interface ReleaseChangelogHookArgs extends ReleaseHookArgs {
 	commits: any[];
 }
+
 export interface ReleaseOptions {
 	/**
 	 *
@@ -67,6 +68,14 @@ export interface ReleaseOptions {
 	 * Whether skip step: build
 	 */
 	skipBuild?: boolean;
+	/**
+	 * Whether skip step: publish
+	 */
+	skipPublish?: boolean;
+	/**
+	 * Whether skip step: commit
+	 */
+	skipCommit?: boolean;
 	/**
 	 * Whether skip step: push
 	 */
@@ -109,12 +118,14 @@ const officalNpmRepo = "https://registry.npmjs.org";
 
 const DEFAULT_OPTIONS = {
 	pkg: "",
-	skipBuild: false,
-	skipLint: true,
-	skipPush: false,
 	dryRun: false,
 	repo: officalNpmRepo,
-	hooks: DEFAULT_HOOKS
+	hooks: DEFAULT_HOOKS,
+	skipLint: true,
+	skipBuild: false,
+	skipPublish: false,
+	skipCommit: false,
+	skipPush: false
 };
 
 export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "version">) {
@@ -144,23 +155,22 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 		throw new Error(`invalid target version: ${targetVersion}`);
 	}
 
-	if (opts.dryRun) {
-		log(chalk`{yellow [dryrun] update ${pkg} version}: Updating package(${pkg}) version to \`${targetVersion}\``);
-	} else {
-		await updatePkgVersion(targetVersion, cwd);
-	}
+	opts.dryRun
+		? log(chalk`{yellow [dryrun] update ${pkg} version}: Updating package(${pkg}) version to \`${targetVersion}\``)
+		: await updatePkgVersion(targetVersion, cwd);
+
+	!opts.skipPublish &&
+		opts.hooks &&
+		opts.hooks.publish &&
+		(await opts.hooks.publish({ cwd, repo: opts.repo, dryRun: opts.dryRun }));
 
 	opts.hooks &&
 		opts.hooks.changelog &&
 		(await opts.hooks.changelog({ cwd, version: targetVersion, dryRun: opts.dryRun, pkg }));
 
-	await commitChangesOfPackage(targetVersion, cwd, opts.dryRun);
+	!opts.skipCommit && (await commitChangesOfPackage(targetVersion, cwd, opts.dryRun));
 
-	opts.hooks && opts.hooks.publish && (await opts.hooks.publish({ cwd, repo: opts.repo, dryRun: opts.dryRun }));
-
-	if (!opts.skipPush) {
-		await addGitTagOfPackage(targetVersion, cwd, opts.dryRun);
-	}
+	!opts.skipPush && (await addGitTagOfPackage(targetVersion, cwd, opts.dryRun));
 
 	log(chalk.green(`Successfully publish package(${pkg}) version:\`${targetVersion}\`!`));
 }
@@ -175,7 +185,7 @@ export async function release(opts: ReleaseOptions) {
 		}
 	};
 
-	const { pkg, skipBuild, skipLint, skipPush, version, dryRun, repo = officalNpmRepo, hooks } = opts;
+	const { pkg, version, dryRun, repo = officalNpmRepo, hooks, ...skips } = opts;
 
 	if (dryRun) {
 		log(chalk`{magenta DRY RUN}: No files will be modified`);
@@ -184,30 +194,18 @@ export async function release(opts: ReleaseOptions) {
 	const cwd = process.cwd();
 	const pkgsRoot = path.resolve(cwd, "packages");
 
-	if (!skipLint) {
-		hooks && hooks.lint && (await hooks.lint({ cwd, dryRun }));
-	}
+	!skips.skipLint && hooks && hooks.lint && (await hooks.lint({ cwd, dryRun }));
 
-	if (!skipBuild) {
-		hooks && hooks.build && (await hooks.build({ cwd, dryRun }));
-	}
+	!skips.skipBuild && hooks && hooks.build && (await hooks.build({ cwd, dryRun }));
 
 	if (version === "independent" || (!version && pkg)) {
-		let dirs: string[];
-
-		if (!pkg) {
-			dirs = await getSortedPkgByPriority();
-		} else {
-			dirs = pkg.split(",");
-		}
+		const dirs = pkg ? pkg.split(",") : await getSortedPkgByPriority();
 
 		for (let l = dirs.length; l--; ) {
 			await releasePackage(dirs[l], opts);
 		}
 
-		if (!skipPush) {
-			await gitPush(dryRun);
-		}
+		!skips.skipPush && (await gitPush(dryRun));
 	} else {
 		const targetVersion = version || (await chooseVersion(cwd));
 
@@ -222,17 +220,18 @@ export async function release(opts: ReleaseOptions) {
 			await updateCrossDeps(targetVersion, cwd);
 		}
 
-		hooks && hooks.changelog && (await hooks.changelog({ version: targetVersion, cwd, dryRun }));
-
-		await commitChanges(targetVersion, cwd, dryRun);
-
-		const pkgs = await getSortedPkgByPriority();
-
-		for (let l = 0; l < pkgs.length; l++) {
-			hooks && hooks.publish && (await hooks.publish({ repo, cwd: path.resolve(pkgsRoot, pkgs[l]), dryRun }));
+		if (!skips.skipPublish) {
+			const pkgs = await getSortedPkgByPriority();
+			for (let l = 0; l < pkgs.length; l++) {
+				hooks && hooks.publish && (await hooks.publish({ repo, cwd: path.resolve(pkgsRoot, pkgs[l]), dryRun }));
+			}
 		}
 
-		if (!skipPush) {
+		hooks && hooks.changelog && (await hooks.changelog({ version: targetVersion, cwd, dryRun }));
+
+		!skips.skipCommit && (await commitChanges(targetVersion, cwd, dryRun));
+
+		if (!skips.skipPush) {
 			await addGitTag(targetVersion, cwd, dryRun);
 			await gitPush(dryRun);
 		}
