@@ -18,12 +18,30 @@ export function runWhetherDry(isDryRun?: boolean) {
 				(execFnCache.run = (bin: string, args: string[], opts = {}) => execa(bin, args, { stdio: "inherit", ...opts }));
 }
 
+/**
+ *
+ * Push git commits to server repo
+ *
+ * 	steps:
+ * 		`git push`: push commits
+ *  	`git push --tags`: push local tags
+ *
+ * @param isDryRun whether is dry run
+ */
 export async function gitPush(isDryRun: boolean) {
 	const run = runWhetherDry(isDryRun);
 	await run("git", ["push"]);
 	await run("git", ["push", "--tags"]);
 }
 
+/**
+ *
+ * Publish package to npm repository
+ *
+ * @param cwd current workspace directory
+ * @param registry specific npm registory url string
+ * @param isDryRun whether is dry run
+ */
 export async function npmPublish(cwd: string, registry: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
 	await run("npm", ["publish", "--access", "public", "--registry", registry].filter(Boolean), {
@@ -32,27 +50,67 @@ export async function npmPublish(cwd: string, registry: string, isDryRun?: boole
 	});
 }
 
+/**
+ *
+ * Add local git tag
+ *
+ * @param version new version string, no `v` prefix
+ * @param cwd current workspace directory - monorepo project root
+ * @param isDryRun whether is dry run
+ */
 export async function addGitTag(version: string, cwd: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
 	await run("git", ["tag", `v${version}`], { cwd, stdio: "inherit" });
 }
+
+/**
+ *
+ * Add local git tag only for monorepo package when use `independent` mode
+ *
+ * @param version new version string, no `v` prefix
+ * @param pkgCwd current workspace directory - specific monorepo package root
+ * @param isDryRun whether is dry run
+ */
 export async function addGitTagOfPackage(version: string, pkgCwd: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
 	await run("git", ["tag", `${path.basename(pkgCwd)}-v${version}`], { cwd: pkgCwd, stdio: "inherit" });
 }
 
+/**
+ *
+ * Add and commit local changes to git store
+ *
+ * @param version new version string, no `v` prefix
+ * @param cwd current workspace directory - monorepo project root
+ * @param isDryRun whether is dry run
+ */
 export async function commitChanges(version: string, cwd: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
 	await run("git", ["add", cwd]);
 	await run("git", ["commit", "-m", `release: v${version}`]);
 }
 
+/**
+ *
+ * Add and commit local changes to git store only for monorepo package when use `independent` mode
+ *
+ * @param version new version string, no `v` prefix
+ * @param pkgCwd current  workspace directory - specific monorepo package root
+ * @param isDryRun whether is dry run
+ */
 export async function commitChangesOfPackage(version: string, pkgCwd: string, isDryRun?: boolean) {
 	const run = runWhetherDry(isDryRun);
 	await run("git", ["add", pkgCwd]);
 	await run("git", ["commit", "-m", `chore(release): ${path.basename(pkgCwd)}-v${version}`]);
 }
 
+/**
+ *
+ * Update `version` field in root package.json
+ *
+ * @param version new version string, no `v` prefix
+ * @param cwd current workspace directory - monorepo project root
+ */
 export async function updatePkgVersion(version: string, cwd: string) {
 	const metaPath = path.resolve(cwd, "package.json");
 
@@ -63,6 +121,13 @@ export async function updatePkgVersion(version: string, cwd: string) {
 	await fs.writeJSON(metaPath, pkgData, { spaces: 2 });
 }
 
+/**
+ *
+ * Update `version` field of interdependent packages
+ *
+ * @param version new version string, no `v` prefix
+ * @param cwd current workspace directory - monorepo project root
+ */
 export async function updateCrossDeps(version: string, cwd: string) {
 	const pkgRoot = path.resolve(cwd, "packages");
 
@@ -102,6 +167,10 @@ export async function updateCrossDeps(version: string, cwd: string) {
 	]);
 }
 
+/**
+ *
+ * @param cwd current workspace directory - monorepo project root  or  specific monorepo package root
+ */
 export async function chooseVersion(cwd: string) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const currentVersion = require(path.resolve(cwd, "package.json")).version;
@@ -152,6 +221,13 @@ function changelogMsgNormalize(item: GroupedCommitsItem, remoteUrl?: string) {
 	return (item.scope ? ` **${item.scope}**: ` : "") + item.subject.trim() + ref;
 }
 
+/**
+ *
+ * Get new changelog content
+ *
+ * @param version new version string, no `v` prefix
+ * @param opts generation options
+ */
 export async function getNewChangedLog(
 	version: string,
 	opts: {
@@ -203,6 +279,15 @@ export async function getNewChangedLog(
 		.join("\n\n");
 }
 
+/**
+ *
+ * Update `CHANGELOG.md` content
+ *
+ * @param version new version string, no `v` prefix
+ * @param cwd current workspace directory - monorepo project root of specific monorepo package root
+ * @param pkg [option] specific monorepo package name
+ * @param isDryRun whether is dry run
+ */
 export async function updateChangelog(version: string, cwd: string, pkg?: string, isDryRun?: boolean) {
 	const newLog = await getNewChangedLog(
 		version,
