@@ -11,10 +11,6 @@ export function cliFallback(api: PluginApi) {
 		option("-d, --deps <deps>", "name of siblings package, e.g. `pkg1` or `pkg1,pkg2`");
 	});
 
-	api.build.cli((option: CLIOptionHandlerParams) => {
-		option("-f, --format <format>", "Output format: es、cjs、umd、umd-min");
-	});
-
 	api.publish.cli((option: CLIOptionHandlerParams) => {
 		option("-s, --skip <skip>", "Will skip steps, e.g: 'lint'、'lint,build'、'lint,build,push'");
 	});

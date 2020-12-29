@@ -148,6 +148,7 @@ export async function initCLI(isStrict?: boolean) {
 			.command("build [pkg]")
 			.description("Build single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-f, --format <format>", "Output format: es、cjs、umd、umd-min")
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "build")),
 		publish: program
 			.command("publish [pkg]")
