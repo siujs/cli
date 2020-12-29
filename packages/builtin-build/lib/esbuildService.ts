@@ -34,9 +34,13 @@ function printMessage(warning: Message, file: string) {
 }
 
 const defaultLoaders = {
-	".js": "js",
-	".jsx": "jsx",
 	".ts": "ts",
+	".js": "js",
+	".mjs": "js",
+	".cjs": "js",
+	".es": "js",
+	".es6": "js",
+	".jsx": "jsx",
 	".tsx": "tsx",
 	".css": "css",
 	".less": "css",
@@ -50,13 +54,14 @@ const defaultLoaders = {
 export async function transform(
 	src: string,
 	file: string,
+	loader: Loader,
 	options: TransformOptions,
 	onwarn: (m: any, file: string, src: string) => void
 ) {
 	const service = await ensureService();
 
 	const opts = {
-		loader: path.extname(file).slice(1) as Loader,
+		loader,
 		sourcefile: file,
 		target: "es2020",
 		...options
@@ -86,13 +91,14 @@ export async function transform(
 export interface SiuEsBuildPluginOptions extends Omit<TransformOptions, "loader"> {
 	include?: string;
 	exclude?: string;
-	loaders: Record<string, Loader>;
-	onwarn: (m: any, file: string, src: string) => void;
+	loaders?: Record<string, Loader>;
+	onwarn?: (m: any, file: string, src: string) => void;
+	importeeAlias?: Record<string, string> | ((id: string) => string);
 }
 
 export function asRollupPlugin() {
 	return (options: SiuEsBuildPluginOptions) => {
-		const { include, exclude, loaders, onwarn = printMessage, ...esbuildOptions } = options;
+		const { include, exclude, loaders, onwarn = printMessage, importeeAlias, ...esbuildOptions } = options;
 
 		const aliasLoaders = {
 			...defaultLoaders
@@ -121,6 +127,11 @@ export function asRollupPlugin() {
 			return null;
 		};
 
+		const importeeAliasFn =
+			typeof importeeAlias === "function"
+				? importeeAlias
+				: (id: string) => (importeeAlias ? (importeeAlias as Record<string, string>)[id] || id : id);
+
 		return {
 			name: "esbuild",
 			async buildStart() {
@@ -128,17 +139,23 @@ export function asRollupPlugin() {
 					_service = await startService();
 				}
 			},
-
 			resolveId(importee, importer) {
-				if (importer && importee[0] === ".") {
-					const resolved = path.resolve(importer ? path.dirname(importer) : process.cwd(), importee);
+				if (!importer) return;
 
-					let file = resolveFile(resolved);
+				let resolved: string;
+				if (importee[0] === "." || importee[0] === "/") {
+					resolved = path.resolve(importer ? path.dirname(importer) : process.cwd(), importee);
+				} else if (importeeAliasFn) {
+					resolved = importeeAliasFn(importee);
+				}
+
+				if (!resolved) return;
+
+				let file = resolveFile(resolved);
+				if (file) return file;
+				if (!file && fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
+					file = resolveFile(resolved, true);
 					if (file) return file;
-					if (!file && fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-						file = resolveFile(resolved, true);
-						if (file) return file;
-					}
 				}
 			},
 			transform(code: string, id: string) {
@@ -149,7 +166,7 @@ export function asRollupPlugin() {
 
 				if (!loader || !_service) return null;
 
-				return transform(code, id, esbuildOptions, onwarn);
+				return transform(code, id, loader, esbuildOptions, onwarn);
 			}
 		} as Plugin;
 	};
