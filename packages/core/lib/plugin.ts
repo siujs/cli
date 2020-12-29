@@ -2,7 +2,7 @@ import chalk from "chalk";
 
 import { deepFreezeObject, getMetasOfPackages, getPkgData, getPkgDirName } from "@siujs/utils";
 
-import { validPkgIsExclude } from "./config";
+import { analysisPlugins, validPkgIsExclude } from "./config";
 import { DEFAULT_PLUGIN_ID, GlobalKeyValues, lifecycles, noop, PkgCaches, pluginCommands } from "./consts";
 import {
 	CLIOption,
@@ -266,6 +266,7 @@ export class SiuPlugin {
 		try {
 			await this.callHook(getHookId(cmd, (this.lifecycle = hasStartHook ? "start" : "process")));
 		} catch (ex) {
+			console.log("Ex:", ex);
 			console.log(chalk.redBright(`\n[${this.id}] ERROR:`));
 			this.ex(ex);
 			await this.callHook(getHookId(cmd, "error"));
@@ -395,7 +396,11 @@ export async function applyPlugins(
 	config: SiuConfig,
 	fallback?: (api: ValueOf<PluginApi>) => void
 ) {
-	const plugs = getPlugins();
+	let plugs = getPlugins();
+
+	if (!plugs || !plugs.length) {
+		plugs = analysisPlugins(config);
+	}
 
 	/* istanbul ignore if */
 	if (!plugs || !plugs.length) return;
