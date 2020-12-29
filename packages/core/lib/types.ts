@@ -24,6 +24,12 @@ export interface HookHandlerContext {
 	opts<T extends any>(key: string): T;
 	/**
 	 *
+	 * 当前插件在当前生命周期钩子下的配置项获取
+	 *
+	 */
+	opts<T extends Record<string, any>>(): T;
+	/**
+	 *
 	 * 当前插件全局临时缓存设置/获取
 	 *
 	 * @param key 目标键

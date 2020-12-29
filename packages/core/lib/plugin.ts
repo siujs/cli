@@ -97,8 +97,12 @@ export class SiuPlugin {
 	 *
 	 * @param key 键名
 	 */
-	private opts<T>(key: string) {
-		return this._opts[this._cmd]?.[key] as T;
+	private opts<T>(key?: string) {
+		return key
+			? (this._opts[this._cmd]?.[key] as T)
+			: {
+					...this._opts[this._cmd]
+			  };
 	}
 
 	/**
