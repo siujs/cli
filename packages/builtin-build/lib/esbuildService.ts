@@ -98,8 +98,8 @@ export interface SiuEsBuildPluginOptions extends Omit<TransformOptions, "loader"
 }
 
 export function asRollupPlugin() {
-	return (options: SiuEsBuildPluginOptions) => {
-		const { include, exclude, loaders, onwarn = printMessage, importeeAlias, ...esbuildOptions } = options;
+	return (options: SiuEsBuildPluginOptions = {}) => {
+		const { include, exclude, loaders, onwarn = printMessage, importeeAlias, ...esbuildOptions } = options || {};
 
 		const aliasLoaders = {
 			...defaultLoaders
