@@ -64,6 +64,7 @@ export async function transform(
 		loader,
 		sourcefile: file,
 		target: "es2020",
+		sourcemap: true,
 		...options
 	};
 
