@@ -171,7 +171,7 @@ export async function updateCrossDeps(version: string, cwd: string) {
  *
  * @param cwd current workspace directory - monorepo project root  or  specific monorepo package root
  */
-export async function chooseVersion(cwd: string) {
+export async function chooseVersion(cwd: string, pkg?: string) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const currentVersion = require(path.resolve(cwd, "package.json")).version;
 
@@ -194,7 +194,7 @@ export async function chooseVersion(cwd: string) {
 	const { release } = await inquirer.prompt({
 		type: "list",
 		name: "release",
-		message: "Select release type",
+		message: "Select release type" + pkg ? ` of '${pkg}'` : "",
 		choices: versionIncrements.map(i => `${i} (${inc(i)})`).concat(["custom"])
 	});
 

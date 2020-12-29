@@ -136,7 +136,7 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 	let targetVersion: string;
 
 	if (!tag) {
-		targetVersion = await chooseVersion(cwd);
+		targetVersion = await chooseVersion(cwd, pkg);
 	} else {
 		const commitFiles = await getCommittedFiles(tag, "HEAD", cwd);
 
@@ -145,7 +145,7 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 		});
 
 		if (hasPkgFile) {
-			targetVersion = await chooseVersion(cwd);
+			targetVersion = await chooseVersion(cwd, pkg);
 		}
 	}
 
