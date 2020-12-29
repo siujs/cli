@@ -1,5 +1,29 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.4](https://github.com/siujs/cli/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2020-12-29)
+
+### Bug Fixes
+
+-  **builtin-build**: `options` may be empty ([aa6c129](https://github.com/siujs/cli/commit/aa6c129d67d4d6e788e1de0e4b53550a20fb9702))
+-  **builtin-build**: Unexpected end of JSON input ([3f46b32](https://github.com/siujs/cli/commit/3f46b32e079c5ad6c0b50364ac97683099474279))
+-  **builtin-build**: Invalid loader、Incomplete resolveId ([3a73668](https://github.com/siujs/cli/commit/3a73668893e41900a331a04eb1f11aa454d0262d))
+-  **core**: plugin short id not considered ([5c372bc](https://github.com/siujs/cli/commit/5c372bcb6668d02dd78ae1dda0059adeace2dd9a))
+-  **core**: repeated analysis plugins in config ([302a121](https://github.com/siujs/cli/commit/302a121339845574871e1a928d10a8de93f2bea5))
+
+### Performance Improvements
+
+-  **cli**: mv `--format` into default build option ([e6c5f66](https://github.com/siujs/cli/commit/e6c5f6670551b594147257bb1634dd71e6f0e383))
+
+### Features
+
+-  **cli**: add `skipPublish`、`skipCommit` option ([a0cba5e](https://github.com/siujs/cli/commit/a0cba5e2b1042f93c0e30e1e8b4440522c05b843))
+-  **builtin-publish**: add `skipPublish` and `skipCommit` ([b864db5](https://github.com/siujs/cli/commit/b864db55ad0c41d99f5a91a6580568b71a47eff5))
+-  **core**: add `opts()=>{}` into `PluginApi` ([2f384f4](https://github.com/siujs/cli/commit/2f384f49d25dba654e9481f226de5475fbd9ff7a))
+
+### Code Refactoring
+
+-  **cli**: rm redundant esbuild config-option ([39587ee](https://github.com/siujs/cli/commit/39587ee4ded7f2d34e7014e03ece221f4f32866c))
+
 ## [v1.0.0-beta.3](https://github.com/siujs/cli/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2020-12-28)
 
 ### Bug Fixes
