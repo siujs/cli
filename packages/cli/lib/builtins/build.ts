@@ -9,18 +9,7 @@ export function asBuildFallback(api: ValueOf<PluginApi>) {
 
 		const builder = new SiuRollupBuilder(pkgData, {
 			onConfigTransform: (config: Config, format: TOutputFormatKey) => {
-				config.plugin("esbuild").use(asRollupPlugin(), [
-					{
-						sourcemap: true,
-						loaders: {
-							".js": "js",
-							".mjs": "js",
-							".cjs": "js",
-							".ts": "ts"
-						}
-					}
-				]);
-
+				config.plugin("esbuild").use(asRollupPlugin());
 				config.output(format).file(path.resolve(pkgData.path, `dist/index.${format === "es" ? "mjs" : "cjs"}`));
 			}
 		});
