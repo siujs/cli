@@ -39,13 +39,13 @@
 
 ```js
 export default (api: PluginApi) => {
-	api.create.start(async (ctx: HookHandlerContext, next: HookHandlerNext) => {
+	api.create.start(async (ctx: HookHandlerContext) => {
 		// do something
 		// ctx: 插件上下文
 		// next: 处理插件的流程流转
 	});
 
-	api.create.process(async (ctx: HookHandlerContext, next: HookHandlerNext) => {
+	api.create.process(async (ctx: HookHandlerContext) => {
 		// do something
 	});
 
@@ -110,13 +110,3 @@ export default (api: PluginApi) => {
 
 - 此操作在命令为`publish`、`deps`、`glint`下不生效，会返回无效数据;
 - 设置操作只会更新当前`package`模块下`package.json`中的内容(对象合并方式，非覆盖式)
-
-### 插件流程流转
-
-`next: HookHandlerNext` 是专门提供给插件开发者主动处理命令周期的流转;
-
-它的流转情况如下：
-
-- `await next()`: `start=>process`、`process=>complete`;
-
-- `await next(error)`: `start=>error` or `process=>error`

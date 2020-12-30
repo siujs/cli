@@ -2,10 +2,8 @@ const assert = require("assert");
 
 /* istanbul ignore next */
 module.exports = api => {
-	api.create.start(async (ctx, next) => {
+	api.create.start(async ctx => {
 		ctx.keys("foo", "2");
-
-		await next();
 	});
 
 	api.create.process(ctx => {

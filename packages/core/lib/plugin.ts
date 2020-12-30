@@ -3,7 +3,7 @@ import chalk from "chalk";
 import { deepFreezeObject, getMetasOfPackages, getPkgData, getPkgDirName } from "@siujs/utils";
 
 import { analysisPlugins, validPkgIsExclude } from "./config";
-import { DEFAULT_PLUGIN_ID, GlobalKeyValues, lifecycles, noop, PkgCaches, pluginCommands } from "./consts";
+import { DEFAULT_PLUGIN_ID, GlobalKeyValues, lifecycles, PkgCaches, pluginCommands } from "./consts";
 import {
 	CLIOption,
 	CLIOptionHandler,
@@ -207,25 +207,6 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * 自主控制流程的流转方向,是向下执行还是直接走到异常环节
-	 *
-	 * @param err [可选] 异常信息
-	 */
-	private async next(err?: Error) {
-		if (err) {
-			this.ex(err);
-			return this.callHook(getHookId(this._cmd, "error"));
-		}
-		if (this.lifecycle === "start") {
-			return this.callHook(getHookId(this._cmd, (this.lifecycle = "process")));
-		}
-		if (this.lifecycle === "process") {
-			return this.callHook(getHookId(this._cmd, (this.lifecycle = "complete")));
-		}
-	}
-
-	/**
-	 *
 	 * 执行插件的Handlers
 	 *
 	 * @param hookKey 插件Key
@@ -235,18 +216,19 @@ export class SiuPlugin {
 
 		if (!handlers || !handlers.length) return;
 
-		const next =
-			hookKey.endsWith("error") || hookKey.endsWith("complete") || hookKey.endsWith("clean")
-				? noop
-				: this.next.bind(this);
-
-		for (let i = 0; i < handlers.length; i++) {
-			await handlers[i](this._ctx, next);
-		}
+		await Promise.all(handlers.map(handler => handler(this._ctx)));
 	}
 
 	async process(cmd: PluginCommand, cmdOpts: Record<string, any>, pkgName?: string) {
-		if (!this.hasHook(getHookId(cmd, "start")) && !this.hasHook(getHookId(cmd, "process"))) return;
+		const hasStartHook = this.hasHook(getHookId(cmd, "start"));
+
+		const hasProcessHook = this.hasHook(getHookId(cmd, "process"));
+
+		if (!hasStartHook) {
+			if (hasProcessHook) {
+				this.lifecycle = "process";
+			} else return;
+		}
 
 		this._cmd = cmd;
 
@@ -257,22 +239,32 @@ export class SiuPlugin {
 
 		this._currentPkg = pkgName;
 
-		const hasStartHook = this.hasHook(getHookId(cmd, "start"));
-
-		const logStr = `[${pkgName ? `${pkgName}:` : ""}${this.id}:${cmd}]`;
-
-		console.log(chalk.hex("#4c91ff").bold(`${logStr} ============\n`));
+		const logStr = `${pkgName ? `${pkgName}:` : ""}${this.id}:${cmd}`;
 
 		try {
-			await this.callHook(getHookId(cmd, (this.lifecycle = hasStartHook ? "start" : "process")));
+			console.log(chalk.yellow.bold(`<${logStr}>\n`));
+
+			await this.callHook(getHookId(cmd, this.lifecycle));
+
+			// `start` => `process`
+			if (this.lifecycle === "start" && hasProcessHook) {
+				await this.callHook(getHookId(cmd, (this.lifecycle = "process")));
+			}
+
+			// `process` => `complete`
+			if (this.lifecycle === "process" && this.hasHook(getHookId(cmd, "complete"))) {
+				await this.callHook(getHookId(cmd, (this.lifecycle = "complete")));
+			}
 		} catch (ex) {
-			console.log("Ex:", ex);
-			console.log(chalk.redBright(`\n[${this.id}] ERROR:`));
 			this.ex(ex);
-			await this.callHook(getHookId(cmd, "error"));
+			console.log(chalk.redBright("\n	<ERROR-MSG>\n"));
+			console.log(ex);
+			console.log(chalk.redBright("\n	</ERROR-MSG>\n"));
+
+			await this.callHook(getHookId(cmd, (this.lifecycle = "error")));
 		}
 
-		console.log(chalk.hex("#4c91ff").bold(`\n============ ${logStr}\n`));
+		console.log(chalk.yellow.bold(`\n</${logStr}>\n`));
 	}
 
 	private option(
@@ -314,9 +306,7 @@ export class SiuPlugin {
 
 			const options = this.option.bind(this);
 
-			for (let i = 0; i < handlers.length; i++) {
-				await handlers[i](options);
-			}
+			await Promise.all(handlers.map(handler => handler(options)));
 		}
 	}
 

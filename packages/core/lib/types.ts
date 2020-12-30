@@ -12,8 +12,6 @@ export type PluginHookKey = string; //`${PluginCommand}.${PluginCommandLifecycle
 
 export type HookHandlerOpts = <T extends any>(key: string) => T;
 
-export type HookHandlerNext = (err?: Error) => Promise<void>;
-
 export interface HookHandlerContext {
 	/**
 	 *
@@ -86,7 +84,7 @@ export interface HookHandlerContext {
 	pkg(meta: Record<string, any>): void;
 }
 
-export type HookHandler = (ctx: HookHandlerContext, next: HookHandlerNext) => Promise<void> | void;
+export type HookHandler = (ctx: HookHandlerContext) => Promise<void> | void;
 
 export interface CLIOption {
 	flags: string;

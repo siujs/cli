@@ -4,11 +4,11 @@ import inquirer from "inquirer";
 import path from "path";
 import sh from "shelljs";
 
-import { HookHandlerContext, HookHandlerNext, PluginApi, ValueOf } from "@siujs/core";
+import { HookHandlerContext, PluginApi, ValueOf } from "@siujs/core";
 import { getPkgDirName } from "@siujs/utils";
 
 export function asCreationFallback(api: ValueOf<PluginApi>) {
-	api.start(async (ctx: HookHandlerContext, next: HookHandlerNext) => {
+	api.start(async (ctx: HookHandlerContext) => {
 		const deps = ctx.opts<string>("deps");
 
 		const pkgsRoot = ctx.pkg().pkgsRoot;
@@ -44,8 +44,6 @@ export function asCreationFallback(api: ValueOf<PluginApi>) {
 				depArr.map(dir => kv[dir] || dir)
 			);
 		}
-
-		await next();
 	});
 
 	api.process(async (ctx: HookHandlerContext) => {

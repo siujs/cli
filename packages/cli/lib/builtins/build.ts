@@ -1,10 +1,10 @@
 import path from "path";
 
 import { asRollupPlugin, Config, SiuRollupBuilder, stopService, TOutputFormatKey } from "@siujs/builtin-build";
-import { HookHandlerContext, HookHandlerNext, PluginApi, ValueOf } from "@siujs/core";
+import { HookHandlerContext, PluginApi, ValueOf } from "@siujs/core";
 
 export function asBuildFallback(api: ValueOf<PluginApi>) {
-	api.process(async (ctx: HookHandlerContext, next: HookHandlerNext) => {
+	api.process(async (ctx: HookHandlerContext) => {
 		const pkgData = ctx.pkg();
 
 		const builder = new SiuRollupBuilder(pkgData, {
@@ -16,14 +16,14 @@ export function asBuildFallback(api: ValueOf<PluginApi>) {
 
 		const format = ctx.opts<string>("format");
 
-		await builder.build({
-			[`allowFormats`]: format && (format.split(",") as TOutputFormatKey[])
-		});
-
-		await next();
+		await builder.build(
+			format && {
+				allowFormats: format.split(",") as TOutputFormatKey[]
+			}
+		);
 	});
 
-	api.complete(() => {
+	api.clean(() => {
 		stopService();
 	});
 }

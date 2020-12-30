@@ -1,8 +1,6 @@
 /* istanbul ignore next */
 module.exports = api => {
-	api.create.process(async (ctx, next) => {
-		await next();
-	});
+	api.create.process(() => {});
 
 	api.create.complete(async () => {
 		throw new Error("next process=>complete");
