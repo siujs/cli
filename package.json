@@ -1,59 +1,59 @@
 {
-	"private": true,
-	"workspaces": [
-		"packages/**"
-	],
-	"name": "siu",
-	"version": "1.0.0-beta.4",
-	"main": "dist/index.js",
-	"module": "dist/index.js",
-	"author": "buns <kuafujs@126.com>",
-	"license": "MIT",
-	"bin": {
-		"siu": "./bin/siu.js"
-	},
-	"files": [
-		"bin",
-		"dist"
-	],
-	"scripts": {
-		"test": "node ./scripts/test.mjs",
-		"clean:dist": "rimraf -g packages/*/dist",
-		"clean:dts": "rimraf -g packages/*/dist/{tsconfig.tsbuildinfo,dts} && rimraf -g packages/*/temp",
-		"dts": "node ./scripts/dts.js && npm run clean:dts",
-		"compile": "rollup -wc",
-		"build": "npm run clean:dist && rollup -c && npm run dts",
-		"changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
-		"release": "node scripts/release.js"
-	},
-	"devDependencies": {
-		"@microsoft/api-extractor": "7.12.1",
-		"@rollup/plugin-commonjs": "17.0.0",
-		"@rollup/plugin-json": "4.1.0",
-		"@rollup/plugin-node-resolve": "11.0.1",
-		"@rollup/pluginutils": "4.1.0",
-		"@types/jest": "26.0.19",
-		"@types/node": "14.14.16",
-		"@typescript-eslint/eslint-plugin": "4.11.1",
-		"@typescript-eslint/parser": "4.11.1",
-		"conventional-changelog-cli": "2.1.1",
-		"cross-env": "7.0.3",
-		"esbuild": "0.8.27",
-		"eslint": "7.16.0",
-		"eslint-config-prettier": "7.1.0",
-		"eslint-plugin-prettier": "3.3.0",
-		"execa": "5.0.0",
-		"minimist": "1.2.5",
-		"prettier": "2.2.1",
-		"rimraf": "3.0.2",
-		"rollup": "2.35.1",
-		"rollup-plugin-node-externals": "2.2.0",
-		"semver": "7.3.4",
-		"typescript": "4.1.3"
-	},
-	"dependencies": {
-		"jest": "26.6.3",
-		"ts-jest": "26.4.4",
-		"validate-npm-package-name": "3.0.0"
-	}
+  "private": true,
+  "workspaces": [
+    "packages/**"
+  ],
+  "name": "siu",
+  "version": "1.0.0-beta.5",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "author": "buns <kuafujs@126.com>",
+  "license": "MIT",
+  "bin": {
+    "siu": "./bin/siu.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "test": "node ./scripts/test.mjs",
+    "clean:dist": "rimraf -g packages/*/dist",
+    "clean:dts": "rimraf -g packages/*/dist/{tsconfig.tsbuildinfo,dts} && rimraf -g packages/*/temp",
+    "dts": "node ./scripts/dts.js && npm run clean:dts",
+    "compile": "rollup -wc",
+    "build": "npm run clean:dist && rollup -c && npm run dts",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "release": "node scripts/release.js"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "7.12.1",
+    "@rollup/plugin-commonjs": "17.0.0",
+    "@rollup/plugin-json": "4.1.0",
+    "@rollup/plugin-node-resolve": "11.0.1",
+    "@rollup/pluginutils": "4.1.0",
+    "@types/jest": "26.0.19",
+    "@types/node": "14.14.16",
+    "@typescript-eslint/eslint-plugin": "4.11.1",
+    "@typescript-eslint/parser": "4.11.1",
+    "conventional-changelog-cli": "2.1.1",
+    "cross-env": "7.0.3",
+    "esbuild": "0.8.27",
+    "eslint": "7.16.0",
+    "eslint-config-prettier": "7.1.0",
+    "eslint-plugin-prettier": "3.3.0",
+    "execa": "5.0.0",
+    "minimist": "1.2.5",
+    "prettier": "2.2.1",
+    "rimraf": "3.0.2",
+    "rollup": "2.35.1",
+    "rollup-plugin-node-externals": "2.2.0",
+    "semver": "7.3.4",
+    "typescript": "4.1.3"
+  },
+  "dependencies": {
+    "jest": "26.6.3",
+    "ts-jest": "26.4.4",
+    "validate-npm-package-name": "3.0.0"
+  }
 }

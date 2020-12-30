@@ -1,5 +1,21 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.5](https://github.com/siujs/cli/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2020-12-30)
+
+### BREAKING CHANGES
+
+- deprecate `next:HookHandlerNext` ([203a3ce](https://github.com/siujs/cli/commit/203a3ce062bf3fbb108ce808d257efee747bc9c2))
+
+### Code Refactoring
+
+-  **cli**: `keys`=>`scopedKeys` ([ea511e4](https://github.com/siujs/cli/commit/ea511e46c94db4e39335680623107268019a4a8b))
+
+### Bug Fixes
+
+-  **builtin-publish**: empty message of version choose prompt ([4cf2138](https://github.com/siujs/cli/commit/4cf213871fe789cf6c5bbcc6b24c92d0e285886e))
+-  **core**: Not considering the use of `applyPlugins` alone without ([6984705](https://github.com/siujs/cli/commit/6984705f8222c7d6ac63bdd232a833940ee56973))
+-  **builtin-publish**: missing prompt for specific package ([559f441](https://github.com/siujs/cli/commit/559f441ff079887f97f633a266d1a48c9a80f657))
+
 ## [v1.0.0-beta.4](https://github.com/siujs/cli/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2020-12-29)
 
 ### Bug Fixes
