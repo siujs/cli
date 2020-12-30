@@ -1,3 +1,5 @@
+import { QuestionCollection } from "inquirer";
+
 import { PkgData } from "@siujs/utils";
 
 export type ValueOf<T> = T extends Record<any, infer P> ? P : T;
@@ -86,20 +88,26 @@ export interface HookHandlerContext {
 
 export type HookHandler = (ctx: HookHandlerContext) => Promise<void> | void;
 
-export interface CLIOption {
-	flags: string;
-	description?: string;
-	defaultValue?: any;
-	fn?: ((arg1: any, arg2: any) => void) | RegExp;
-}
 export type CLIOptionHandler = (
 	option: (
 		flags: string,
 		description?: string,
 		defaultValue?: any,
 		fn?: ((arg1: any, arg2: any) => void) | RegExp
-	) => void
+	) => <T>(prompt: {
+		questions: QuestionCollection<T>;
+		initialAnswers?: Partial<T>;
+		answerTransform?: (answer: any) => any;
+	}) => void
 ) => Promise<void> | void;
+
+export interface CLIOption {
+	flags: string;
+	description?: string;
+	defaultValue?: any;
+	fn?: ((arg1: any, arg2: any) => void) | RegExp;
+	prompt?: ParamTypeOf<ReturnType<ParamTypeOf<CLIOptionHandler>>>;
+}
 
 export type CLIOptionHandlerParams = ParamTypeOf<CLIOptionHandler>;
 

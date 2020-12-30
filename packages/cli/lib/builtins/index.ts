@@ -12,7 +12,20 @@ export function cliFallback(api: PluginApi) {
 	});
 
 	api.publish.cli((option: CLIOptionHandlerParams) => {
-		option("-s, --skip <skip>", "Will skip steps, e.g: 'lint'、'lint,build'、'lint,build,push'");
+		option(
+			"-s, --skip <skip>",
+			"Will skip steps: lint | build | publish | commit | push , support comma join"
+		)({
+			questions: {
+				type: "checkbox",
+				name: "skip",
+				message: "Select skip steps:",
+				choices: ["lint", "build", "publish", "commit", "push"]
+			},
+			answerTransform(answer: any) {
+				return answer && answer.join(",");
+			}
+		});
 	});
 }
 

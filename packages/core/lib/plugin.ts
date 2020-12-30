@@ -279,12 +279,22 @@ export class SiuPlugin {
 			description = description + ` [support by ${this.id}]`;
 		}
 
-		this.CliOptions[this._cmd].push({
-			flags,
-			description,
-			fn,
-			defaultValue
-		});
+		let cur: CLIOption;
+
+		this.CliOptions[this._cmd].push(
+			(cur = {
+				flags,
+				description,
+				fn,
+				defaultValue
+			})
+		);
+
+		const prompt = (prompt: ParamTypeOf<ReturnType<ParamTypeOf<CLIOptionHandler>>>) => {
+			cur.prompt = prompt;
+		};
+
+		return prompt;
 	}
 
 	async processCLIOptions() {

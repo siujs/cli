@@ -1,10 +1,11 @@
 import chalk from "chalk";
 import program from "commander";
+import inquirer from "inquirer";
 import validProjectName from "validate-npm-package-name";
 
 import { initApp } from "@siujs/cli-init";
 import { adjustSiuConfigCWD, loadPlugins, PluginCommand } from "@siujs/core";
-import { filterUnExistsPkgs, isPkgExists } from "@siujs/utils";
+import { filterUnExistsPkgs, getPackageDirs, isPkgExists } from "@siujs/utils";
 
 import { cliFallback, cmdFallback } from "./builtins";
 
@@ -36,6 +37,11 @@ export function validPkgName(name: string) {
 	}
 }
 
+function isNullOrUndefined(obj: any) {
+	const typeStr = Object.prototype.toString.call(obj);
+	return typeStr === "[object Null]" || typeStr === "[object Undefined]";
+}
+
 export async function initCLI(isStrict?: boolean) {
 	if (isStrict) {
 		await adjustSiuConfigCWD();
@@ -56,6 +62,22 @@ export async function initCLI(isStrict?: boolean) {
 		}
 
 		try {
+			const cliOpts = options[cmd];
+			if (cliOpts) {
+				const prompts = cliOpts.filter(o => !!o.prompt).map(o => o.prompt);
+				if (prompts.length) {
+					for (let l = prompts.length; l--; ) {
+						const prompt = prompts[l],
+							targetKey = (prompts[l].questions as any).name;
+
+						if (!isNullOrUndefined(opts[targetKey])) continue;
+						const output = (await inquirer.prompt(prompt.questions, prompt.initialAnswers)) as Record<string, any>;
+
+						opts[targetKey] = prompt.answerTransform ? prompt.answerTransform(output[targetKey]) : output[targetKey];
+					}
+				}
+			}
+
 			await applyPlugins(cmd, opts, cmdFallback(cmd));
 		} catch (ex) {
 			console.error(ex);
@@ -63,13 +85,13 @@ export async function initCLI(isStrict?: boolean) {
 		}
 	}
 
-	async function handleWithPkgAction(pkg: string, cmd: any, cmdText: PluginCommand) {
+	async function handleWithPkgAction(pkg: string, opts: Record<string, any>, cmdText: PluginCommand) {
 		const arr = await filterUnExistsPkgs(pkg);
 		if (arr.length) {
 			console.log(chalk.red.bold(`[siu] ERROR: \`${arr.join(",")}\` does not exists!`));
 			return;
 		}
-		await runCmd(cmdText, { pkg, ...cmd.opts() });
+		await runCmd(cmdText, { pkg, ...opts });
 	}
 
 	const DEFAULT_COMMAND = {
@@ -106,11 +128,24 @@ export async function initCLI(isStrict?: boolean) {
 					}
 				}
 				if (!deps) return;
+
+				const opts = cmd.opts();
+
+				if (!cmd.pkg) {
+					const { pkg } = await inquirer.prompt({
+						name: "pkg",
+						type: "list",
+						message: "Select package that need install deps:",
+						choices: await getPackageDirs()
+					});
+					opts.pkg = pkg;
+				}
+
 				await runCmd("deps", {
 					deps,
 					pkg: cmd.pkg,
 					action: cmd.rm ? "rm" : "add",
-					...cmd.opts()
+					...opts
 				});
 			}),
 		glint: program
@@ -122,34 +157,60 @@ export async function initCLI(isStrict?: boolean) {
 				"Git lifecycle hook: pre-commit、prepare-commit-msg、commit-msg、post-commit、post-merge"
 			)
 			.action(async cmd => {
-				await runCmd("glint", cmd.opts());
+				const opts = cmd.opts();
+
+				if (!cmd.hook) {
+					const { hook } = await inquirer.prompt({
+						name: "hook",
+						type: "list",
+						message: "Select git lifecycle hook:",
+						choices: ["pre-commit", "prepare-commit-msg", "commit-msg", "post-commit", "post-merge"]
+					});
+					opts.hook = hook;
+				}
+
+				await runCmd("glint", opts);
 			}),
 		test: program
 			.command("test [pkg]")
 			.description("Test single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "test")),
+			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "test")),
 		doc: program
 			.command("doc [pkg]")
 			.description("Generate docs of target monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "doc")),
+			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "doc")),
 		serve: program
 			.command("serve [pkg]")
 			.description("Local developement of target monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "serve")),
+			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "serve")),
 		demo: program
 			.command("demo [pkg]")
 			.description("Local demo of target monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "demo")),
+			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "demo")),
 		build: program
 			.command("build [pkg]")
 			.description("Build single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option("-f, --format <format>", "Output format: es、cjs、umd、umd-min")
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "build")),
+			.action(async (pkg, cmd) => {
+				const opts = cmd.opts();
+
+				if (!cmd.format) {
+					const { format } = await inquirer.prompt({
+						name: "format",
+						type: "checkbox",
+						message: "Select output formats:",
+						choices: ["es", "cjs", "umd", "umd-min"]
+					});
+					opts.format = format ? format.join(",") : "";
+				}
+
+				handleWithPkgAction(pkg, opts, "build");
+			}),
 		publish: program
 			.command("publish [pkg]")
 			.description("Publish all packages or target monorepo's packages")
@@ -157,7 +218,7 @@ export async function initCLI(isStrict?: boolean) {
 			.option("-n, --dry-run", "Whether dry run")
 			.option("-v, --ver <ver>", "Target version: independent or x.x.x or auto choice")
 			.option("-r, --repo <repo>", "Target npm repository url")
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd, "publish"))
+			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "publish"))
 	};
 
 	Object.keys(DEFAULT_COMMAND).forEach((key: PluginCommand) => {
