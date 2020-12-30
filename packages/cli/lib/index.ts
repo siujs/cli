@@ -99,7 +99,7 @@ export async function initCLI(isStrict?: boolean) {
 			.action(async (deps, cmd) => {
 				if (cmd.pkg) {
 					validPkgName(cmd.pkg);
-					const exists = await isPkgExists(cmd.target);
+					const exists = await isPkgExists(cmd.pkg);
 					if (!exists) {
 						console.log(chalk.red.bold(`[siu] ERROR: \`${cmd.target}\` does not exists! `));
 						return;
