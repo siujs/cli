@@ -39,6 +39,35 @@
 
 ```js
 export default (api: PluginApi) => {
+	api.create.cli((option: CLIOptionHandlerParams) => {
+		option("-d, --deps <deps>", "name of siblings package, e.g. `pkg1` or `pkg1,pkg2`");
+	});
+
+	// or
+
+	api.publish.cli((option: CLIOptionHandlerParams) => {
+		option(
+			"-s, --skip <skip>",
+			"Will skip steps: lint | build | publish | commit | push , support comma join"
+		)({
+			/**
+			 * 自定义针对当前option的prompt功能
+			 */
+			questions: {
+				type: "checkbox",
+				name: "skip",
+				message: "Select skip steps:",
+				choices: ["lint", "build", "publish", "commit", "push"]
+			},
+			/**
+			 * 自定义针对当前prompt所得到的的answer的自定义转换
+			 */
+			answerTransform(answer: any) {
+				return answer && answer.join(",");
+			}
+		});
+	});
+
 	api.create.start(async (ctx: HookHandlerContext) => {
 		// do something
 		// ctx: 插件上下文
