@@ -194,7 +194,7 @@ export async function chooseVersion(cwd: string, pkg?: string) {
 	const { release } = await inquirer.prompt({
 		type: "list",
 		name: "release",
-		message: "Select release type" + pkg ? ` of '${pkg}'` : "",
+		message: "Select release type" + (pkg ? ` of '${pkg}'` : ""),
 		choices: versionIncrements.map(i => `${i} (${inc(i)})`).concat(["custom"])
 	});
 
