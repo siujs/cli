@@ -39,6 +39,25 @@ test(" normalizeDepStr ", () => {
 	expect(map.devDeps[1].version).toBe("1.0.0");
 });
 
+test(" normalizeDepStr scoped deps", () => {
+	const map = normalizeDepStr("@foo/bar,@foo/bar2:D,@foo/bar3@1.0.0,@foo/bar4@1.0.0:D");
+
+	expect(map).toHaveProperty("deps");
+	expect(map.deps.length).toBe(2);
+	expect(map.deps[0].name).toBe("@foo/bar");
+	expect(map.deps[0].version).toBe("latest");
+	expect(map.deps[1].name).toBe("@foo/bar3");
+	expect(map.deps[1].version).toBe("1.0.0");
+
+	expect(map).toHaveProperty("devDeps");
+	expect(map.devDeps.length).toBe(2);
+
+	expect(map.devDeps[0].name).toBe("@foo/bar2");
+	expect(map.devDeps[0].version).toBe("latest");
+	expect(map.devDeps[1].name).toBe("@foo/bar4");
+	expect(map.devDeps[1].version).toBe("1.0.0");
+});
+
 test(" isLocalPackage ", async done => {
 	process.chdir(path.resolve(__dirname, "../../../"));
 

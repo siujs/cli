@@ -12,9 +12,19 @@ export function detectYarn() {
 }
 
 export function transformDepStr(str: string) {
-	const arr = str.replace(":D", "").split("@");
+	let normalStr = str.replace(":D", "");
+
+	const isScoped = normalStr[0] === "@";
+
+	if (isScoped) {
+		normalStr = normalStr.substring(1);
+	}
+	const arr = normalStr.split("@");
+
+	if (!arr[0]) return;
+
 	return {
-		name: arr[0],
+		name: isScoped ? `@${arr[0]}` : arr[0],
 		[`version`]: arr.length > 1 ? arr[1] : "latest"
 	};
 }
@@ -35,13 +45,12 @@ export function transformDepStr(str: string) {
 export function normalizeDepStr(deps: string) {
 	return deps.split(",").reduce(
 		(prev, cur) => {
-			if (cur.endsWith(":D")) {
-				prev.devDeps = prev.devDeps || [];
-				prev.devDeps.push(transformDepStr(cur.replace(":D", "")));
-			} else {
-				prev.deps = prev.deps || [];
-				prev.deps.push(transformDepStr(cur));
-			}
+			const depInfo = transformDepStr(cur);
+
+			const propName = cur.endsWith(":D") ? "devDeps" : "deps";
+
+			depInfo && (prev[propName] = prev[propName] || []).push(depInfo);
+
 			return prev;
 		},
 		{} as {
