@@ -28,7 +28,7 @@ export function asCreationFallback(api: ValueOf<PluginApi>) {
 			]);
 
 			if (deps) {
-				ctx.keys("deps", deps);
+				ctx.scopedKeys("deps", deps);
 			}
 		} else {
 			const depArr = deps.split(",");
@@ -39,7 +39,7 @@ export function asCreationFallback(api: ValueOf<PluginApi>) {
 				return prev;
 			}, {} as Record<string, string>);
 
-			ctx.keys(
+			ctx.scopedKeys(
 				"deps",
 				depArr.map(dir => kv[dir] || dir)
 			);
@@ -47,7 +47,7 @@ export function asCreationFallback(api: ValueOf<PluginApi>) {
 	});
 
 	api.process(async (ctx: HookHandlerContext) => {
-		const deps = ctx.keys<string[]>("deps");
+		const deps = ctx.scopedKeys<string[]>("deps");
 		const pkgData = ctx.pkg();
 
 		sh.mkdir(pkgData.path, path.resolve(pkgData.path, "lib"), path.resolve(pkgData.path, "__tests__"));
