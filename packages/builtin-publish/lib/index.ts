@@ -209,6 +209,8 @@ export async function release(opts: ReleaseOptions) {
 	} else {
 		const targetVersion = version || (await chooseVersion(cwd));
 
+		if (!targetVersion) return;
+
 		if (!semver.valid(targetVersion)) {
 			throw new Error(`invalid target version: ${targetVersion}`);
 		}

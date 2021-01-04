@@ -188,30 +188,29 @@ export async function chooseVersion(cwd: string, pkg?: string) {
 
 	const inc = (i: semver.ReleaseType) => semver.inc(currentVersion, i, preId);
 
-	let targetVersion = "";
-
 	// no explicit version, offer suggestions
 	const { release } = await inquirer.prompt({
 		type: "list",
 		name: "release",
 		message: "Select release type" + (pkg ? ` of '${pkg}'` : ""),
-		choices: versionIncrements.map(i => `${i} (${inc(i)})`).concat(["custom"])
+		choices: versionIncrements.map(i => `${i} (${inc(i)})`).concat(["custom", "cancel"])
 	});
 
-	if (release === "custom") {
-		targetVersion = (
-			await inquirer.prompt({
-				type: "input",
-				name: "version",
-				message: "Input custom version",
-				default: currentVersion
-			})
-		).version;
-	} else {
-		targetVersion = release.match(/\((.*)\)/)[1];
+	switch (release) {
+		case "custom":
+			return (
+				await inquirer.prompt({
+					type: "input",
+					name: "version",
+					message: "Input custom version",
+					default: currentVersion
+				})
+			).version;
+		case "cancel":
+			return;
+		default:
+			return release.match(/\((.*)\)/)[1];
 	}
-
-	return targetVersion;
 }
 
 function changelogMsgNormalize(item: GroupedCommitsItem, remoteUrl?: string) {
