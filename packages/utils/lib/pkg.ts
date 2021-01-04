@@ -24,7 +24,7 @@ export async function getPackageDirs(cwd = process.cwd()) {
 export async function getPackagePaths(cwd = process.cwd()) {
 	const pkgsRoot = path.resolve(cwd, "./packages");
 	const dirs = await getPackageDirs(cwd);
-	return dirs.map(dir => path.resolve(pkgsRoot, dir));
+	return dirs.map(dir => path.resolve(pkgsRoot, dir)).filter(p => fs.pathExistsSync(path.resolve(p, "package.json")));
 }
 
 /**
