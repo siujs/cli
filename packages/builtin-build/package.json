@@ -1,6 +1,6 @@
 {
   "name": "@siujs/builtin-build",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0-beta.6",
   "description": "build of siujs",
   "keywords": [
     "build",
@@ -36,8 +36,8 @@
     "@rollup/plugin-node-resolve": "^11.0.1",
     "@rollup/plugin-replace": "^2.3.4",
     "@rollup/pluginutils": "^4.1.0",
-    "@siujs/core": "1.0.0-beta.5",
-    "@siujs/utils": "1.0.0-beta.5",
+    "@siujs/core": "1.0.0-beta.6",
+    "@siujs/utils": "1.0.0-beta.6",
     "chalk": "^4.1.0",
     "esbuild": "^0.8.27",
     "fs-extra": "^9.0.1",

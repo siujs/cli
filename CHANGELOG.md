@@ -1,5 +1,21 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.6](https://github.com/siujs/cli/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2021-01-04)
+
+### Performance Improvements
+
+-  **builtin-publish**: add `cancel` choice for version select ([89b7f80](https://github.com/siujs/cli/commit/89b7f8097c98e0d290f32acd63b5fa26742e56fd))
+
+### Features
+
+- support prompt for command option ([ff4ddef](https://github.com/siujs/cli/commit/ff4ddefa6b8863af04a195bcbb75a81da104bdf0))
+
+### Bug Fixes
+
+-  **builtin-deps**: does not support scoped dep name resolution ([896e0c6](https://github.com/siujs/cli/commit/896e0c678276a34fe438ed90574a27420437809d))
+-  **cli**: ctx.opts('dep') => ctx.opts('deps') ([3954782](https://github.com/siujs/cli/commit/395478265a3fcaf073b8265fcbb4cc53bfb1b37b))
+-  **cli**: `cmd.target` is undefined ([b33ab25](https://github.com/siujs/cli/commit/b33ab2569e9313d474c3c47da59d5bb1acc2d5cd))
+
 ## [v1.0.0-beta.5](https://github.com/siujs/cli/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2020-12-30)
 
 ### BREAKING CHANGES
