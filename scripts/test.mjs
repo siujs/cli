@@ -16,4 +16,4 @@ if (process.argv.length >= 2) {
 					.join(",");
 }
 
-execSync(`cross-env UT_MDU=${specifiedPkgNames} jest --coverage --color=always`);
+execSync(`cross-env UT_MDU=${specifiedPkgNames.replace(/^\s*|\s*$/, "")} jest --coverage --color=always`);
