@@ -1,5 +1,6 @@
 import path from "path";
 
+import { testPlugin } from "../lib";
 import { resolvePlugins } from "../lib/config";
 import { applyPlugins, clearPlugins, resolveCLIOptions } from "../lib/plugin";
 
@@ -27,209 +28,147 @@ test(" resolve cli options", async done => {
 });
 
 test(" apply plugins => `opts`", async done => {
-	let hasErr = false;
-	try {
-		await applyPlugins(
-			{
-				cmd: "create",
-				opts: {
-					pkg: "core"
-				}
-			},
-			{
-				plugins: [
-					[
-						"./plugins/opts",
-						{
-							custom: {
-								create: {
-									foo: "1"
-								}
+	await applyPlugins(
+		{
+			cmd: "create",
+			opts: {
+				pkg: "core"
+			}
+		},
+		{
+			plugins: [
+				[
+					"./plugins/opts",
+					{
+						custom: {
+							create: {
+								foo: "1"
 							}
 						}
-					]
+					}
 				]
-			}
-		);
-		hasErr = false;
-	} catch (ex) {
-		expect(ex.message).toBe("opts.foo!=='2'");
-		hasErr = true;
-	}
-
-	expect(hasErr).toBe(true);
-
+			]
+		}
+	);
 	done();
 });
 
 test(" apply plugins => `keys`", async done => {
-	let hasErr = false;
-	try {
-		await applyPlugins(
-			{
-				cmd: "create",
-				opts: {
-					pkg: "core2"
-				}
-			},
-			{
-				plugins: ["./plugins/keys"]
+	await applyPlugins(
+		{
+			cmd: "create",
+			opts: {
+				pkg: "core2"
 			}
-		);
-		hasErr = false;
-	} catch (ex) {
-		hasErr = true;
-	}
-
-	expect(hasErr).toBe(false);
+		},
+		{
+			plugins: ["./plugins/keys"]
+		}
+	);
 
 	done();
 });
 
 test(" apply plugins => `next start=>process`", async done => {
-	let hasErr = false;
-	try {
-		await applyPlugins(
-			{
-				cmd: "create",
-				opts: {
-					pkg: "core"
-				}
-			},
-			{
-				plugins: ["./plugins/next-start2process"]
+	await applyPlugins(
+		{
+			cmd: "create",
+			opts: {
+				pkg: "core"
 			}
-		);
-		hasErr = false;
-	} catch (ex) {
-		expect(ex.message).toBe("next start=>process");
-		hasErr = true;
-	}
-
-	expect(hasErr).toBe(true);
-
+		},
+		{
+			plugins: ["./plugins/next-start2process"]
+		}
+	);
 	done();
 });
 
 test(" apply plugins => `next process=>complete`", async done => {
-	let hasErr = false;
-	try {
-		await applyPlugins(
-			{
-				cmd: "create",
-				opts: {
-					pkg: "core"
-				}
-			},
-			{
-				plugins: ["./plugins/next-process2complete"]
+	await applyPlugins(
+		{
+			cmd: "create",
+			opts: {
+				pkg: "core"
 			}
-		);
-		hasErr = false;
-	} catch (ex) {
-		expect(ex.message).toBe("next process=>complete");
-		hasErr = true;
-	}
-
-	expect(hasErr).toBe(true);
-
+		},
+		{
+			plugins: ["./plugins/next-process2complete"]
+		}
+	);
 	done();
 });
 
 test(" apply plugins => `next(ex)`", async done => {
-	let hasErr = false;
-	try {
-		await applyPlugins(
-			{
-				cmd: "create",
-				opts: {
-					pkg: "core"
-				}
-			},
-			{
-				plugins: ["./plugins/next-err"]
+	await applyPlugins(
+		{
+			cmd: "create",
+			opts: {
+				pkg: "core"
 			}
-		);
-		hasErr = false;
-	} catch (ex) {
-		expect(ex.message).toBe("next-err");
-		hasErr = true;
-	}
-
-	expect(hasErr).toBe(true);
-
+		},
+		{
+			plugins: ["./plugins/next-err"]
+		}
+	);
 	done();
 });
 
 test(" apply plugins => get `pkg` ", async done => {
-	let hasErr = false;
-	try {
-		await applyPlugins(
-			{
-				cmd: "build",
-				opts: {
-					pkg: "foo"
-				}
-			},
-			{
-				plugins: ["./plugins/pkg"]
+	await applyPlugins(
+		{
+			cmd: "build",
+			opts: {
+				pkg: "foo"
 			}
-		);
-		hasErr = false;
-	} catch (ex) {
-		hasErr = true;
-	}
-
-	expect(hasErr).toBe(false);
-
+		},
+		{
+			plugins: ["./plugins/pkg"]
+		}
+	);
 	done();
 });
 
 test(" apply plugins => refresh `pkg` ", async done => {
-	let hasErr = false;
-	try {
-		await applyPlugins(
-			{
-				cmd: "build",
-				opts: {
-					pkg: "foo"
-				}
-			},
-			{
-				plugins: ["./plugins/pkg-refresh"]
+	await applyPlugins(
+		{
+			cmd: "build",
+			opts: {
+				pkg: "foo"
 			}
-		);
-		hasErr = false;
-	} catch (ex) {
-		hasErr = true;
-	}
-
-	expect(hasErr).toBe(false);
-
+		},
+		{
+			plugins: ["./plugins/pkg-refresh"]
+		}
+	);
 	done();
 });
 
 test(" apply plugins : deps ", async done => {
-	let hasErr = false;
-	try {
-		await applyPlugins(
-			{
-				cmd: "deps",
-				opts: {
-					pkg: "foo"
-				}
-			},
-			{
-				plugins: ["./plugins/deps"]
+	await applyPlugins(
+		{
+			cmd: "deps",
+			opts: {
+				pkg: "foo"
 			}
-		);
-		hasErr = false;
-	} catch (ex) {
-		expect(ex.message).toBe("deps called");
-		hasErr = true;
-	}
+		},
+		{
+			plugins: ["./plugins/deps"]
+		}
+	);
+	done();
+});
 
-	expect(hasErr).toBe(true);
+test(" test plugin", async done => {
+	process.env.NODE_ENV = "SIU_TEST";
+
+	await resolvePlugins({
+		plugins: ["./plugins/keys"]
+	});
+
+	const ctx = await testPlugin("create", "start");
+
+	expect(ctx.scopedKeys("foo")).toBe("2");
 
 	done();
 });

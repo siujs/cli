@@ -1,3 +1,5 @@
+const assert = require("assert");
+
 /* istanbul ignore next */
 module.exports = api => {
 	api.create.start(async () => {
@@ -5,6 +7,7 @@ module.exports = api => {
 	});
 
 	api.create.error(ctx => {
-		throw ctx.ex();
+		const ex = ctx.ex();
+		assert.strictEqual(ex.message, "next-err");
 	});
 };

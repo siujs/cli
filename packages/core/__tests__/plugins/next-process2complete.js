@@ -1,12 +1,15 @@
+const assert = require("assert");
+
 /* istanbul ignore next */
 module.exports = api => {
 	api.create.process(() => {});
 
-	api.create.complete(async () => {
-		throw new Error("next process=>complete");
+	api.create.complete(ctx => {
+		return ctx.ex("complete");
 	});
 
 	api.create.error(ctx => {
-		throw ctx.ex();
+		const ex = ctx.ex();
+		assert.strictEqual(ex, "complete");
 	});
 };

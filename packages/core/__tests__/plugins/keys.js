@@ -3,14 +3,15 @@ const assert = require("assert");
 /* istanbul ignore next */
 module.exports = api => {
 	api.create.start(async ctx => {
-		ctx.keys("foo", "2");
+		ctx.scopedKeys("foo", "2");
 	});
 
 	api.create.process(ctx => {
-		assert.strictEqual(ctx.keys("foo"), "2", `foo !== '2'`);
+		assert.strictEqual(ctx.scopedKeys("foo"), "1", `foo !== '2'`);
 	});
 
 	api.create.error(ctx => {
-		throw ctx.ex();
+		const ex = ctx.ex();
+		assert.strictEqual(ex.message, "foo !== '2'");
 	});
 };

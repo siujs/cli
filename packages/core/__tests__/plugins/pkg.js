@@ -10,8 +10,6 @@ module.exports = api => {
 		const root = path.resolve(__dirname, "../");
 		const pkgsRoot = path.resolve(root, "packages");
 
-		console.log(pkgData);
-
 		assert.strictEqual(pkgData.root, root, `pkg root err`);
 		assert.strictEqual(pkgData.pkgsRoot, pkgsRoot, `pkg pkgsRoot err`);
 		assert.strictEqual(pkgData.name, "@xxx/foo", `pkg name err`);
@@ -20,9 +18,5 @@ module.exports = api => {
 		assert.strictEqual(pkgData.umdName, "Foo", `pkg umdName err`);
 		assert.strictEqual(pkgData.metaPath, path.resolve(pkgsRoot, "foo/package.json"), `pkg metaPath err`);
 		assert.strictEqual(pkgData.meta.name, "@xxx/foo", `pkg meta.name err`);
-	});
-
-	api.build.error(ctx => {
-		throw ctx.ex();
 	});
 };

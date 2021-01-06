@@ -8,13 +8,10 @@ module.exports = api => {
 		ctx.pkg({
 			description: pkgData.meta.name
 		});
-
-		pkgData = ctx.pkg();
-
-		assert.strictEqual(pkgData.meta.description, "@xxx/foo", "pkg refresh err");
 	});
 
-	api.build.error(ctx => {
-		throw ctx.ex();
+	api.build.complete(ctx => {
+		pkgData = ctx.pkg();
+		assert.strictEqual(pkgData.meta.description, "@xxx/foo", "pkg refresh err");
 	});
 };
