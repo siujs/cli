@@ -56,6 +56,7 @@ export async function downloadTpl(opts: InitAppOptios) {
 
 	await new Promise((resolve, reject) => {
 		shell.exec(`git clone -b ${branch} ${gitPath} ${dest}`, { silent: true }, (code, stdout, stderr) => {
+			/* istanbul ignore if */
 			if (code !== 0) {
 				shell.echo("Err: Failed clone template files, reason: " + stderr);
 				shell.exit(1);
@@ -71,6 +72,7 @@ export async function downloadTpl(opts: InitAppOptios) {
 
 	const hasSiuConfig = await fs.pathExists(siuConfigPath);
 
+	/* istanbul ignore if */
 	if (!hasSiuConfig) {
 		await fs.writeFile(siuConfigPath, `module.exports={ excludePkgs:[], plugins:[] }`);
 	}

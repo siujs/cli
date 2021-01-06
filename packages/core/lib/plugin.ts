@@ -188,6 +188,7 @@ export class SiuPlugin {
 	 */
 	private pkg(meta?: Record<string, any>) {
 		if (meta) {
+			/* istanbul ignore if */
 			if (!this._currentPkg) return;
 
 			const data = PkgCaches[this._currentPkg];
@@ -201,7 +202,8 @@ export class SiuPlugin {
 
 		return this._currentPkg
 			? PkgCaches[this._currentPkg] || (PkgCaches[this._currentPkg] = getPkgData(this._currentPkg, process.cwd()))
-			: null;
+			: /* istanbul ignore next */
+			  null;
 	}
 
 	/**
