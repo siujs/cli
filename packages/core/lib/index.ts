@@ -26,17 +26,23 @@ export async function loadPlugins(fallback?: (api: PluginApi) => void) {
 
 /**
  *
- * The specified lifecycle of the specified command of the test plug-in
+ * The specific lifecycle of the specific command of the test plug-in
  *
  *  note: `NODE_ENV` must be `SIU_TEST`
  *
  * @param cmd plugin command
  * @param lifecycle plugin command lifecycle
+ * @param extra [optional] extra data
+ * @property {Record<string,any>} extra.opts [optional] current plugin options
+ * @property {string} extra.pkgName [optional] specific package name
  */
 export function testPlugin(
 	cmd: PluginCommand,
 	lifecycle: PluginCommandLifecycle,
-	pkgName?: string
+	extra: {
+		opts?: Record<string, any>;
+		pkgName?: string;
+	} = {}
 ): Promise<HookHandlerContext> {
 	/* istanbul ignore if */
 	if (process.env.NODE_ENV !== "SIU_TEST") return;
@@ -45,5 +51,7 @@ export function testPlugin(
 	/* istanbul ignore if */
 	if (!plugs || !plugs.length) return;
 
-	return plugs[0].callHookForTest(getHookId(cmd, lifecycle), pkgName);
+	extra && extra.opts && plugs[0].refreshOpts(extra.opts);
+
+	return plugs[0].callHookForTest(getHookId(cmd, lifecycle), extra && extra.pkgName);
 }
