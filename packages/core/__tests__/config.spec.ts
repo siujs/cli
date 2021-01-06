@@ -17,8 +17,9 @@ test(" resolveConfig ", async done => {
 	expect(config.pkgsOrder).toBe("auto");
 
 	expect(config).toHaveProperty("plugins");
-	expect(config.plugins.length).toBe(1);
+	expect(config.plugins.length).toBe(2);
 	expect(config.plugins[0]).toBe("./plugins/local-npm-package");
+	expect(config.plugins[1]).toBe("./plugins/cli-opts");
 
 	done();
 });
@@ -51,7 +52,7 @@ test(" analysisPlugins ", () => {
 
 	expect(plugs.length).toBe(3);
 	expect(plugs[0].id).toBe(path.resolve(__dirname, "plugins/local-npm-package"));
-	expect(plugs[0].hasCommandHooks("create")).toBe(true);
+	expect(plugs[0].hasCommandHooks("deps")).toBe(true);
 
 	expect(plugs[1].id).toBe("siujs-plugin-foo");
 	expect(plugs[1].hasCommandHooks("build")).toBe(true);

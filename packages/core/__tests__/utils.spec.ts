@@ -1,4 +1,5 @@
-import { adjustSiuConfigCWD, findUpSiuConfigCwd, sortPkgs } from "../lib/utils";
+import { adjustSiuConfigCWD } from "../lib";
+import { findUpSiuConfigCwd, sortPkgs } from "../lib/utils";
 
 test("adjustSiuConfigCWD", async done => {
 	let hasErr = false;

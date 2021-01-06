@@ -1,6 +1,6 @@
 import path from "path";
 
-import { testPlugin } from "../lib";
+import { loadPlugins, testPlugin } from "../lib";
 import { resolvePlugins } from "../lib/config";
 import { applyPlugins, clearPlugins, resolveCLIOptions } from "../lib/plugin";
 
@@ -12,17 +12,31 @@ afterEach(() => {
 	clearPlugins();
 });
 
-test(" resolve cli options", async done => {
-	const plugs = await resolvePlugins({
-		plugins: ["./plugins/cli-opts"]
-	});
+test(" load plugins ", async done => {
+	const { applyPlugins, resolveCLIOptions } = await loadPlugins();
 
-	const options = await resolveCLIOptions(plugs);
+	await applyPlugins("deps", {});
+
+	const options = await resolveCLIOptions();
 
 	expect(options).toHaveProperty("create");
 	expect(options.create.length).toBe(1);
 	expect(options.create[0].description).toBe(`Foo [support by ${path.resolve(process.cwd(), "./plugins/cli-opts")}]`);
 	expect(options.create[0].defaultValue).toBe("1");
+
+	done();
+});
+
+test(" test plugin", async done => {
+	process.env.NODE_ENV = "SIU_TEST";
+
+	await resolvePlugins({
+		plugins: ["./plugins/keys"]
+	});
+
+	const ctx = await testPlugin("create", "start");
+
+	expect(ctx.scopedKeys("foo")).toBe("2");
 
 	done();
 });
@@ -156,19 +170,5 @@ test(" apply plugins : deps ", async done => {
 			plugins: ["./plugins/deps"]
 		}
 	);
-	done();
-});
-
-test(" test plugin", async done => {
-	process.env.NODE_ENV = "SIU_TEST";
-
-	await resolvePlugins({
-		plugins: ["./plugins/keys"]
-	});
-
-	const ctx = await testPlugin("create", "start");
-
-	expect(ctx.scopedKeys("foo")).toBe("2");
-
 	done();
 });
