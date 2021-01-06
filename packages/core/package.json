@@ -1,42 +1,42 @@
 {
-  "name": "@siujs/core",
-  "version": "1.0.0-beta.7",
-  "description": "core of @siujs",
-  "keywords": [],
-  "author": "buns <kuafujs@126.com>",
-  "license": "MIT",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/core.d.ts",
-  "typings": "dist/core.d.ts",
-  "directories": {
-    "lib": "lib",
-    "test": "__tests__"
-  },
-  "files": [
-    "dist"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/siujs/siu.git"
-  },
-  "bugs": {
-    "url": "https://github.com/siujs/siu/issues"
-  },
-  "homepage": "https://github.com/siujs/siu#readme",
-  "peerDependencies": {
-    "@siujs/utils": "1.0.0-beta.7",
-    "esbuild": "^0.8.27"
-  },
-  "dependencies": {
-    "@siujs/utils": "1.0.0-beta.7",
-    "chalk": "^4.1.0",
-    "esbuild": "^0.8.27",
-    "fs-extra": "^9.0.1"
-  },
-  "devDependencies": {
-    "@types/fs-extra": "^9.0.6",
-    "@types/inquirer": "^7.3.1",
-    "inquirer": "^7.3.3"
-  }
+	"name": "@siujs/core",
+	"version": "1.0.0-beta.7",
+	"description": "core of @siujs",
+	"keywords": [],
+	"author": "buns <kuafujs@126.com>",
+	"license": "MIT",
+	"main": "dist/index.js",
+	"module": "dist/index.mjs",
+	"types": "dist/core.d.ts",
+	"typings": "dist/core.d.ts",
+	"directories": {
+		"lib": "lib",
+		"test": "__tests__"
+	},
+	"files": [
+		"dist"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/siujs/siu.git"
+	},
+	"bugs": {
+		"url": "https://github.com/siujs/siu/issues"
+	},
+	"homepage": "https://github.com/siujs/siu#readme",
+	"peerDependencies": {
+		"@siujs/utils": "1.0.0-beta.7",
+		"esbuild": "^0.8.27"
+	},
+	"dependencies": {
+		"@siujs/utils": "1.0.0-beta.7",
+		"chalk": "^4.1.0",
+		"esbuild": "^0.8.27",
+		"fs-extra": "^9.0.1",
+		"inquirer": "^7.3.3"
+	},
+	"devDependencies": {
+		"@types/fs-extra": "^9.0.6",
+		"@types/inquirer": "^7.3.1"
+	}
 }
