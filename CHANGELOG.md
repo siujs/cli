@@ -1,5 +1,19 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.7](https://github.com/siujs/cli/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2021-01-06)
+
+### Bug Fixes
+
+-  **builtin-deps**: parse scoped package str failed ([2a5f888](https://github.com/siujs/cli/commit/2a5f888583252783d3f2fc6ad018073961f6197f))
+-  **utils**: unfiltered does not exist package.json packages ([954c1df](https://github.com/siujs/cli/commit/954c1df0380361ee20de51e33e05e48d68fdba1a))
+
+### Features
+
+-  **builtin-publish**: exclude package with `private=true` and ([5e1cd4d](https://github.com/siujs/cli/commit/5e1cd4df2359513fa0f5b1381e7167863248bbcd))
+-  **utils**: support multiple monorepo workspaces ([13d4b68](https://github.com/siujs/cli/commit/13d4b681c1c8963963f7c0fb406f696a5b696d00))
+-  **core**: support `testPlugin` for unit-test of plugin ([7aed0ee](https://github.com/siujs/cli/commit/7aed0ee059cb70d3c64a870f2a2fc149ae732971))
+-  **core**: add detection of `ctx.ex` ([7bc77f2](https://github.com/siujs/cli/commit/7bc77f2e817726ac9e194685624068b066d87058))
+
 ## [v1.0.0-beta.6](https://github.com/siujs/cli/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2021-01-04)
 
 ### Performance Improvements

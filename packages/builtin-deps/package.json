@@ -1,6 +1,6 @@
 {
   "name": "@siujs/builtin-deps",
-  "version": "1.0.0-beta.6",
+  "version": "1.0.0-beta.7",
   "description": "deps handle of siujs",
   "keywords": [
     "deps",
@@ -28,8 +28,8 @@
   },
   "homepage": "https://github.com/siujs/siu#readme",
   "dependencies": {
-    "@siujs/core": "1.0.0-beta.6",
-    "@siujs/utils": "1.0.0-beta.6",
+    "@siujs/core": "1.0.0-beta.7",
+    "@siujs/utils": "1.0.0-beta.7",
     "fs-extra": "^9.0.1",
     "shelljs": "^0.8.4"
   },

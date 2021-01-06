@@ -1,6 +1,6 @@
 {
   "name": "@siujs/builtin-githooks",
-  "version": "1.0.0-beta.6",
+  "version": "1.0.0-beta.7",
   "description": "git hooks for siujs",
   "keywords": [
     "git",
@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/siujs/siu#readme",
   "dependencies": {
-    "@siujs/utils": "1.0.0-beta.6",
+    "@siujs/utils": "1.0.0-beta.7",
     "chalk": "^4.1.0",
     "shelljs": "^0.8.4"
   }
