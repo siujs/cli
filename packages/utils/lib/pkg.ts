@@ -3,14 +3,16 @@ import path from "path";
 
 import { camelize } from "./str";
 
+const DEFAULT_WORKSPACE = "packages";
+
 /**
  *
  * 获取当前工作目录下的所有有效package的目录名称
  *
  * @param cwd 当前工作目录 默认process.cwd()
  */
-export async function getPackageDirs(cwd = process.cwd()) {
-	const pkgsRoot = path.resolve(cwd, "./packages");
+export async function getPackageDirs(cwd = process.cwd(), workspace = DEFAULT_WORKSPACE) {
+	const pkgsRoot = path.resolve(cwd, workspace);
 	const dirs = await fs.readdir(pkgsRoot);
 	return dirs.filter(dir => fs.statSync(path.resolve(pkgsRoot, dir)).isDirectory());
 }
@@ -21,8 +23,8 @@ export async function getPackageDirs(cwd = process.cwd()) {
  *
  * @param cwd 当前工作目录 默认process.cwd()
  */
-export async function getPackagePaths(cwd = process.cwd()) {
-	const pkgsRoot = path.resolve(cwd, "./packages");
+export async function getPackagePaths(cwd = process.cwd(), workspace = DEFAULT_WORKSPACE) {
+	const pkgsRoot = path.resolve(cwd, workspace);
 	const dirs = await getPackageDirs(cwd);
 	return dirs.map(dir => path.resolve(pkgsRoot, dir)).filter(p => fs.pathExistsSync(path.resolve(p, "package.json")));
 }
@@ -33,8 +35,8 @@ export async function getPackagePaths(cwd = process.cwd()) {
  *
  * @param cwd 当前工作目录 默认process.cwd()
  */
-export async function getMetasOfPackages(cwd = process.cwd()) {
-	const pkgPaths = await getPackagePaths(cwd);
+export async function getMetasOfPackages(cwd = process.cwd(), workspace = DEFAULT_WORKSPACE) {
+	const pkgPaths = await getPackagePaths(cwd, workspace);
 
 	const kv = {} as Record<string, Record<string, any>>;
 
@@ -67,8 +69,8 @@ export function getPkgDirName(pkgName: string) {
  * @param pkgName 客户端传入的pkg名称
  * @param cwd 当前工作目录 默认process.cwd()
  */
-export function getPackagePath(pkgName: string, cwd = process.cwd()) {
-	const pkgsRoot = path.resolve(cwd, "./packages");
+export function getPackagePath(pkgName: string, cwd = process.cwd(), workspace = DEFAULT_WORKSPACE) {
+	const pkgsRoot = path.resolve(cwd, workspace);
 	const dir = getPkgDirName(pkgName);
 	return path.resolve(pkgsRoot, dir);
 }
@@ -115,10 +117,10 @@ export interface PkgData {
  * @param pkgName 当前包的名称
  * @param cwd 当前工作目录 默认process.cwd()
  */
-export function getPkgData(pkgName: string, cwd = process.cwd()): PkgData {
+export function getPkgData(pkgName: string, cwd = process.cwd(), workspace = DEFAULT_WORKSPACE): PkgData {
 	const dirName = getPkgDirName(pkgName);
 
-	const pkgsRoot = path.resolve(cwd, "./packages");
+	const pkgsRoot = path.resolve(cwd, workspace);
 
 	const pkgPath = path.resolve(pkgsRoot, dirName);
 
@@ -145,8 +147,8 @@ export function getPkgData(pkgName: string, cwd = process.cwd()): PkgData {
  *
  * @param cwd current workspace directory
  */
-export async function getSortedPkgByPriority(cwd = process.cwd()) {
-	const pkgPaths = await getPackagePaths(cwd);
+export async function getSortedPkgByPriority(cwd = process.cwd(), workspace = DEFAULT_WORKSPACE) {
+	const pkgPaths = await getPackagePaths(cwd, workspace);
 
 	const kv = {} as Record<string, number>;
 
@@ -181,11 +183,12 @@ export async function getSortedPkgByPriority(cwd = process.cwd()) {
  * Whether package is exists
  *
  * @param name package name
+ * @param workspace [optional] current monorepo workspace name,default:packages
  */
-export async function isPkgExists(name: string) {
+export async function isPkgExists(name: string, workspace = DEFAULT_WORKSPACE) {
 	const dirName = getPkgDirName(name);
 
-	const pkgs = await fs.readdir(path.resolve(process.cwd(), "packages"));
+	const pkgs = await fs.readdir(path.resolve(process.cwd(), workspace));
 
 	return pkgs.includes(dirName);
 }
