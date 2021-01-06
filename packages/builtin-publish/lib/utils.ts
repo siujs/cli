@@ -5,7 +5,14 @@ import inquirer from "inquirer";
 import path from "path";
 import semver from "semver";
 
-import { getFirstCommitId, getGitRemoteUrl, getGroupedCommits, getPreTag, GroupedCommitsItem } from "@siujs/utils";
+import {
+	getFirstCommitId,
+	getGitRemoteUrl,
+	getGroupedCommits,
+	getPackageDirs,
+	getPreTag,
+	GroupedCommitsItem
+} from "@siujs/utils";
 
 const execFnCache = {} as Record<"dryRun" | "run", (bin: string, args: string[], opts?: Record<string, any>) => any>;
 
@@ -128,17 +135,34 @@ export async function updatePkgVersion(version: string, cwd: string) {
  * @param version new version string, no `v` prefix
  * @param cwd current workspace directory - monorepo project root
  */
-export async function updateCrossDeps(version: string, cwd: string) {
-	const pkgRoot = path.resolve(cwd, "packages");
+export async function updateCrossDeps(
+	version: string,
+	extra?: {
+		cwd: string;
+		workspace?: string;
+		pkgs?: string[];
+		pkgDatas?: any[];
+	}
+) {
+	extra = {
+		cwd: process.cwd(),
+		workspace: "packages",
+		...(extra || {})
+	};
 
-	const meta = await fs.readJSON(path.resolve(cwd, "package.json"));
-	meta.version = version;
+	const pkgsRoot = path.resolve(extra.cwd, extra.workspace);
 
-	const pkgDirs = await fs.readdir(pkgRoot);
+	if (!extra.pkgs || !extra.pkgs.length) {
+		extra.pkgs = await getPackageDirs(extra.cwd);
+	}
 
-	const pkgMetas = (
-		await Promise.all(pkgDirs.map(dir => fs.readJSON(path.resolve(pkgRoot, dir, "package.json"))))
-	).reduce((prev, meta) => {
+	if (!extra.pkgDatas || !extra.pkgDatas.length) {
+		extra.pkgDatas = (
+			await Promise.all(extra.pkgs.map(dir => fs.readJSON(path.resolve(pkgsRoot, dir, "package.json"))))
+		).filter(p => !p.private);
+	}
+
+	const pkgMetas = extra.pkgDatas.reduce((prev, meta) => {
 		prev[meta.name] = meta;
 		return prev;
 	}, {}) as Record<string, Record<string, any>>;
@@ -162,7 +186,7 @@ export async function updateCrossDeps(version: string, cwd: string) {
 
 	await Promise.all([
 		...Object.keys(pkgMetas).map((value, index) =>
-			fs.writeJSON(path.resolve(pkgRoot, pkgDirs[index], "package.json"), pkgMetas[value], { spaces: 2 })
+			fs.writeJSON(path.resolve(pkgsRoot, extra.pkgs[index], "package.json"), pkgMetas[value], { spaces: 2 })
 		)
 	]);
 }

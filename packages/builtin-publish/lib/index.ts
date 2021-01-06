@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import fs from "fs-extra";
 import path from "path";
 import semver from "semver";
 
@@ -89,6 +90,10 @@ export interface ReleaseOptions {
 		changelog?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
 		publish?: (opts: { cwd: string; repo: string; dryRun?: boolean }) => Promise<void>;
 	};
+	/**
+	 * current workspace name, default: packages
+	 */
+	workspace?: string;
 }
 
 const DEFAULT_HOOKS = {
@@ -117,6 +122,7 @@ const DEFAULT_HOOKS = {
 const officalNpmRepo = "https://registry.npmjs.org";
 
 const DEFAULT_OPTIONS = {
+	workspace: "packages",
 	pkg: "",
 	dryRun: false,
 	repo: officalNpmRepo,
@@ -128,8 +134,28 @@ const DEFAULT_OPTIONS = {
 	skipPush: false
 };
 
-export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "version">) {
-	const cwd = path.resolve(process.cwd(), "packages", pkg);
+export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "version"> & { valid?: boolean }) {
+	const workspace = opts.workspace || DEFAULT_OPTIONS.workspace;
+
+	const cwd = path.resolve(process.cwd(), workspace, pkg);
+
+	if (opts.valid !== false) {
+		const isOK = await fs.pathExists(path.resolve(cwd, "package.json"));
+
+		if (!isOK) {
+			console.warn(chalk.yellow(`[siu] Warning: '${pkg}'`) + "is not a valid package,missing package.json");
+			return;
+		}
+
+		const meta = await fs.readJSON(path.resolve(cwd, "package.json"));
+
+		if (meta && meta.private) {
+			console.warn(
+				chalk.yellow(`[siu] Warning: '${pkg}'`) + "is a private package that does not allowed to be published"
+			);
+			return;
+		}
+	}
 
 	const tag = await getPreTag(`${pkg}-`);
 
@@ -141,7 +167,7 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 		const commitFiles = await getCommittedFiles(tag, "HEAD", cwd);
 
 		const hasPkgFile = commitFiles.filter(p => {
-			p.endsWith("package.json") || p.startsWith(`packages/${pkg}/lib`) || p.startsWith(`packages/${pkg}/src`);
+			p.endsWith("package.json") || p.startsWith(`${workspace}/${pkg}/lib`) || p.startsWith(`${workspace}/${pkg}/src`);
 		});
 
 		if (hasPkgFile) {
@@ -192,21 +218,20 @@ export async function release(opts: ReleaseOptions) {
 	}
 
 	const cwd = process.cwd();
-	const pkgsRoot = path.resolve(cwd, "packages");
 
 	!skips.skipLint && hooks && hooks.lint && (await hooks.lint({ cwd, dryRun }));
 
 	!skips.skipBuild && hooks && hooks.build && (await hooks.build({ cwd, dryRun }));
 
 	if (version === "independent" || (!version && pkg)) {
-		const dirs = pkg ? pkg.split(",") : await getSortedPkgByPriority();
-
-		for (let l = dirs.length; l--; ) {
-			await releasePackage(dirs[l], opts);
+		const pkgs = pkg ? pkg.split(",") : await getSortedPkgByPriority();
+		for (let l = pkgs.length; l--; ) {
+			await releasePackage(pkgs[l], opts);
 		}
-
 		!skips.skipPush && (await gitPush(dryRun));
 	} else {
+		const pkgsRoot = path.resolve(cwd, opts.workspace || DEFAULT_OPTIONS.workspace);
+
 		const targetVersion = version || (await chooseVersion(cwd));
 
 		if (!targetVersion) return;
@@ -215,17 +240,38 @@ export async function release(opts: ReleaseOptions) {
 			throw new Error(`invalid target version: ${targetVersion}`);
 		}
 
+		const pkgs = await getSortedPkgByPriority();
+
+		const pkgDatas = await Promise.all(pkgs.map(pkg => fs.readJSON(path.resolve(pkgsRoot, pkg, "package.json"))));
+
+		// private:true package can't be published
+		for (let l = pkgs.length; l--; ) {
+			if (pkgDatas[l].private) {
+				log(chalk`{magenta Warning}: "${pkgs[l]}" is a private package that does not allowed to be published`);
+				pkgs.splice(l, 1);
+				pkgDatas.splice(l, 1);
+			}
+		}
+
+		if (!pkgs.length) {
+			log(chalk`{red [siu] Error:} No package that to be published!`);
+			return;
+		}
+
 		if (dryRun) {
 			log(chalk`{yellow [dryrun] update version}: Updating all package version to \`${targetVersion}\``);
 		} else {
 			await updatePkgVersion(targetVersion, cwd);
-			await updateCrossDeps(targetVersion, cwd);
+			await updateCrossDeps(targetVersion, {
+				cwd,
+				pkgs,
+				pkgDatas
+			});
 		}
 
 		if (!skips.skipPublish) {
-			const pkgs = await getSortedPkgByPriority();
-			for (let l = 0; l < pkgs.length; l++) {
-				hooks && hooks.publish && (await hooks.publish({ repo, cwd: path.resolve(pkgsRoot, pkgs[l]), dryRun }));
+			for (let i = 0; i < pkgs.length; i++) {
+				hooks && hooks.publish && (await hooks.publish({ repo, cwd: path.resolve(pkgsRoot, pkgs[i]), dryRun }));
 			}
 		}
 
