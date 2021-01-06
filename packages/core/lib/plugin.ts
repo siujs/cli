@@ -220,6 +220,19 @@ export class SiuPlugin {
 
 	/**
 	 *
+	 * call hook for unit-test
+	 *
+	 * 	note: open `context` calls
+	 *
+	 * @param hookKey plugin unique key
+	 */
+	async callHookForTest(hookKey: PluginHookKey) {
+		await this.callHook(hookKey);
+		return this._ctx;
+	}
+
+	/**
+	 *
 	 * Whether goto error lifecycle to handle
 	 *
 	 * @param cmd current plugin command
