@@ -227,8 +227,10 @@ export class SiuPlugin {
 	 * 	note: open `context` calls
 	 *
 	 * @param hookKey plugin unique key
+	 * @param pkgName [optional] specified package directory name
 	 */
-	async callHookForTest(hookKey: PluginHookKey) {
+	async callHookForTest(hookKey: PluginHookKey, pkgName?: string) {
+		this._currentPkg = pkgName;
 		await this.callHook(hookKey);
 		return this._ctx;
 	}
