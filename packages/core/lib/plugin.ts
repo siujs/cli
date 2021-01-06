@@ -134,7 +134,7 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * Whether has handlers of specified lifecycle of specified command
+	 * Whether has handlers of specific lifecycle of specific command
 	 *
 	 * @private
 	 * @param hookKey target hook key
@@ -208,7 +208,7 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * call hook of specified plugin lifecycle of the specified plugin command
+	 * call hook of specific plugin lifecycle of the specific plugin command
 	 *
 	 * @param hookKey plugin unique key
 	 */
@@ -227,7 +227,7 @@ export class SiuPlugin {
 	 * 	note: open `context` calls
 	 *
 	 * @param hookKey plugin unique key
-	 * @param pkgName [optional] specified package directory name
+	 * @param pkgName [optional] specific package directory name
 	 */
 	async callHookForTest(hookKey: PluginHookKey, pkgName?: string) {
 		this._currentPkg = pkgName;
