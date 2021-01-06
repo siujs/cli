@@ -1,4 +1,4 @@
-import { InputOptions, OutputOptions, RollupOptions } from "rollup";
+import { InputOptions, ModuleSideEffectsOption, OutputOptions, RollupOptions } from "rollup";
 
 import { ChainedMap } from "../ChainedMap";
 import { ChainedSet } from "../ChainedSet";
@@ -10,7 +10,13 @@ export interface Config {
 	external: ChainedSet<Config, string>;
 	plugin(name: string): Plugin<Config>;
 	output(key: TOutputFormatKey): Output<Config>;
-	treeshake(value: Record<string, any>): Config;
+	treeshake(value: {
+		annotations?: boolean;
+		moduleSideEffects?: ModuleSideEffectsOption;
+		propertyReadSideEffects?: boolean;
+		tryCatchDeoptimization?: boolean;
+		unknownGlobalSideEffects?: boolean;
+	}): Config;
 }
 
 export class Config extends ChainedMap<void, any> {
