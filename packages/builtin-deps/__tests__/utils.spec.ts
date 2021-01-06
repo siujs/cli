@@ -18,10 +18,13 @@ test(" transformDepStr ", () => {
 	depsMap = transformDepStr("foo@1.1.1:D");
 	expect(depsMap.name).toBe("foo");
 	expect(depsMap.version).toBe("1.1.1");
+
+	depsMap = transformDepStr("@1.1.1");
+	expect(!!depsMap).toBe(false);
 });
 
 test(" normalizeDepStr ", () => {
-	const map = normalizeDepStr("foo,foo2:D,foo3@1.0.0,foo4@1.0.0:D");
+	const map = normalizeDepStr("foo,foo2:D,foo3@1.0.0,foo4@1.0.0:D,@noscoped");
 
 	expect(map).toHaveProperty("deps");
 	expect(map.deps.length).toBe(2);
@@ -40,7 +43,7 @@ test(" normalizeDepStr ", () => {
 });
 
 test(" normalizeDepStr scoped deps", () => {
-	const map = normalizeDepStr("@foo/bar,@foo/bar2:D,@foo/bar3@1.0.0,@foo/bar4@1.0.0:D");
+	const map = normalizeDepStr("@foo/bar,@foo/bar2:D,@foo/bar3@1.0.0,@foo/bar4@1.0.0:D,@noscoped");
 
 	expect(map).toHaveProperty("deps");
 	expect(map.deps.length).toBe(2);

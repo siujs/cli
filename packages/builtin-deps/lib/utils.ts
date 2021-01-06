@@ -14,7 +14,7 @@ export function detectYarn() {
 export function transformDepStr(str: string) {
 	let normalStr = str.replace(":D", "");
 
-	const isScoped = normalStr[0] === "@";
+	const isScoped = normalStr[0] && normalStr[0] === "@" && !!~normalStr.indexOf("/");
 
 	if (isScoped) {
 		normalStr = normalStr.substring(1);
@@ -47,9 +47,11 @@ export function normalizeDepStr(deps: string) {
 		(prev, cur) => {
 			const depInfo = transformDepStr(cur);
 
+			if (!depInfo) return prev;
+
 			const propName = cur.endsWith(":D") ? "devDeps" : "deps";
 
-			depInfo && (prev[propName] = prev[propName] || []).push(depInfo);
+			(prev[propName] = prev[propName] || []).push(depInfo);
 
 			return prev;
 		},
