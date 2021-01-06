@@ -93,9 +93,9 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * 获取当前插件在当前action的配置信息
+	 * get options of current plugin command
 	 *
-	 * @param key 键名
+	 * @param key key
 	 */
 	private opts<T>(key?: string) {
 		return key
@@ -107,34 +107,34 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * 新增插件hook
+	 * add plugin hook
 	 *
-	 * @param action 操作名称
-	 * @param lifeCycle 操作执行周期
-	 * @param hookHandler hook处理器
+	 * @param cmd plugin command
+	 * @param lifeCycle lifecycle of plugin command
+	 * @param hookHandler handler
 	 */
-	private addHook(action: PluginCommand, lifeCycle: PluginCommandLifecycle, hookHandler: HookHandler) {
-		const hookId = getHookId(action, lifeCycle);
+	private addHook(cmd: PluginCommand, lifeCycle: PluginCommandLifecycle, hookHandler: HookHandler) {
+		const hookId = getHookId(cmd, lifeCycle);
 		this._hooks[hookId] = this._hooks[hookId] || [];
 		this._hooks[hookId].push(hookHandler);
 	}
 
 	/**
 	 *
-	 * 新增插件关于命令选项初始化的hook
+	 * add hook for cli option register
 	 *
-	 * @param action 操作名称
-	 * @param hookHandler hook处理器
+	 * @param cmd plugin command
+	 * @param hookHandler handler of current plugin command
 	 */
-	private addCLIOptionHook(action: PluginCommand, hookHandler: CLIOptionHandler) {
-		const hookId = getHookId(action, "cli");
+	private addCLIOptionHook(cmd: PluginCommand, hookHandler: CLIOptionHandler) {
+		const hookId = getHookId(cmd, "cli");
 		this._hooks[hookId] = this._hooks[hookId] || [];
 		this._hooks[hookId].push(hookHandler);
 	}
 
 	/**
 	 *
-	 * 判断是否具备对应的hook
+	 * Whether has handlers of specified lifecycle of specified command
 	 *
 	 * @private
 	 * @param hookKey target hook key
@@ -149,11 +149,10 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * 1. 获取当前上下文的临时缓存中特定键对应的值
-	 * 2. 设置新的临时缓存键值对
+	 * get/set key-value of current plugin
 	 *
-	 * @param key 键名
-	 * @param value [可选] 值
+	 * @param key key
+	 * @param value [optional] value
 	 */
 	private keys<T>(key: string, value?: T) {
 		const realKey = this._cacheKeyPrefix + key;
@@ -162,10 +161,10 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * 带作用域的key
+	 * get/set key-value of scoped (depends `command` and `package`)
 	 *
-	 * @param key 键名
-	 * @param value [可选] 值
+	 * @param key key
+	 * @param value [optional] value
 	 */
 	private scopedKeys<T>(key: string, value?: T) {
 		return this.keys(`@${this._cmd}${this._currentPkg ? `${this._currentPkg}/` : ""}/${key}`, value);
@@ -173,9 +172,9 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * 记录异常信息
+	 * record error message
 	 *
-	 * @param value [可选] 异常的错误对象或者异常文本信息
+	 * @param value [optional] `Error` instance or error-message
 	 */
 	private ex(value?: Error | string) {
 		return this.scopedKeys("SIU_PLUGIN_CATCH_ERR", value);
@@ -183,9 +182,9 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * 获取/设置当前package的元数据信息
+	 * get/set meta data (in package.json) of current package
 	 *
-	 * @param meta [可选] 新的元数据信息
+	 * @param meta [optional] new meta data
 	 */
 	private pkg(meta?: Record<string, any>) {
 		if (meta) {
@@ -207,9 +206,9 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * 执行插件的Handlers
+	 * call hook of specified plugin lifecycle of the specified plugin command
 	 *
-	 * @param hookKey 插件Key
+	 * @param hookKey plugin unique key
 	 */
 	private async callHook(hookKey: PluginHookKey) {
 		const handlers = this._hooks[hookKey] as HookHandler[];
@@ -217,6 +216,21 @@ export class SiuPlugin {
 		if (!handlers || !handlers.length) return;
 
 		await Promise.all(handlers.map(handler => handler(this._ctx)));
+	}
+
+	/**
+	 *
+	 * Whether goto error lifecycle to handle
+	 *
+	 * @param cmd current plugin command
+	 */
+	private async whetherGotoError(cmd: PluginCommand) {
+		const ex = this._ctx.ex();
+
+		if (!ex) return false;
+		console.log(chalk.redBright("\n<ERROR-MSG>\n"), ex, chalk.redBright("\n</ERROR-MSG>\n"));
+		await this.callHook(getHookId(cmd, (this.lifecycle = "error")));
+		return true;
 	}
 
 	async process(cmd: PluginCommand, cmdOpts: Record<string, any>, pkgName?: string) {
@@ -245,23 +259,22 @@ export class SiuPlugin {
 			console.log(chalk.yellow.bold(`<${logStr}>\n`));
 
 			await this.callHook(getHookId(cmd, this.lifecycle));
+			let flag = await this.whetherGotoError(cmd);
 
 			// `start` => `process`
-			if (this.lifecycle === "start" && hasProcessHook) {
+			if (!flag && this.lifecycle === "start" && hasProcessHook) {
 				await this.callHook(getHookId(cmd, (this.lifecycle = "process")));
+				flag = await this.whetherGotoError(cmd);
 			}
 
 			// `process` => `complete`
-			if (this.lifecycle === "process" && this.hasHook(getHookId(cmd, "complete"))) {
+			if (!flag && this.lifecycle === "process" && this.hasHook(getHookId(cmd, "complete"))) {
 				await this.callHook(getHookId(cmd, (this.lifecycle = "complete")));
+				await this.whetherGotoError(cmd);
 			}
 		} catch (ex) {
 			this.ex(ex);
-			console.log(chalk.redBright("\n	<ERROR-MSG>\n"));
-			console.log(ex);
-			console.log(chalk.redBright("\n	</ERROR-MSG>\n"));
-
-			await this.callHook(getHookId(cmd, (this.lifecycle = "error")));
+			await this.whetherGotoError(this._cmd);
 		}
 
 		console.log(chalk.yellow.bold(`\n</${logStr}>\n`));
@@ -321,7 +334,7 @@ export class SiuPlugin {
 	}
 
 	/**
-	 * 清除当前插件的临时存储
+	 * clear tmp caches of current plugin
 	 */
 	private cleanKeys() {
 		Object.keys(GlobalKeyValues)
@@ -333,9 +346,9 @@ export class SiuPlugin {
 
 	/**
 	 *
-	 * 对外提供主动唤起清理动作的接口
+	 * Clean action of current plugin
 	 *
-	 * @param pkg [可选] package名称
+	 * @param pkg [optional] package name
 	 */
 	async clean(pkg?: string) {
 		this._currentPkg = pkg;
