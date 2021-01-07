@@ -2,7 +2,14 @@ import fs from "fs-extra";
 import path from "path";
 import sh from "shelljs";
 
-import { downloadGit, getFirstCommitId, getGitRemoteUrl, getPreTag } from "../lib/git";
+import {
+	downloadGit,
+	getCommittedFiles,
+	getFirstCommitId,
+	getGitRemoteUrl,
+	getGroupedCommits,
+	getPreTag
+} from "../lib/git";
 
 test(" getFirstCommitId ", async done => {
 	const expectedId = "289e90072966ebc2c549a01aab426ffd8b0940b3";
@@ -48,6 +55,33 @@ test(" getPreTag ", async done => {
 
 	expect(!!tags).toBe(true);
 	expect(tag).toBe(tags[0]);
+
+	done();
+});
+
+test(" getCommittedFiles ", async done => {
+	const files = await getCommittedFiles(
+		"199972e856978b9194db3fec9c3d94bb1445f7ab",
+		"18889daf229505554ce55d4e9e4c4e4a92b9dce3"
+	);
+
+	expect(files.length).toBe(10);
+
+	expect(files.some(file => file.endsWith("CHANGELOG.md"))).toBe(true);
+	expect(files.filter(file => file.endsWith("package.json")).length).toBe(9);
+
+	done();
+});
+
+test(" getGroupedCommits ", async done => {
+	const commits = await getGroupedCommits(
+		"199972e856978b9194db3fec9c3d94bb1445f7ab",
+		"18889daf229505554ce55d4e9e4c4e4a92b9dce3"
+	);
+
+	expect(commits).toHaveProperty("release");
+
+	expect(commits.release.length).toBe(1);
 
 	done();
 });
