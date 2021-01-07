@@ -110,37 +110,31 @@ export function validPkgIsExclude(config: SiuConfig) {
  * @param config Config Data in `siu.config.js` or `siu.config.ts`
  */
 export function analysisPlugins(config: SiuConfig) {
-	if (!config) return getPlugins();
-
-	const { plugins = [] } = config;
+	if (!config || !config.plugins || !config.plugins.length) return getPlugins();
 
 	const nmPath = path.resolve(process.cwd(), "node_modules");
 
-	if (plugins && plugins.length) {
-		for (let i = 0, l = plugins.length; i < l; i++) {
-			const plug = plugins[i];
+	config.plugins.forEach(plug => {
+		let id = Array.isArray(plug) ? plug[0] : plug;
 
-			let id = Array.isArray(plug) ? plug[0] : plug;
-
-			let factory: any;
-			if (id.startsWith(".") || id.startsWith("/")) {
-				id = path.resolve(process.cwd(), id);
-				factory = require(id);
-			} else {
-				id = resolvePluginId(id);
-				factory = require(path.resolve(nmPath, id));
-			}
-
-			factory = factory.default || factory;
-
-			/* istanbul ignore else */
-			if (factory) {
-				factory(definePlugin(id, Array.isArray(plug) && plug.length > 1 && plug[1] ? plug[1].custom || {} : {}));
-			} else {
-				console.warn(`[@siujs/core] Warning: ${id} is empty!`);
-			}
+		let factory: any;
+		if (id.startsWith(".") || id.startsWith("/")) {
+			id = path.resolve(process.cwd(), id);
+			factory = require(id);
+		} else {
+			id = resolvePluginId(id);
+			factory = require(path.resolve(nmPath, id));
 		}
-	}
+
+		factory = factory.default || factory;
+
+		/* istanbul ignore else */
+		if (factory) {
+			factory(definePlugin(id, Array.isArray(plug) && plug.length > 1 && plug[1] ? plug[1].custom || {} : {}));
+		} else {
+			console.warn(`[siujs] Warning: ${id} is empty!`);
+		}
+	});
 
 	return getPlugins();
 }
