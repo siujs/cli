@@ -83,8 +83,6 @@ export function asCreationFallback(api: ValueOf<PluginApi>) {
 	});
 
 	api.error((ctx: HookHandlerContext) => {
-		const ex = ctx.ex();
-		console.log("ex:", ex);
 		sh.rm("-rf", ctx.pkg().path);
 	});
 }
