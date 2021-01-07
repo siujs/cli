@@ -12,10 +12,7 @@ import {
 	isPkgExists
 } from "../lib/pkg";
 
-let cwd = "";
-beforeAll(() => {
-	cwd = path.resolve(__dirname, "../../../");
-});
+const cwd = process.cwd();
 
 const sortedPkgDirNames = [
 	"builtin-build",
@@ -120,8 +117,6 @@ test("getSortedPkgByPriority", async done => {
 });
 
 test(" isPkgExists ", async done => {
-	process.chdir(path.resolve(__dirname, "../../../"));
-
 	let exists = await isPkgExists("test");
 	expect(exists).toBe(false);
 
@@ -135,8 +130,6 @@ test(" isPkgExists ", async done => {
 });
 
 test(" filterUnExistsPkgs ", async done => {
-	process.chdir(path.resolve(__dirname, "../../../"));
-
 	let pkgs = await filterUnExistsPkgs("");
 	expect(pkgs.join(",")).toBe("");
 

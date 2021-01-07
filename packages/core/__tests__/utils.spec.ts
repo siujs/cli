@@ -1,3 +1,5 @@
+
+
 import { adjustSiuConfigCWD } from "../lib";
 import { findUpSiuConfigCwd, sortPkgs } from "../lib/utils";
 
@@ -14,7 +16,13 @@ test("adjustSiuConfigCWD", async done => {
 });
 
 test("findUpSiuConfigCwd", async done => {
+	const oldCWD = process.cwd();
+
+	process.chdir(__dirname);
+
 	const targetCWD = await findUpSiuConfigCwd(__dirname);
+
+	process.chdir(oldCWD);
 
 	expect(targetCWD).toBe(__dirname);
 

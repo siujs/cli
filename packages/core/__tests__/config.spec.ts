@@ -6,13 +6,21 @@ import { analysisPlugins, resolveConfig, resolvePlugins, validPkgIsExclude } fro
 import { DEFAULT_PLUGIN_ID } from "../lib/consts";
 import { clearPlugins } from "../lib/plugin";
 
+const oldCWD = process.cwd();
+
+beforeAll(() => {
+	process.chdir(__dirname);
+});
+
+afterAll(() => {
+	process.chdir(oldCWD);
+});
+
 afterEach(() => {
 	clearPlugins();
 });
 
 test(" resolveConfig ", async done => {
-	process.chdir(path.resolve(__dirname));
-
 	const config = await resolveConfig();
 
 	expect(config).toHaveProperty("pkgsOrder");
@@ -27,8 +35,6 @@ test(" resolveConfig ", async done => {
 });
 
 test(" analysisPlugins ", () => {
-	process.chdir(path.resolve(__dirname));
-
 	sh.mkdir(path.resolve(__dirname, "packages"));
 	sh.mkdir(path.resolve(__dirname, "packages", "foo"));
 	fs.writeJSONSync(path.resolve(__dirname, "packages/foo/package.json"), {
@@ -72,7 +78,6 @@ test(" analysisPlugins ", () => {
 });
 
 test(" resolve plugins ", async done => {
-	process.chdir(path.resolve(__dirname));
 	const plugs = await resolvePlugins(
 		{
 			plugins: []

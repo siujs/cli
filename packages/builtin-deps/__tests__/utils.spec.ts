@@ -62,8 +62,6 @@ test(" normalizeDepStr scoped deps", () => {
 });
 
 test(" isLocalPackage ", async done => {
-	process.chdir(path.resolve(__dirname, "../../../"));
-
 	const depsVersion = require(path.resolve(process.cwd(), "packages", "builtin-deps", "package.json")).version;
 
 	let version = await isLocalPackage("@siujs/builtin-deps");
@@ -75,8 +73,6 @@ test(" isLocalPackage ", async done => {
 	done();
 });
 test(" getPkgMeta ", async done => {
-	process.chdir(path.resolve(__dirname, "../../../"));
-
 	const meta = await getPkgMeta("builtin-deps");
 
 	expect(meta).toHaveProperty("name");

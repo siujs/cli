@@ -6,6 +6,10 @@ import { downloadTpl } from "../lib/utils";
 
 const dest = path.resolve(__dirname, "./tpls");
 
+beforeEach(() => {
+	sh.rm("-rf", dest);
+});
+
 afterEach(() => {
 	sh.rm("-rf", dest);
 });

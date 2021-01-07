@@ -5,12 +5,15 @@ import { loadPlugins, testPlugin } from "../lib";
 import { resolvePlugins } from "../lib/config";
 import { applyPlugins, clearPlugins } from "../lib/plugin";
 
+const oldCWD = process.cwd();
+
 beforeAll(() => {
 	process.chdir(__dirname);
 	sh.mkdir(path.resolve(__dirname, "packages"));
 });
 
 afterAll(() => {
+	process.chdir(oldCWD);
 	sh.rm("-rf", path.resolve(__dirname, "packages"));
 });
 
