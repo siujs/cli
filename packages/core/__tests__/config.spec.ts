@@ -1,4 +1,6 @@
+import fs from "fs-extra";
 import path from "path";
+import sh from "shelljs";
 
 import { analysisPlugins, resolveConfig, resolvePlugins, validPkgIsExclude } from "../lib/config";
 import { DEFAULT_PLUGIN_ID } from "../lib/consts";
@@ -26,6 +28,12 @@ test(" resolveConfig ", async done => {
 
 test(" analysisPlugins ", () => {
 	process.chdir(path.resolve(__dirname));
+
+	sh.mkdir(path.resolve(__dirname, "packages"));
+	sh.mkdir(path.resolve(__dirname, "packages", "foo"));
+	fs.writeJSONSync(path.resolve(__dirname, "packages/foo/package.json"), {
+		name: "@xxx/foo"
+	});
 
 	let plugs = analysisPlugins(null as any);
 	expect(plugs.length).toBe(0);
@@ -59,6 +67,8 @@ test(" analysisPlugins ", () => {
 
 	expect(plugs[2].id).toBe(path.resolve(__dirname, "plugins/analysisPlugins-with-custom"));
 	expect(plugs[2].hasCommandHooks("create")).toBe(true);
+
+	sh.rm("-rf", path.resolve(__dirname, "packages/foo"));
 });
 
 test(" resolve plugins ", async done => {

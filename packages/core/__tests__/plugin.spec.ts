@@ -1,11 +1,17 @@
 import path from "path";
+import sh from "shelljs";
 
 import { loadPlugins, testPlugin } from "../lib";
 import { resolvePlugins } from "../lib/config";
-import { applyPlugins, clearPlugins, resolveCLIOptions } from "../lib/plugin";
+import { applyPlugins, clearPlugins } from "../lib/plugin";
 
-beforeEach(() => {
-	process.chdir(path.resolve(__dirname));
+beforeAll(() => {
+	process.chdir(__dirname);
+	sh.mkdir(path.resolve(__dirname, "packages"));
+});
+
+afterAll(() => {
+	sh.rm("-rf", path.resolve(__dirname, "packages"));
 });
 
 afterEach(() => {
