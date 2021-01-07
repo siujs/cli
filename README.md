@@ -1,5 +1,9 @@
 # siu cli
 
+![language](https://img.shields.io/github/languages/top/siujs/cli)
+![version](https://img.shields.io/github/package-json/v/siujs/cli)
+![MIT](https://img.shields.io/github/license/siujs/cli)
+
 #### Description
 
 Extensible front-end application scaffold, sounds like football moving: `siu...`
@@ -21,7 +25,3 @@ To run tests on a specific package:
 ```console
 $ yarn test <name>
 ```
-
-## License
-
-[MIT](LICENSE)
