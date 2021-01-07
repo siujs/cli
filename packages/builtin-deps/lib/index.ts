@@ -20,13 +20,14 @@ import { addDeps, detectYarn, normalizeDepStr } from "./utils";
  *
  * @param action `add` or `rm`
  */
-export async function changeDeps(pkg: string, depStr: string, action: "add" | "rm" = "add") {
+export async function changeDeps(pkg: string, depStr: string, action: "add" | "rm" = "add", workspace = "packages") {
 	const depsMap = normalizeDepStr(depStr);
+
 	if (!depsMap) return;
 
 	detectYarn();
 
-	const cwd = pkg ? await getPackagePath(pkg) : process.cwd();
+	const cwd = pkg ? getPackagePath(pkg, workspace) : process.cwd();
 
 	const { deps = [], devDeps = [] } = depsMap;
 
@@ -39,7 +40,7 @@ export async function changeDeps(pkg: string, depStr: string, action: "add" | "r
 			{ cwd }
 		);
 	} else {
-		deps.length && (await addDeps(deps, cwd));
-		devDeps.length && (await addDeps(devDeps, cwd, true));
+		deps.length && (await addDeps(deps, cwd, false, workspace));
+		devDeps.length && (await addDeps(devDeps, cwd, true, workspace));
 	}
 }

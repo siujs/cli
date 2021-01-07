@@ -78,10 +78,11 @@ let pkgMetas: Record<string, any>[];
  * Whether is local package
  *
  * @param depName target dependency package name
+ * @param workspace [optional] specific workspace directory name
  */
-export async function isLocalPackage(depName: string) {
+export async function isLocalPackage(depName: string, workspace = "packages") {
 	if (!pkgMetas) {
-		const pkgsRoots = path.resolve(process.cwd(), "./packages");
+		const pkgsRoots = path.resolve(process.cwd(), workspace);
 
 		pkgMetas = await fs
 			.readdir(pkgsRoots)
@@ -95,9 +96,14 @@ export async function isLocalPackage(depName: string) {
 }
 
 /* istanbul ignore next */
-export async function addDeps(deps: { name: string; version: string }[], cwd: string, isDev = false) {
+export async function addDeps(
+	deps: { name: string; version: string }[],
+	cwd: string,
+	isDev: boolean,
+	workspace = "packages"
+) {
 	for (let l = deps.length; l--; ) {
-		const version = await isLocalPackage(deps[l].name);
+		const version = await isLocalPackage(deps[l].name, workspace);
 		if (version) {
 			deps[l].version = version;
 		}
