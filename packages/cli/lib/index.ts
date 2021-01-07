@@ -1,6 +1,8 @@
 import chalk from "chalk";
 import program from "commander";
+import fs from "fs-extra";
 import inquirer from "inquirer";
+import path from "path";
 import validProjectName from "validate-npm-package-name";
 
 import { initApp } from "@siujs/cli-init";
@@ -33,6 +35,17 @@ export function validPkgName(name: string) {
 			});
 		}
 
+		process.exit(1);
+	}
+}
+
+export async function validWorkspace(workspace = "packages") {
+	const wkPath = path.resolve(process.cwd(), workspace);
+
+	const flag = await fs.pathExists(wkPath);
+
+	if (!flag) {
+		console.log(chalk.red.bold(`[siu] ERROR: "${wkPath}" does not exists!`));
 		process.exit(1);
 	}
 }
@@ -86,6 +99,8 @@ export async function initCLI(isStrict?: boolean) {
 	}
 
 	async function handleWithPkgAction(pkg: string, opts: Record<string, any>, cmdText: PluginCommand) {
+		await validWorkspace(opts.workspace);
+
 		const arr = await filterUnExistsPkgs(pkg);
 		if (arr.length) {
 			console.log(chalk.red.bold(`[siu] ERROR: \`${arr.join(",")}\` does not exists!`));
@@ -99,7 +114,10 @@ export async function initCLI(isStrict?: boolean) {
 			.command("create <pkg>")
 			.description("Create monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
 			.action(async (pkg, cmd) => {
+				await validWorkspace(cmd.workspace);
+
 				const pkgs = pkg ? pkg.split(",") : [];
 
 				for (let l = pkgs.length; l--; ) {
@@ -114,11 +132,14 @@ export async function initCLI(isStrict?: boolean) {
 			}),
 		deps: program
 			.command("deps <deps>")
+			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
 			.option("-p, --pkg <pkg>", "target package name,e.g. foo、@foo/bar")
 			.option("-r, --rm", "is remove deps from package")
-			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.description("Add deps to target monorepo's package, e.g. add foo,foo@1.2.2,foo:D,foo@1.2.2:D ")
 			.action(async (deps, cmd) => {
+				await validWorkspace(cmd.workspace);
+
 				if (cmd.pkg) {
 					validPkgName(cmd.pkg);
 					const exists = await isPkgExists(cmd.pkg);
@@ -175,28 +196,35 @@ export async function initCLI(isStrict?: boolean) {
 			.command("test [pkg]")
 			.description("Test single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "test")),
 		doc: program
 			.command("doc [pkg]")
 			.description("Generate docs of target monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "doc")),
 		serve: program
 			.command("serve [pkg]")
 			.description("Local developement of target monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "serve")),
 		demo: program
 			.command("demo [pkg]")
 			.description("Local demo of target monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
 			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "demo")),
 		build: program
 			.command("build [pkg]")
 			.description("Build single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
 			.option("-f, --format <format>", "Output format: es、cjs、umd、umd-min")
 			.action(async (pkg, cmd) => {
+				await validWorkspace(cmd.workspace);
+
 				const opts = cmd.opts();
 
 				if (!cmd.format) {
@@ -215,6 +243,7 @@ export async function initCLI(isStrict?: boolean) {
 			.command("publish [pkg]")
 			.description("Publish all packages or target monorepo's packages")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
+			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
 			.option("-n, --dry-run", "Whether dry run")
 			.option("-v, --ver <ver>", "Target version: independent or x.x.x or auto choice")
 			.option("-r, --repo <repo>", "Target npm repository url")

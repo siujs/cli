@@ -201,7 +201,8 @@ export class SiuPlugin {
 		}
 
 		return this._currentPkg
-			? PkgCaches[this._currentPkg] || (PkgCaches[this._currentPkg] = getPkgData(this._currentPkg, process.cwd()))
+			? PkgCaches[this._currentPkg] ||
+					(PkgCaches[this._currentPkg] = getPkgData(this._currentPkg, process.cwd(), this._opts[this._cmd]?.workspace))
 			: /* istanbul ignore next */
 			  null;
 	}
@@ -453,7 +454,7 @@ export async function applyPlugins(
 
 		let dirs: string[];
 
-		const pkgMetas = await getMetasOfPackages();
+		const pkgMetas = await getMetasOfPackages(process.cwd(), rest.workspace);
 
 		if (args.cmd === "create" && pkg) {
 			dirs = [];

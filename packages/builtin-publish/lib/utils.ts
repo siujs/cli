@@ -153,7 +153,7 @@ export async function updateCrossDeps(
 	const pkgsRoot = path.resolve(extra.cwd, extra.workspace);
 
 	if (!extra.pkgs || !extra.pkgs.length) {
-		extra.pkgs = await getPackageDirs(extra.cwd);
+		extra.pkgs = await getPackageDirs(extra.cwd, extra.workspace);
 	}
 
 	if (!extra.pkgDatas || !extra.pkgDatas.length) {

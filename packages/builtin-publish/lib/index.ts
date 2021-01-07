@@ -224,7 +224,7 @@ export async function release(opts: ReleaseOptions) {
 	!skips.skipBuild && hooks && hooks.build && (await hooks.build({ cwd, dryRun }));
 
 	if (version === "independent" || (!version && pkg)) {
-		const pkgs = pkg ? pkg.split(",") : await getSortedPkgByPriority();
+		const pkgs = pkg ? pkg.split(",") : await getSortedPkgByPriority(process.cwd(), opts.workspace);
 		for (let l = pkgs.length; l--; ) {
 			await releasePackage(pkgs[l], opts);
 		}
@@ -240,7 +240,7 @@ export async function release(opts: ReleaseOptions) {
 			throw new Error(`invalid target version: ${targetVersion}`);
 		}
 
-		const pkgs = await getSortedPkgByPriority();
+		const pkgs = await getSortedPkgByPriority(process.cwd(), opts.workspace);
 
 		const pkgDatas = await Promise.all(pkgs.map(pkg => fs.readJSON(path.resolve(pkgsRoot, pkg, "package.json"))));
 
