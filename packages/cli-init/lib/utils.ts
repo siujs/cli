@@ -58,7 +58,7 @@ export async function downloadTpl(opts: InitAppOptios) {
 		shell.exec(`git clone -b ${branch} ${gitPath} ${dest}`, { silent: true }, (code, stdout, stderr) => {
 			/* istanbul ignore if */
 			if (code !== 0) {
-				shell.echo("Err: Failed clone template files, reason: " + stderr);
+				spinner.fail("Failed clone template files, reason: " + stderr);
 				shell.exit(1);
 			}
 			shell.cd(dest);
@@ -77,14 +77,8 @@ export async function downloadTpl(opts: InitAppOptios) {
 		await fs.writeFile(siuConfigPath, `module.exports={ excludePkgs:[], plugins:[] }`);
 	}
 
-	spinner.stop(true);
-
-	console.log(
-		chalk.green(
-			`${chalk.greenBright("✔")} ${chalk.bold("Initialized")} ${chalk.bold(opts.appName)} files! (cost ${ms(
-				Date.now() - startTime
-			)})`
-		)
+	spinner.succeed(
+		chalk.green(`${chalk.bold("Initialized")} ${chalk.bold(opts.appName)} files! (cost ${ms(Date.now() - startTime)})`)
 	);
 }
 
@@ -95,7 +89,7 @@ export async function installDeps() {
 	const spinner = startSpinner(chalk.greenBright(`☕ Installing packages, it will take a while `));
 
 	if (!shell.which("yarn")) {
-		shell.echo(chalk.yellowBright(`Warning: Missing \`yarn\`, and we will install it --global`));
+		spinner.warn(chalk.yellowBright(`Warning: Missing \`yarn\`, and we will install it --global`));
 		shell.exec(`${isWindows ? "" : "sudo "}npm i -g yarn`);
 	}
 
@@ -113,9 +107,5 @@ export async function installDeps() {
 		});
 	});
 
-	spinner.stop(true);
-
-	console.log(
-		chalk.green(`${chalk.greenBright("✔")} ${chalk.bold("Installed")} packages in ${ms(Date.now() - startTime)}!`)
-	);
+	spinner.succeed(chalk.green(`${chalk.bold("Installed")} packages in ${ms(Date.now() - startTime)}!`));
 }

@@ -1,15 +1,5 @@
-import { Spinner } from "cli-spinner";
+import ora, { Options, Ora } from "ora";
 
-/**
- *
- * Spinning of the console
- *
- * @param {string} text The text displayed by the console
- */
-/* istanbul ignore next */
-export function startSpinner(text: string): any {
-	const spinner = new Spinner(`%s ${text}`);
-	spinner.setSpinnerString("|/-\\");
-	spinner.start();
-	return spinner;
+export function startSpinner(text: Options | string): Ora {
+	return ora(text).start();
 }
