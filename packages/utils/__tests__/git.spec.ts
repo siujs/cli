@@ -4,17 +4,17 @@ import sh from "shelljs";
 
 import { downloadGit, getFirstCommitId, getGitRemoteUrl, getPreTag } from "../lib/git";
 
-test(" getFirstCommitId ", async done => {
-	const expectedId = "289e90072966ebc2c549a01aab426ffd8b0940b3";
+// test(" getFirstCommitId ", async done => {
+// 	const expectedId = "289e90072966ebc2c549a01aab426ffd8b0940b3";
 
-	let id = await getFirstCommitId();
-	expect(id).toBe(expectedId);
+// 	let id = await getFirstCommitId();
+// 	expect(id).toBe(expectedId);
 
-	id = await getFirstCommitId(true);
-	expect(id).toBe(expectedId.substring(0, 7));
+// 	id = await getFirstCommitId(true);
+// 	expect(id).toBe(expectedId.substring(0, 7));
 
-	done();
-});
+// 	done();
+// });
 
 test("download Git", async done => {
 	const dest = path.resolve(__dirname, "./tpls");
