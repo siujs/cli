@@ -28,8 +28,8 @@
 	},
 	"homepage": "https://github.com/siujs/siu#readme",
 	"peerDependencies": {
-		"esbuild": "^0.8.27",
-		"rollup": "^2.36.0"
+		"esbuild": "^0.8.31",
+		"rollup": "^2.36.1"
 	},
 	"dependencies": {
 		"@microsoft/api-extractor": "^7.12.1",
@@ -40,10 +40,10 @@
 		"@siujs/core": "1.0.0-beta.7",
 		"@siujs/utils": "1.0.0-beta.7",
 		"chalk": "^4.1.0",
-		"esbuild": "^0.8.29",
+		"esbuild": "^0.8.31",
 		"fs-extra": "^9.0.1",
 		"pretty-ms": "^7.0.1",
-		"rollup": "^2.36.0",
+		"rollup": "^2.36.1",
 		"rollup-plugin-gzip": "^2.5.0",
 		"rollup-plugin-node-externals": "^2.2.0",
 		"rollup-plugin-terser": "^7.0.2",
