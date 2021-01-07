@@ -1,6 +1,6 @@
 import chalk from "chalk";
 
-import { deepFreezeObject, getMetasOfPackages, getPkgData, getPkgDirName } from "@siujs/utils";
+import { createDebugger, deepFreezeObject, getMetasOfPackages, getPkgData, getPkgDirName } from "@siujs/utils";
 
 import { analysisPlugins, validPkgIsExclude } from "./config";
 import { DEFAULT_PLUGIN_ID, GlobalKeyValues, lifecycles, PkgCaches, pluginCommands } from "./consts";
@@ -19,6 +19,8 @@ import {
 	ValueOf
 } from "./types";
 import { getHookId, sortPkgs } from "./utils";
+
+const debug = createDebugger("siu:core");
 
 export class SiuPlugin {
 	readonly id: string;
@@ -115,6 +117,7 @@ export class SiuPlugin {
 	 */
 	private addHook(cmd: PluginCommand, lifeCycle: PluginCommandLifecycle, hookHandler: HookHandler) {
 		const hookId = getHookId(cmd, lifeCycle);
+		debug(`add hook of ${hookId}`);
 		this._hooks[hookId] = this._hooks[hookId] || [];
 		this._hooks[hookId].push(hookHandler);
 	}
@@ -128,6 +131,7 @@ export class SiuPlugin {
 	 */
 	private addCLIOptionHook(cmd: PluginCommand, hookHandler: CLIOptionHandler) {
 		const hookId = getHookId(cmd, "cli");
+		debug(`add cli hook of ${hookId}`);
 		this._hooks[hookId] = this._hooks[hookId] || [];
 		this._hooks[hookId].push(hookHandler);
 	}
@@ -246,8 +250,13 @@ export class SiuPlugin {
 		const ex = this._ctx.ex();
 
 		if (!ex) return false;
+
+		debug(`detect error in lifecycle:${this.lifecycle}`);
+
 		console.log(chalk.redBright("\n<ERROR-MSG>\n"), ex, chalk.redBright("\n</ERROR-MSG>\n"));
+
 		await this.callHook(getHookId(cmd, (this.lifecycle = "error")));
+
 		return true;
 	}
 
@@ -257,9 +266,8 @@ export class SiuPlugin {
 		const hasProcessHook = this.hasHook(getHookId(cmd, "process"));
 
 		if (!hasStartHook) {
-			if (hasProcessHook) {
-				this.lifecycle = "process";
-			} else return;
+			if (!hasProcessHook) return;
+			this.lifecycle = "process";
 		}
 
 		this._cmd = cmd;
@@ -291,7 +299,10 @@ export class SiuPlugin {
 				await this.whetherGotoError(cmd);
 			}
 		} catch (ex) {
+			debug(`catch error in lifecycle:${this.lifecycle}`);
+
 			this.ex(ex);
+
 			await this.whetherGotoError(this._cmd);
 		}
 
@@ -369,6 +380,8 @@ export class SiuPlugin {
 	 * @param pkg [optional] package name
 	 */
 	async clean(pkg?: string) {
+		debug(`start clean all tmps of current plugin:${this.id}`);
+
 		this._currentPkg = pkg;
 
 		this.cleanKeys();
@@ -427,6 +440,8 @@ export async function applyPlugins(
 	config: SiuConfig,
 	fallback?: (api: ValueOf<PluginApi>) => void
 ) {
+	debug(`command:${args.cmd} opts:`, args.opts);
+
 	let plugs = getPlugins();
 
 	if (!plugs || !plugs.length) {
@@ -464,6 +479,8 @@ export async function applyPlugins(
 			});
 		} else {
 			dirs = await sortPkgs(config?.pkgsOrder ?? "priority", pkg);
+
+			debug("sorted pkgs:", dirs);
 		}
 
 		const isPkgExclude = validPkgIsExclude(config);

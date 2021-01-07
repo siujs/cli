@@ -1,17 +1,20 @@
 import chalk from "chalk";
-import { Loader, Message, Service, startService, TransformOptions } from "esbuild";
+import { Loader, Message, Service, TransformOptions } from "esbuild";
 import fs from "fs";
 import path from "path";
-import { Plugin } from "rollup";
+import { Plugin, TransformResult } from "rollup";
 
 import { createFilter } from "@rollup/pluginutils";
+import { createDebugger } from "@siujs/utils";
+
+const debug = createDebugger("siu:build.esbuild");
 
 // lazy start the service
 let _service: Service;
 
 const ensureService = async () => {
 	if (!_service) {
-		_service = await startService();
+		_service = await require("esbuild").startService();
 	}
 	return _service;
 };
@@ -57,7 +60,7 @@ export async function transform(
 	loader: Loader,
 	options: TransformOptions,
 	onwarn: (m: any, file: string, src: string) => void
-) {
+): Promise<TransformResult> {
 	const service = await ensureService();
 
 	const opts = {
@@ -101,6 +104,8 @@ export function asRollupPlugin() {
 	return (options: SiuEsBuildPluginOptions = {}) => {
 		const { include, exclude, loaders, onwarn = printMessage, importeeAlias, ...esbuildOptions } = options || {};
 
+		debug("esbuild options:", esbuildOptions);
+
 		const aliasLoaders = {
 			...defaultLoaders
 		};
@@ -136,9 +141,7 @@ export function asRollupPlugin() {
 		return {
 			name: "esbuild",
 			async buildStart() {
-				if (!_service) {
-					_service = await startService();
-				}
+				ensureService();
 			},
 			resolveId(importee, importer) {
 				if (!importer) return;
@@ -166,6 +169,8 @@ export function asRollupPlugin() {
 				const loader = aliasLoaders[ext];
 
 				if (!loader || !_service) return null;
+
+				debug("esbuild file id:", id, " loader: ", loader);
 
 				return transform(code, id, loader, esbuildOptions, onwarn);
 			}

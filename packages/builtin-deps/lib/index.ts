@@ -1,8 +1,10 @@
 import shell from "shelljs";
 
-import { getPackagePath } from "@siujs/utils";
+import { createDebugger, getPackagePath } from "@siujs/utils";
 
 import { addDeps, detectYarn, normalizeDepStr } from "./utils";
+
+const debug = createDebugger("siu:deps");
 
 /**
  *
@@ -23,7 +25,11 @@ import { addDeps, detectYarn, normalizeDepStr } from "./utils";
 export async function changeDeps(pkg: string, depStr: string, action: "add" | "rm" = "add", workspace = "packages") {
 	const depsMap = normalizeDepStr(depStr);
 
+	debug("transformed dep:", depsMap);
+
 	if (!depsMap) return;
+
+	debug(`start "${action}" deps on "${pkg}" `);
 
 	detectYarn();
 

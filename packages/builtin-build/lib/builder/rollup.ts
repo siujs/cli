@@ -11,10 +11,12 @@ import { brotliCompressSync, gzipSync } from "zlib";
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
-import { camelize, PkgData } from "@siujs/utils";
+import { camelize, createDebugger, PkgData } from "@siujs/utils";
 
 import { Config } from "../config/rollup/Config";
 import { TOutputFormatKey } from "../config/rollup/Output";
+
+const debug = createDebugger("siu:build.rollup");
 
 const FormatMap = {
 	"umd-min": "umd",
@@ -304,6 +306,8 @@ export class SiuRollupBuilder {
 				...DEFAULT_BUILD_OPTIONS,
 				...(opts || {})
 			};
+
+			debug("build opts:", opts);
 
 			const configs = [] as Config[];
 

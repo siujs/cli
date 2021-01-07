@@ -2,9 +2,15 @@ import chalk from "chalk";
 import ms from "pretty-ms";
 import shell from "shelljs";
 
+import { createDebugger } from "@siujs/utils";
+
 import { downloadTpl, InitAppOptios, installDeps } from "./utils";
 
+const debug = createDebugger("siu:init");
+
 export async function initApp(opts: InitAppOptios) {
+	debug("options:", opts);
+
 	shell.mkdir(opts.cwd);
 
 	shell.cd(opts.cwd);
