@@ -99,7 +99,7 @@ export class SiuPlugin {
 	 */
 	private opts<T>(key?: string) {
 		return key
-			? (this._opts[this._cmd]?.[key] as T)
+			? (this._opts[this._cmd][key] as T)
 			: {
 					...this._opts[this._cmd]
 			  };
