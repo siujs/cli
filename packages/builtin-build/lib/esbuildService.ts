@@ -14,6 +14,7 @@ let _service: Service;
 
 const ensureService = async () => {
 	if (!_service) {
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		_service = await require("esbuild").startService();
 	}
 	return _service;
@@ -77,11 +78,14 @@ export async function transform(
 			console.error(`[esbuild] warnings while transforming ${file}:`);
 			result.warnings.forEach(warning => onwarn(warning, file, src));
 		}
+
 		return {
 			code: result.code,
 			map: result.map
 		};
 	} catch (e) {
+		debug("esbuild err", e);
+
 		console.error(chalk.red(`[esbuild] error while transforming ${file}:`));
 		console.error(e);
 
@@ -96,13 +100,15 @@ export interface SiuEsBuildPluginOptions extends Omit<TransformOptions, "loader"
 	include?: string;
 	exclude?: string;
 	loaders?: Record<string, Loader>;
+	closeImmediate?: boolean;
 	onwarn?: (m: any, file: string, src: string) => void;
 	importeeAlias?: Record<string, string> | ((id: string) => string);
 }
 
 export function asRollupPlugin() {
 	return (options: SiuEsBuildPluginOptions = {}) => {
-		const { include, exclude, loaders, onwarn = printMessage, importeeAlias, ...esbuildOptions } = options || {};
+		const { include, exclude, loaders, onwarn = printMessage, importeeAlias, closeImmediate, ...esbuildOptions } =
+			options || {};
 
 		debug("esbuild options:", esbuildOptions);
 
@@ -173,6 +179,9 @@ export function asRollupPlugin() {
 				debug("esbuild file id:", id, " loader: ", loader);
 
 				return transform(code, id, loader, esbuildOptions, onwarn);
+			},
+			buildEnd() {
+				closeImmediate !== false && stopService();
 			}
 		} as Plugin;
 	};
