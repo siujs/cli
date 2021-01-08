@@ -1,5 +1,11 @@
 # Siu Cli
 
+![codecov](https://img.shields.io/codecov/c/github/siujs/cli)
+![build](https://img.shields.io/github/workflow/status/siujs/cli/Create%20Release)
+![language](https://img.shields.io/github/languages/top/siujs/cli)
+![version](https://img.shields.io/github/package-json/v/siujs/cli)
+![MIT](https://img.shields.io/github/license/siujs/cli)
+
 > 取名`siu`,主要是希望能够像`C罗`进球时那般快速的赶脚, 当然那声`siu...`的庆祝动作也很霸气
 
 `@siujs/cli`是一个基于`Monorepo`+`Typescript`为主基调风格的插件化前端脚手架, 让类库开发亦或多项目开发场景的人员更轻松也更自由；
