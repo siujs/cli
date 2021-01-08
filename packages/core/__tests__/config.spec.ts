@@ -10,10 +10,17 @@ const oldCWD = process.cwd();
 
 beforeAll(() => {
 	process.chdir(__dirname);
+
+	sh.mkdir(path.resolve(__dirname, "packages"));
+	sh.mkdir(path.resolve(__dirname, "packages", "foo"));
+	fs.writeJSONSync(path.resolve(__dirname, "packages/foo/package.json"), {
+		name: "@xxx/foo"
+	});
 });
 
 afterAll(() => {
 	process.chdir(oldCWD);
+	sh.rm("-rf", path.resolve(__dirname, "packages/foo"));
 });
 
 afterEach(() => {
@@ -32,49 +39,6 @@ test(" resolveConfig ", async done => {
 	expect(config.plugins[1]).toBe("./plugins/cli-opts");
 
 	done();
-});
-
-test(" analysisPlugins ", () => {
-	sh.mkdir(path.resolve(__dirname, "packages"));
-	sh.mkdir(path.resolve(__dirname, "packages", "foo"));
-	fs.writeJSONSync(path.resolve(__dirname, "packages/foo/package.json"), {
-		name: "@xxx/foo"
-	});
-
-	let plugs = analysisPlugins(null as any);
-	expect(plugs.length).toBe(0);
-
-	plugs = analysisPlugins({} as any);
-	expect(plugs.length).toBe(0);
-
-	plugs = analysisPlugins({
-		plugins: [
-			"./plugins/local-npm-package",
-			"foo",
-			[
-				"./plugins/analysisPlugins-with-custom",
-				{
-					custom: {
-						build: {
-							bar: "1"
-						}
-					}
-				}
-			]
-		]
-	});
-
-	expect(plugs.length).toBe(3);
-	expect(plugs[0].id).toBe(path.resolve(__dirname, "plugins/local-npm-package"));
-	expect(plugs[0].hasCommandHooks("deps")).toBe(true);
-
-	expect(plugs[1].id).toBe("siujs-plugin-foo");
-	expect(plugs[1].hasCommandHooks("build")).toBe(true);
-
-	expect(plugs[2].id).toBe(path.resolve(__dirname, "plugins/analysisPlugins-with-custom"));
-	expect(plugs[2].hasCommandHooks("create")).toBe(true);
-
-	sh.rm("-rf", path.resolve(__dirname, "packages/foo"));
 });
 
 test(" resolve plugins ", async done => {
@@ -126,4 +90,53 @@ test(" validPkgIsExclude ", async done => {
 	expect(fn("pkg3", "siujs-plugin-foo2", "build")).toBe(false);
 
 	done();
+});
+
+describe(" config / analysisPlugins ", () => {
+	beforeAll(() => {
+		sh.mkdir(path.resolve(__dirname, "packages"));
+		sh.mkdir(path.resolve(__dirname, "packages", "foo"));
+		fs.writeJSONSync(path.resolve(__dirname, "packages/foo/package.json"), {
+			name: "@xxx/foo"
+		});
+	});
+
+	afterAll(() => {
+		sh.rm("-rf", path.resolve(__dirname, "packages/foo"));
+	});
+
+	test(" analysisPlugins ", () => {
+		let plugs = analysisPlugins(null as any);
+		expect(plugs.length).toBe(0);
+
+		plugs = analysisPlugins({} as any);
+		expect(plugs.length).toBe(0);
+
+		plugs = analysisPlugins({
+			plugins: [
+				"./plugins/local-npm-package",
+				"foo",
+				[
+					"./plugins/analysisPlugins-with-custom",
+					{
+						custom: {
+							build: {
+								bar: "1"
+							}
+						}
+					}
+				]
+			]
+		});
+
+		expect(plugs.length).toBe(3);
+		expect(plugs[0].id).toBe(path.resolve(__dirname, "plugins/local-npm-package"));
+		expect(plugs[0].hasCommandHooks("deps")).toBe(true);
+
+		expect(plugs[1].id).toBe("siujs-plugin-foo");
+		expect(plugs[1].hasCommandHooks("build")).toBe(true);
+
+		expect(plugs[2].id).toBe(path.resolve(__dirname, "plugins/analysisPlugins-with-custom"));
+		expect(plugs[2].hasCommandHooks("create")).toBe(true);
+	});
 });

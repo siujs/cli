@@ -1,3 +1,4 @@
+import fs from "fs-extra";
 import path from "path";
 import sh from "shelljs";
 
@@ -10,6 +11,10 @@ const oldCWD = process.cwd();
 beforeAll(() => {
 	process.chdir(__dirname);
 	sh.mkdir(path.resolve(__dirname, "packages"));
+	sh.mkdir(path.resolve(__dirname, "packages", "foo"));
+	fs.writeJSONSync(path.resolve(__dirname, "packages/foo/package.json"), {
+		name: "@xxx/foo"
+	});
 });
 
 afterAll(() => {
