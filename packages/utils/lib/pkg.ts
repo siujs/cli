@@ -160,8 +160,14 @@ export async function getSortedPkgByPriority(cwd = process.cwd(), workspace = DE
 		if (!kv[meta.name]) {
 			kv[meta.name] = 0;
 		}
-		if (meta.dependencies) {
-			Object.keys(meta.dependencies).reduce((prev, cur) => {
+
+		const deps = Object.keys({
+			...(meta.dependencies || {}),
+			...(meta.peerDependencies || {})
+		});
+
+		if (deps.length) {
+			deps.reduce((prev, cur) => {
 				prev[cur] = kv[meta.name] + 1;
 				return prev;
 			}, kv);
