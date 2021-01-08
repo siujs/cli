@@ -36,7 +36,7 @@ export class ChainedSet<T, V> extends Chainable<T> {
 		return [...this.store];
 	}
 
-	merge(arr: V[]): ChainedSet<T, V> {
+	merge(...arr: V[]): ChainedSet<T, V> {
 		this.store = new Set([...this.store, ...arr]);
 		return this;
 	}

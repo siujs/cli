@@ -7,20 +7,24 @@ import { Plugin } from "./Plugin";
 
 export interface Config {
 	input(value: string | Record<string, string>): Config;
-	external: ChainedSet<Config, string>;
+	external: ChainedSet<Config, string | RegExp>;
 	plugin(name: string): Plugin<Config>;
 	output(key: TOutputFormatKey): Output<Config>;
-	treeshake(value: {
-		annotations?: boolean;
-		moduleSideEffects?: ModuleSideEffectsOption;
-		propertyReadSideEffects?: boolean;
-		tryCatchDeoptimization?: boolean;
-		unknownGlobalSideEffects?: boolean;
-	}): Config;
+	treeshake(
+		value:
+			| boolean
+			| {
+					annotations?: boolean;
+					moduleSideEffects?: ModuleSideEffectsOption;
+					propertyReadSideEffects?: boolean;
+					tryCatchDeoptimization?: boolean;
+					unknownGlobalSideEffects?: boolean;
+			  }
+	): Config;
 }
 
 export class Config extends ChainedMap<void, any> {
-	external: ChainedSet<Config, string>;
+	external: ChainedSet<Config, string | RegExp>;
 	plugins: ChainedMap<Config, Plugin<Config>>;
 	outputs: ChainedMap<Config, Output<Config>>;
 	constructor() {
@@ -92,18 +96,11 @@ export class Config extends ChainedMap<void, any> {
 	clone(): Config {
 		const config = new Config();
 
-		this.external.values().forEach(val => config.external.add(val));
-
-		Object.entries(this.outputs.entries()).forEach(([key, value]) => {
-			const output = config
-				.output(key as TOutputFormatKey)
-				.file(value.get("file"))
-				.format(value.get("format"));
-
-			Object.entries(value.globals.entries()).forEach(([key2, value2]) => {
-				output.globals.set(key2, value2);
-			});
+		Object.entries(this.entries()).forEach(([key, value]) => {
+			config.set(key, value);
 		});
+
+		this.external.values().forEach(val => config.external.add(val));
 
 		Object.entries(this.plugins.entries()).forEach(([key, value]) => {
 			config
@@ -112,7 +109,30 @@ export class Config extends ChainedMap<void, any> {
 				.use(value.get("plugin") as Function, value.get("args") as any[]);
 		});
 
-		return config.input(this.get("input"));
+		Object.entries(this.outputs.entries()).forEach(([key, value]) => {
+			const output = config.output(key as TOutputFormatKey);
+
+			Object.entries(value.entries()).forEach(([key2, value2]) => {
+				output.set(key2, value2);
+			});
+
+			Object.entries(value.globals.entries()).forEach(([key2, value2]) => {
+				output.globals.set(key2, value2);
+			});
+
+			Object.entries(value.paths.entries()).forEach(([key2, value2]) => {
+				output.paths.set(key2, value2);
+			});
+
+			Object.entries(value.plugins.entries()).forEach(([key, value]) => {
+				output
+					.plugin(key)
+					// eslint-disable-next-line @typescript-eslint/ban-types
+					.use(value.get("plugin") as Function, value.get("args") as any[]);
+			});
+		});
+
+		return config;
 	}
 }
 

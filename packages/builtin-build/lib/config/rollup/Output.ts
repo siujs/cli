@@ -78,6 +78,8 @@ export class Output<T> extends ChainedMap<T, any> {
 
 	clear(): Output<T> {
 		this.globals.clear();
+		this.paths.clear();
+		this.plugins.clear();
 		this.store.clear();
 		return this;
 	}
