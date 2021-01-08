@@ -1,44 +1,97 @@
-import fs from "fs-extra";
 import path from "path";
-import sh from "shelljs";
 
 import { analysisPlugins, resolveConfig, resolvePlugins, validPkgIsExclude } from "../lib/config";
 import { DEFAULT_PLUGIN_ID } from "../lib/consts";
 import { clearPlugins } from "../lib/plugin";
+import { createFooPackage, createSiuConfigJs, createSiuConfigTs, createSiuPackageJSON } from "./common";
 
 const oldCWD = process.cwd();
 
+let clean: () => void;
+
 beforeAll(() => {
 	process.chdir(__dirname);
-
-	sh.mkdir(path.resolve(__dirname, "packages"));
-	sh.mkdir(path.resolve(__dirname, "packages", "foo"));
-	fs.writeJSONSync(path.resolve(__dirname, "packages/foo/package.json"), {
-		name: "@xxx/foo"
-	});
+	clean = createFooPackage();
 });
 
 afterAll(() => {
 	process.chdir(oldCWD);
-	sh.rm("-rf", path.resolve(__dirname, "packages/foo"));
+	clean && clean();
 });
 
 afterEach(() => {
 	clearPlugins();
 });
 
-test(" resolveConfig ", async done => {
-	const config = await resolveConfig();
+describe("siu.config.ts / resolveConfig", () => {
+	test(" resolveConfig 'siu.config.ts' ", async done => {
+		let clean: () => void;
+		try {
+			clean = createSiuConfigTs();
+			const config = await resolveConfig();
 
-	expect(config).toHaveProperty("pkgsOrder");
-	expect(config.pkgsOrder).toBe("auto");
+			expect(config).toHaveProperty("pkgsOrder");
+			expect(config.pkgsOrder).toBe("auto");
 
-	expect(config).toHaveProperty("plugins");
-	expect(config.plugins.length).toBe(2);
-	expect(config.plugins[0]).toBe("./plugins/local-npm-package");
-	expect(config.plugins[1]).toBe("./plugins/cli-opts");
+			expect(config).toHaveProperty("plugins");
+			expect(config.plugins.length).toBe(2);
+			expect(config.plugins[0]).toBe("./plugins/local-npm-package");
+			expect(config.plugins[1]).toBe("./plugins/cli-opts");
+		} catch {}
 
-	done();
+		clean && clean();
+		done();
+	});
+});
+
+describe("siu.config.js / resolveConfig", () => {
+	let clean: () => void;
+	beforeEach(() => {
+		clean = createSiuConfigJs();
+	});
+
+	afterEach(() => {
+		clean && clean();
+	});
+
+	test(" resolveConfig 'siu.config.js' ", async done => {
+		const config = await resolveConfig();
+
+		expect(config).toHaveProperty("pkgsOrder");
+		expect(config.pkgsOrder).toBe("auto");
+
+		expect(config).toHaveProperty("plugins");
+		expect(config.plugins.length).toBe(2);
+		expect(config.plugins[0]).toBe("./plugins/local-npm-package");
+		expect(config.plugins[1]).toBe("./plugins/cli-opts");
+
+		done();
+	});
+});
+
+describe("`siu` in package.json / resolveConfig", () => {
+	let clean: () => void;
+	beforeEach(() => {
+		clean = createSiuPackageJSON();
+	});
+
+	afterEach(() => {
+		clean && clean();
+	});
+
+	test(" resolveConfig 'siu' in package.json ", async done => {
+		const config = await resolveConfig();
+
+		expect(config).toHaveProperty("pkgsOrder");
+		expect(config.pkgsOrder).toBe("auto");
+
+		expect(config).toHaveProperty("plugins");
+		expect(config.plugins.length).toBe(2);
+		expect(config.plugins[0]).toBe("./plugins/local-npm-package");
+		expect(config.plugins[1]).toBe("./plugins/cli-opts");
+
+		done();
+	});
 });
 
 test(" resolve plugins ", async done => {
@@ -93,18 +146,6 @@ test(" validPkgIsExclude ", async done => {
 });
 
 describe(" config / analysisPlugins ", () => {
-	beforeAll(() => {
-		sh.mkdir(path.resolve(__dirname, "packages"));
-		sh.mkdir(path.resolve(__dirname, "packages", "foo"));
-		fs.writeJSONSync(path.resolve(__dirname, "packages/foo/package.json"), {
-			name: "@xxx/foo"
-		});
-	});
-
-	afterAll(() => {
-		sh.rm("-rf", path.resolve(__dirname, "packages/foo"));
-	});
-
 	test(" analysisPlugins ", () => {
 		let plugs = analysisPlugins(null as any);
 		expect(plugs.length).toBe(0);

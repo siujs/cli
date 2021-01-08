@@ -1,44 +1,54 @@
-import fs from "fs-extra";
 import path from "path";
 import sh from "shelljs";
 
 import { loadPlugins, testPlugin } from "../lib";
 import { resolvePlugins } from "../lib/config";
 import { applyPlugins, clearPlugins } from "../lib/plugin";
+import { createFooPackage, createSiuConfigJs } from "./common";
 
 const oldCWD = process.cwd();
 
+let clean: (rmAll?: boolean) => void;
 beforeAll(() => {
 	process.chdir(__dirname);
-	sh.mkdir(path.resolve(__dirname, "packages"));
-	sh.mkdir(path.resolve(__dirname, "packages", "foo"));
-	fs.writeJSONSync(path.resolve(__dirname, "packages/foo/package.json"), {
-		name: "@xxx/foo"
-	});
+	clean = createFooPackage();
 });
 
 afterAll(() => {
 	process.chdir(oldCWD);
-	sh.rm("-rf", path.resolve(__dirname, "packages"));
+	clean && clean(true);
 });
 
 afterEach(() => {
 	clearPlugins();
 });
 
-test(" load plugins ", async done => {
-	const { applyPlugins, resolveCLIOptions } = await loadPlugins();
+describe(" siu-config / loadPlugins", () => {
+	let clean: (rmAll?: boolean) => void;
 
-	await applyPlugins("deps", {});
+	beforeEach(() => {
+		sh.rm("-rf", [path.resolve(__dirname, "siu.config.ts"), path.resolve(__dirname, "siu.config.js")]);
+		clean = createSiuConfigJs();
+	});
 
-	const options = await resolveCLIOptions();
+	afterEach(() => {
+		clean && clean();
+	});
 
-	expect(options).toHaveProperty("create");
-	expect(options.create.length).toBe(1);
-	expect(options.create[0].description).toBe(`Foo [support by ${path.resolve(process.cwd(), "./plugins/cli-opts")}]`);
-	expect(options.create[0].defaultValue).toBe("1");
+	test(" should have cli options ", async done => {
+		const { applyPlugins, resolveCLIOptions } = await loadPlugins();
 
-	done();
+		await applyPlugins("deps", {});
+
+		const options = await resolveCLIOptions();
+
+		expect(options).toHaveProperty("create");
+		expect(options.create.length).toBe(1);
+		expect(options.create[0].description).toBe(`Foo [support by ${path.resolve(process.cwd(), "./plugins/cli-opts")}]`);
+		expect(options.create[0].defaultValue).toBe("1");
+
+		done();
+	});
 });
 
 test(" test plugin", async done => {

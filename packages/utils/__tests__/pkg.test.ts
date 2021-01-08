@@ -14,7 +14,7 @@ import {
 
 const cwd = process.cwd();
 
-const sortedPkgDirNames = [
+const autoSortedPkgDirNames = [
 	"builtin-build",
 	"builtin-deps",
 	"builtin-githooks",
@@ -28,7 +28,7 @@ const sortedPkgDirNames = [
 test("getPackageDirs", async done => {
 	const dirs = await getPackageDirs(cwd);
 
-	expect(JSON.stringify(dirs)).toBe(JSON.stringify(sortedPkgDirNames));
+	expect(JSON.stringify(dirs)).toBe(JSON.stringify(autoSortedPkgDirNames));
 
 	done();
 });
@@ -36,7 +36,7 @@ test("getPackageDirs", async done => {
 test("getPackagePaths", async done => {
 	const dirs = await getPackagePaths(cwd);
 
-	expect(JSON.stringify(dirs)).toBe(JSON.stringify(sortedPkgDirNames.map(it => path.resolve(cwd, "packages", it))));
+	expect(JSON.stringify(dirs)).toBe(JSON.stringify(autoSortedPkgDirNames.map(it => path.resolve(cwd, "packages", it))));
 
 	done();
 });
@@ -104,8 +104,8 @@ test("getSortedPkgByPriority", async done => {
 		JSON.stringify([
 			"utils",
 			"core",
-			"cli-init",
 			"builtin-build",
+			"cli-init",
 			"builtin-deps",
 			"builtin-githooks",
 			"builtin-publish",
