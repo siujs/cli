@@ -6,7 +6,7 @@ import path from "path";
 import validProjectName from "validate-npm-package-name";
 
 import { initApp } from "@siujs/cli-init";
-import { adjustSiuConfigCWD, loadPlugins, PluginCommand } from "@siujs/core";
+import { adjustSiuConfigCWD, loadPlugins, PluginCommand, SiuConfig } from "@siujs/core";
 import { filterUnExistsPkgs, getPackageDirs, isPkgExists } from "@siujs/utils";
 
 import { cliFallback, cmdFallback } from "./builtins";
@@ -263,4 +263,8 @@ export async function initCLI(isStrict?: boolean) {
 	});
 
 	return runCmd;
+}
+
+export function defineConfig(config: SiuConfig): SiuConfig {
+	return config;
 }
