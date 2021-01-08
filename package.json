@@ -22,7 +22,6 @@
 	"scripts": {
 		"preinstall": "node ./scripts/checkYarn.js",
 		"test": "node ./scripts/test.mjs",
-		"codecov": "npm run test && codecov",
 		"clean:dist": "rimraf -g packages/*/dist",
 		"clean:dts": "rimraf -g packages/*/dist/{tsconfig.tsbuildinfo,dts} && rimraf -g packages/*/temp",
 		"dts": "node ./scripts/dts.js && npm run clean:dts",
