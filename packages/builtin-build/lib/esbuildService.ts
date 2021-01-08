@@ -25,6 +25,7 @@ export const stopService = () => {
 	_service = undefined;
 };
 
+/* istanbul ignore next */
 function printMessage(warning: Message, file: string) {
 	console.error(chalk.yellow(warning.text));
 
