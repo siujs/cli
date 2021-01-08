@@ -14,7 +14,7 @@ const allowConfigList = ["siu.config.js", "siu.config.ts"];
  * @param cwd current workspace directory
  * @param deep search deep
  */
-export async function findUpSiuConfigCwd(cwd: string, deep = 3): Promise<string> {
+export async function lookupSiu(cwd: string, deep = 3): Promise<string> {
 	if (deep === 0) return "";
 
 	const hasSiuConfig = await Promise.all(
@@ -27,7 +27,7 @@ export async function findUpSiuConfigCwd(cwd: string, deep = 3): Promise<string>
 			const meta = await fs.readJSON(path.resolve(cwd, "package.json"));
 			if (meta.siu) return cwd;
 		}
-		return await findUpSiuConfigCwd(path.resolve(cwd, "../"), deep - 1);
+		return await lookupSiu(path.resolve(cwd, "../"), deep - 1);
 	}
 
 	return cwd;
@@ -39,7 +39,7 @@ export async function findUpSiuConfigCwd(cwd: string, deep = 3): Promise<string>
  *
  */
 export async function adjustSiuConfigCWD() {
-	const siuConfigCWD = await findUpSiuConfigCwd(process.cwd());
+	const siuConfigCWD = await lookupSiu(process.cwd());
 	if (!siuConfigCWD) {
 		throw new Error(`[siu] ERROR: Cant't find root workspace directory of \`siu.config.js\``);
 	}
