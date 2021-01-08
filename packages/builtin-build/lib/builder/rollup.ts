@@ -156,6 +156,33 @@ export interface BuilderSizeInfo {
 	brotli: string;
 }
 
+export function genCommonConfig(config: Config) {
+	config
+		.plugin("nodeResolve")
+		.use(nodeResolve, [{ preferBuiltins: false }])
+		.end()
+		.plugin("commonjs")
+		.use(commonjs)
+		.end()
+		.plugin("replace")
+		.use(replace, [{ "process.env.NODE_ENV": JSON.stringify("production") }])
+		.end()
+		.plugin("nodeExternals")
+		.use(require("rollup-plugin-node-externals"))
+		.end();
+
+	config.treeshake({
+		moduleSideEffects: false
+	});
+
+	return config;
+}
+
+export async function rollupBuild(config: Config) {
+	const bundle = await rollup(config.toInput());
+	await Promise.all(config.toOutput().map(bundle.write));
+}
+
 export class SiuRollupBuilder {
 	protected pkgData: PkgData;
 	protected config: Config;
@@ -169,26 +196,7 @@ export class SiuRollupBuilder {
 	}
 
 	private initCommonConfig(config: Config) {
-		config
-			.input(path.resolve(this.pkgData.path, "lib/index.ts"))
-			.plugin("nodeResolve")
-			.use(nodeResolve, [{ preferBuiltins: false }])
-			.end()
-			.plugin("commonjs")
-			.use(commonjs)
-			.end()
-			.plugin("replace")
-			.use(replace, [{ "process.env.NODE_ENV": JSON.stringify("production") }])
-			.end()
-			.plugin("nodeExternals")
-			.use(require("rollup-plugin-node-externals"))
-			.end();
-
-		config.treeshake({
-			moduleSideEffects: false
-		});
-
-		return config;
+		return genCommonConfig(config).input(path.resolve(this.pkgData.path, "lib/index.ts"));
 	}
 
 	private initBrowserConfig(mini?: boolean) {
@@ -342,8 +350,7 @@ export class SiuRollupBuilder {
 				monitors.eachStartTime = Date.now();
 				this.hooks.onEachBuildStart && (await this.hooks.onEachBuildStart(finalConfigs[l], monitors));
 
-				const bundle = await rollup(finalConfigs[l].toInput());
-				await Promise.all(finalConfigs[l].toOutput().map(bundle.write));
+				await rollupBuild(finalConfigs[l]);
 
 				monitors.eachFinishedTime = Date.now();
 				this.hooks.onEachBuildFinished && (await this.hooks.onEachBuildFinished(finalConfigs[l], monitors));
