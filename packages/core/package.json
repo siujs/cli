@@ -26,8 +26,7 @@
 	"homepage": "https://github.com/siujs/siu#readme",
 	"peerDependencies": {
 		"@siujs/builtin-build": "1.0.0-beta.7",
-		"@siujs/utils": "1.0.0-beta.7",
-		"esbuild": "^0.8.31"
+		"@siujs/utils": "1.0.0-beta.7"
 	},
 	"dependencies": {
 		"chalk": "^4.1.0",

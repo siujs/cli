@@ -1,21 +1,17 @@
-import esbuild from "esbuild";
 import fs from "fs-extra";
 import path from "path";
 
+import { asRollupPlugin, Config, genCommonConfig, rollupBuild, SiuEsBuildPluginOptions } from "@siujs/builtin-build";
 import { resolvePluginId } from "@siujs/utils";
 
 import { DEFAULT_PLUGIN_ID } from "./consts";
 import { definePlugin, getPlugins } from "./plugin";
 import { PluginApi, PluginCommand, SiuConfig, SiuConfigExcludePkgs } from "./types";
 
-let siuConfig: SiuConfig;
-
 /**
  * resolve `siu.config.js` or `siu.config.ts`
  */
 export async function resolveConfig() {
-	if (siuConfig) return siuConfig;
-
 	const cwd = process.cwd();
 
 	let configFile = path.resolve(cwd, "siu.config.ts");
@@ -27,24 +23,29 @@ export async function resolveConfig() {
 	if (exists) {
 		isTS = true;
 
-		await esbuild.build({
-			entryPoints: [configFile],
-			bundle: true,
-			outfile: path.resolve(cwd, "node_modules/siu.config.js"),
-			format: "cjs"
-		});
+		const outputConfigFile = path.resolve(cwd, "_siu.config.js");
 
-		configFile = path.resolve(cwd, "node_modules/siu.config.js");
+		const config = genCommonConfig(new Config()).input(configFile).treeshake({ moduleSideEffects: true });
+
+		config.output("cjs").format("cjs").exports("named").file(outputConfigFile);
+
+		config.plugin("esbuild").use<SiuEsBuildPluginOptions>(asRollupPlugin());
+
+		await rollupBuild(config);
+
+		configFile = outputConfigFile;
 	} else {
 		configFile = path.resolve(cwd, "siu.config.js");
 	}
 
 	exists = await fs.pathExists(configFile);
 
+	let siuConfig: SiuConfig;
+
 	if (exists) {
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const raw = require(configFile);
 		siuConfig = (raw.__esModule ? raw.default : raw) as SiuConfig;
-		siuConfig.pkgsOrder = siuConfig.pkgsOrder || "priority";
 	} else {
 		const metaPath = path.resolve(cwd, "package.json");
 
@@ -52,7 +53,7 @@ export async function resolveConfig() {
 
 		if (exists) {
 			const meta = await fs.readJSON(metaPath);
-			siuConfig = meta.siu || { pkgsOrder: "priority" };
+			siuConfig = meta.siu;
 		}
 	}
 
