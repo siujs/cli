@@ -5,7 +5,7 @@ import rollup from "rollup";
 import { ChainedMap } from "../ChainedMap";
 
 export interface Plugin<T> extends ChainedMap<T, Function | any[]> {
-	use(plugin: Function, args?: any[]): Plugin<T>;
+	use<O extends any>(plugin: Function, args?: O[]): Plugin<T>;
 
 	tap(f: Function): Plugin<T>;
 
