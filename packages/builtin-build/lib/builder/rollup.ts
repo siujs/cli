@@ -188,11 +188,11 @@ export class SiuRollupBuilder {
 	protected config: Config;
 	protected browserConfig: Config;
 	protected hooks: SiuRollupBuilderHooks;
-	constructor(pkgData: PkgData, hooks: SiuRollupBuilderHooks) {
+	constructor(pkgData: PkgData, hooks?: SiuRollupBuilderHooks) {
 		this.pkgData = pkgData;
 		this.config = new Config();
 		this.browserConfig = new Config();
-		this.hooks = { ...DEFAULT_HOOKS, ...hooks };
+		this.hooks = { ...DEFAULT_HOOKS, ...(hooks || {}) };
 	}
 
 	private initCommonConfig(config: Config) {
