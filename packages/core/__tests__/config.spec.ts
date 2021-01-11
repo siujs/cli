@@ -7,91 +7,8 @@ import { createFooPackage, createSiuConfigJs, createSiuConfigTs, createSiuPackag
 
 const oldCWD = process.cwd();
 
-let clean: () => void;
-
-beforeAll(() => {
-	process.chdir(__dirname);
-	clean = createFooPackage();
-});
-
-afterAll(() => {
-	process.chdir(oldCWD);
-	clean && clean();
-});
-
 afterEach(() => {
 	clearPlugins();
-});
-
-describe("siu.config.ts / resolveConfig", () => {
-	test(" resolveConfig 'siu.config.ts' ", async done => {
-		let clean: () => void;
-		try {
-			clean = createSiuConfigTs();
-			const config = await resolveConfig();
-
-			expect(config).toHaveProperty("pkgsOrder");
-			expect(config.pkgsOrder).toBe("auto");
-
-			expect(config).toHaveProperty("plugins");
-			expect(config.plugins.length).toBe(2);
-			expect(config.plugins[0]).toBe("./plugins/local-npm-package");
-			expect(config.plugins[1]).toBe("./plugins/cli-opts");
-		} catch {}
-
-		clean && clean();
-		done();
-	});
-});
-
-describe("siu.config.js / resolveConfig", () => {
-	let clean: () => void;
-	beforeEach(() => {
-		clean = createSiuConfigJs();
-	});
-
-	afterEach(() => {
-		clean && clean();
-	});
-
-	test(" resolveConfig 'siu.config.js' ", async done => {
-		const config = await resolveConfig();
-
-		expect(config).toHaveProperty("pkgsOrder");
-		expect(config.pkgsOrder).toBe("auto");
-
-		expect(config).toHaveProperty("plugins");
-		expect(config.plugins.length).toBe(2);
-		expect(config.plugins[0]).toBe("./plugins/local-npm-package");
-		expect(config.plugins[1]).toBe("./plugins/cli-opts");
-
-		done();
-	});
-});
-
-describe("`siu` in package.json / resolveConfig", () => {
-	let clean: () => void;
-	beforeEach(() => {
-		clean = createSiuPackageJSON();
-	});
-
-	afterEach(() => {
-		clean && clean();
-	});
-
-	test(" resolveConfig 'siu' in package.json ", async done => {
-		const config = await resolveConfig();
-
-		expect(config).toHaveProperty("pkgsOrder");
-		expect(config.pkgsOrder).toBe("auto");
-
-		expect(config).toHaveProperty("plugins");
-		expect(config.plugins.length).toBe(2);
-		expect(config.plugins[0]).toBe("./plugins/local-npm-package");
-		expect(config.plugins[1]).toBe("./plugins/cli-opts");
-
-		done();
-	});
 });
 
 test(" resolve plugins ", async done => {
@@ -145,8 +62,52 @@ test(" validPkgIsExclude ", async done => {
 	done();
 });
 
-describe(" config / analysisPlugins ", () => {
+describe("use `resolveConfig`", () => {
+	beforeAll(() => {
+		process.chdir(__dirname);
+	});
+
+	afterAll(() => {
+		process.chdir(oldCWD);
+	});
+
+	test(`should be ok with analysising 'siu.config.ts'、'siu.config.js'、'siu' in 'package.json'`, async done => {
+		let clean = createSiuConfigTs();
+		let config = await resolveConfig();
+		expect(config).toHaveProperty("pkgsOrder");
+		expect(config.pkgsOrder).toBe("auto");
+		expect(config).toHaveProperty("plugins");
+		expect(config.plugins.length).toBe(2);
+		expect(config.plugins[0]).toBe("./plugins/local-npm-package");
+		expect(config.plugins[1]).toBe("./plugins/cli-opts");
+		clean && clean();
+
+		clean = createSiuConfigJs();
+		config = await resolveConfig();
+		expect(config).toHaveProperty("pkgsOrder");
+		expect(config.pkgsOrder).toBe("auto");
+		expect(config).toHaveProperty("plugins");
+		expect(config.plugins.length).toBe(2);
+		expect(config.plugins[0]).toBe("./plugins/local-npm-package");
+		expect(config.plugins[1]).toBe("./plugins/cli-opts");
+		clean && clean();
+
+		clean = createSiuPackageJSON();
+		config = await resolveConfig();
+		expect(config).toHaveProperty("pkgsOrder");
+		expect(config.pkgsOrder).toBe("auto");
+		expect(config).toHaveProperty("plugins");
+		expect(config.plugins.length).toBe(2);
+		expect(config.plugins[0]).toBe("./plugins/local-npm-package");
+		expect(config.plugins[1]).toBe("./plugins/cli-opts");
+		clean && clean();
+
+		done();
+	});
+
 	test(" analysisPlugins ", () => {
+		const clean = createFooPackage();
+
 		let plugs = analysisPlugins(null as any);
 		expect(plugs.length).toBe(0);
 
@@ -179,5 +140,7 @@ describe(" config / analysisPlugins ", () => {
 
 		expect(plugs[2].id).toBe(path.resolve(__dirname, "plugins/analysisPlugins-with-custom"));
 		expect(plugs[2].hasCommandHooks("create")).toBe(true);
+
+		clean && clean();
 	});
 });
