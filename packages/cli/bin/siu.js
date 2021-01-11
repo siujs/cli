@@ -16,13 +16,15 @@ program.version(fs.readJSONSync(path.resolve(__dirname, "../package.json")).vers
 	program
 		.command("init <template> <app>")
 		.option("-s,--source <source>", "source of template: gitlab、github、gitee or self private git-repo url")
+		.option("--skipInstall", "Skip instaling node_modules", false)
 		.description("Generate project from a remote template")
 		.action(async (template, app, cmd) => {
 			const usrStdin = {
 				appName: app,
 				cwd: path.resolve(process.cwd(), app),
 				template,
-				source: cmd.source
+				source: cmd.source,
+				skipInstall: cmd.skipInstall
 			};
 			const isCurrent = app === ".";
 

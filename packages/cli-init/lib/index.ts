@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import path from "path";
 import ms from "pretty-ms";
 import shell from "shelljs";
 
@@ -13,19 +14,11 @@ export async function initApp(opts: InitAppOptios) {
 
 	shell.mkdir(opts.cwd);
 
-	shell.cd(opts.cwd);
-
 	const startTime = Date.now();
 
 	await downloadTpl(opts);
 
-	!opts.skipInstall && (await installDeps());
+	!opts.skipInstall && (await installDeps({ cwd: path.resolve(opts.cwd, opts.appName) }));
 
-	console.log(
-		chalk.green(
-			`${chalk.greenBright("✔")} \`${chalk.bold(opts.appName)}\` Created successfully in ${chalk.bold(
-				ms(Date.now() - startTime)
-			)}!`
-		)
-	);
+	console.log(chalk.green(` Done in ${chalk.bold(ms(Date.now() - startTime))}!`));
 }

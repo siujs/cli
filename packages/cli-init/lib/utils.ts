@@ -1,7 +1,6 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
-import ms from "pretty-ms";
 import shell from "shelljs";
 
 import { isWindows, startSpinner } from "@siujs/utils";
@@ -46,9 +45,7 @@ export async function downloadTpl(opts: InitAppOptios) {
 		shell.exit(1);
 	}
 
-	const startTime = Date.now();
-
-	const spinner = startSpinner(chalk.greenBright(`Initializing \`${chalk.bold(opts.appName)}\` files... `));
+	const spinner = startSpinner(chalk.greenBright(`Cloning files... `));
 
 	const { gitPath, branch } = getGitInfo(opts.template, opts.source);
 
@@ -61,10 +58,11 @@ export async function downloadTpl(opts: InitAppOptios) {
 				spinner.fail("Failed clone template files, reason: " + stderr);
 				shell.exit(1);
 			}
-			shell.cd(dest);
-			shell.rm("-rf", "./.git").exec("git init", { silent: true, cwd: dest }, (code, stdout, stderr) => {
-				code !== 0 ? reject(stderr) : resolve(stdout);
-			});
+			shell
+				.rm("-rf", path.resolve(dest, "./.git"))
+				.exec("git init", { silent: true, cwd: dest }, (code, stdout, stderr) => {
+					code !== 0 ? reject(stderr) : resolve(stdout);
+				});
 		});
 	});
 
@@ -77,15 +75,11 @@ export async function downloadTpl(opts: InitAppOptios) {
 		await fs.writeFile(siuConfigPath, `module.exports={ excludePkgs:[], plugins:[] }`);
 	}
 
-	spinner.succeed(
-		chalk.green(`${chalk.bold("Initialized")} ${chalk.bold(opts.appName)} files! (cost ${ms(Date.now() - startTime)})`)
-	);
+	spinner.succeed(chalk.green(`${chalk.bold("Cloned")} files in ${chalk.bold(path.resolve(opts.cwd, opts.appName))}!`));
 }
 
 /* istanbul ignore next */
-export async function installDeps() {
-	const startTime = Date.now();
-
+export async function installDeps(opts: { cwd: string }) {
 	const spinner = startSpinner(chalk.greenBright(`☕ Installing packages, it will take a while `));
 
 	if (!shell.which("yarn")) {
@@ -94,18 +88,13 @@ export async function installDeps() {
 	}
 
 	await new Promise((resolve, reject) => {
-		shell.exec("git init", { silent: true }, code => {
+		shell.exec("yarn", { silent: true, cwd: opts.cwd }, code => {
 			if (code !== 0) {
 				reject(false);
 			}
-			shell.exec("yarn", { silent: true }, code => {
-				if (code !== 0) {
-					reject(false);
-				}
-				resolve(true);
-			});
+			resolve(true);
 		});
 	});
 
-	spinner.succeed(chalk.green(`${chalk.bold("Installed")} packages in ${ms(Date.now() - startTime)}!`));
+	spinner.succeed(chalk.green(`${chalk.bold("Installed")} packages!`));
 }
