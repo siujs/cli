@@ -143,8 +143,8 @@ export function getGroupedCommits(
 					.reduce(
 						(prev, commit) => {
 							const node = parser.sync(commit, {
-								mergePattern: /^(Merge) pull request #(\d+) from (.*)$/,
-								mergeCorrespondence: ["type", "pullId", "pullSource"]
+								mergePattern: /^Merge pull request #(\d+) from (.*)$/,
+								mergeCorrespondence: ["pullId", "pullSource"]
 							});
 							const extra = node.extra.split("\n");
 
@@ -164,6 +164,9 @@ export function getGroupedCommits(
 
 							if (breaking) {
 								prev.breaking.push(kv);
+							} else if (node.merge) {
+								prev.merge = prev.merge || [];
+								prev.merge.push(kv);
 							} else {
 								prev[node.type] = prev[node.type] || [];
 								prev[node.type].push(kv);
