@@ -1,7 +1,6 @@
 import { resolveConfig, resolvePlugins } from "./config";
 import { applyPlugins, getPlugins, resolveCLIOptions } from "./plugin";
 import { CLIOption, HookHandlerContext, PluginApi, PluginCommand, PluginCommandLifecycle, ValueOf } from "./types";
-import { getHookId } from "./utils";
 
 export * from "./types";
 
@@ -50,6 +49,7 @@ export function testPlugin(
 	if (process.env.NODE_ENV !== "SIU_TEST") return;
 
 	const plugs = getPlugins();
+
 	/* istanbul ignore if */
 	if (!plugs || !plugs.length) return;
 
@@ -59,8 +59,12 @@ export function testPlugin(
 		pkg = extra;
 	} else {
 		pkg = extra && extra.pkg;
-		extra && extra.opts && plugs[0].refreshOpts(extra.opts);
+		extra &&
+			extra.opts &&
+			plugs[0].refreshOpts({
+				[cmd]: extra.opts
+			});
 	}
 
-	return plugs[0].callHookForTest(getHookId(cmd, lifecycle), pkg);
+	return plugs[0].callHookForTest(cmd, lifecycle, pkg);
 }

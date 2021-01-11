@@ -11,4 +11,11 @@ module.exports = api => {
 
 		assert.strictEqual(ex.message, "opts.foo!=='2'");
 	});
+
+	api.build.process(ctx => {
+		const opts = ctx.opts();
+
+		assert.strictEqual(opts.foo, "1", `opts.foo!=='1'`);
+		assert.strictEqual(opts.bar, "2", `opts.bar!=='2'`);
+	});
 };

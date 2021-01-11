@@ -30,7 +30,7 @@ export class SiuPlugin {
 	private readonly _hooks: Partial<Record<PluginHookKey, ParamTypeOf<HookHandlerFunc>[]>>;
 	private readonly _ctx: HookHandlerContext;
 
-	private _opts: Record<string, any> = {};
+	private _opts: Partial<Record<PluginCommand, Record<string, any>>> = {};
 
 	private _cmd?: PluginCommand;
 
@@ -83,12 +83,13 @@ export class SiuPlugin {
 	 *
 	 * @param opts  new options
 	 */
-	refreshOpts(opts?: Record<string, any>) {
+	refreshOpts(opts?: Partial<Record<PluginCommand, Record<string, any>>>) {
 		if (opts) {
 			this._opts = {
 				...this._opts,
 				...opts
 			};
+			debug("this._opts", this._opts);
 		}
 		return this;
 	}
@@ -231,12 +232,15 @@ export class SiuPlugin {
 	 *
 	 * 	note: open `context` calls
 	 *
-	 * @param hookKey plugin unique key
+	 * @param action plugin command
+	 * @param lifeCycle plugin command lifecycle
 	 * @param pkgName [optional] specific package directory name
 	 */
-	async callHookForTest(hookKey: PluginHookKey, pkgName?: string) {
+	async callHookForTest(cmd: PluginCommand, lifeCycle: PluginCommandLifecycle, pkgName?: string) {
 		this._currentPkg = pkgName;
-		await this.callHook(hookKey);
+		this._cmd = cmd;
+		this.lifecycle = lifeCycle;
+		await this.callHook(getHookId(cmd, lifeCycle));
 		return this._ctx;
 	}
 

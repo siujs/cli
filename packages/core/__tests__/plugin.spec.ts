@@ -88,6 +88,14 @@ test(" apply plugins => `opts`", async done => {
 			]
 		}
 	);
+
+	await testPlugin("build", "process", {
+		opts: {
+			foo: "1",
+			bar: "2"
+		}
+	});
+
 	done();
 });
 
