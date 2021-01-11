@@ -11,9 +11,7 @@ import { PluginApi, PluginCommand, SiuConfig, SiuConfigExcludePkgs } from "./typ
 /**
  * resolve `siu.config.js` or `siu.config.ts`
  */
-export async function resolveConfig() {
-	const cwd = process.cwd();
-
+export async function resolveConfig(cwd = process.cwd()) {
 	let configFile = path.resolve(cwd, "siu.config.ts");
 
 	let exists = await fs.pathExists(configFile);
