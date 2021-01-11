@@ -1,5 +1,39 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.8](https://github.com/siujs/cli/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2021-01-11)
+
+### Bug Fixes
+
+-  **utils**: miss `Merge pull request` analysising ([34a6445](https://github.com/siujs/cli/commit/34a6445935a506e4d87ae1f50b29effb3911d27c))
+-  **core**: unconsidered `_cmd`  in testPlugin ([cf5b7e2](https://github.com/siujs/cli/commit/cf5b7e209033d593dd9467ac1e8e6270fe86e5c9))
+-  **utils**: unconsidered `deerDepe..` in `getSortedPkgByPriority` ([c49ba48](https://github.com/siujs/cli/commit/c49ba48862852e8e26002f47866a198e9cb450ad))
+-  **core**: `testPlugin` not considered `ctx.pkg` scene ([7207786](https://github.com/siujs/cli/commit/7207786b12bd543f9fca1e2c17141270102ec64d))
+
+### Code Refactoring
+
+-  **builtin-build**: set `SiuRollupBuilderHooks` optional ([9b4ab87](https://github.com/siujs/cli/commit/9b4ab8719b56e7ad6917a50a3b19c72876bd93e1))
+-  **core**: `findUpSiuConfigCwd`=>`lookupSiu` ([3ce9648](https://github.com/siujs/cli/commit/3ce9648d52646e35a10009aba4d4c9b537228a20))
+-  **cli**: rm unused ex console of create ([9638e22](https://github.com/siujs/cli/commit/9638e22ad8f01ceb27bb1ea8a84fe9522d6f24a8))
+- `cli-spinner`=>`ora` ([3e60a4c](https://github.com/siujs/cli/commit/3e60a4c5665f0704425b7c5ff3ef736f610c2a9f))
+-  **core**: simplify code judgment logic ([0dba8d1](https://github.com/siujs/cli/commit/0dba8d1b8badf51e038e76c5938c672e9dc6866f))
+-  **core**: adjust `extra` define of `testPlugin` ([ab1b9ca](https://github.com/siujs/cli/commit/ab1b9ca1d095a748a45d680423ec51dd8247d638))
+
+### Performance Improvements
+
+- improve `siu init` logic and console display ([56fe721](https://github.com/siujs/cli/commit/56fe721d4e7eaed32b5997c1172944d5eaf35b0b))
+-  **builtin-build**: improve rollup config handle and define ([8b52f3e](https://github.com/siujs/cli/commit/8b52f3ef9bec1117cec7a0e8ca642e394ffbc24c))
+-  **builtin-build**: custom stop esbuild service ([74a7b13](https://github.com/siujs/cli/commit/74a7b1365e5a716d71d8d4e8356e8d8024acf69f))
+
+### Features
+
+-  **core**: enhance processing of `siu.config.ts` ([e5a44d3](https://github.com/siujs/cli/commit/e5a44d3b9ae40807099388128db98005bb2ed51c))
+-  **builtin-build**: add `genCommonConfig`、`rollupBuild` ([025f77f](https://github.com/siujs/cli/commit/025f77fdb457f67abd6d388098a8b91cb0f01704))
+-  **cli**: add `defineConfig` for intellisense ([9ab5686](https://github.com/siujs/cli/commit/9ab5686413b67e70db1b56e002fa1c57a88f9464))
+- add `debug` ([9070c9f](https://github.com/siujs/cli/commit/9070c9fdf05f2508c051ae56cc70f20cd715e255))
+- support multi monorepo workspaces handle ([722340e](https://github.com/siujs/cli/commit/722340e44ea9e086b481cc30bce5b3996f89c2be))
+-  **builtin-deps**: support multi monorepo workspace ([cb1ecf2](https://github.com/siujs/cli/commit/cb1ecf2dbcac6c3449083d8838ffd149f130bab2))
+-  **core**: support `opts` customization by `testPlugin` ([5fa116a](https://github.com/siujs/cli/commit/5fa116aa5e6df1647427996fba83058c0758d3b8))
+
 ## [v1.0.0-beta.7](https://github.com/siujs/cli/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2021-01-06)
 
 ### Bug Fixes
