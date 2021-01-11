@@ -112,6 +112,8 @@ export type GroupedCommitsItem = Commit & {
 		userEmail: string;
 		time: string;
 	};
+	pullId?: string;
+	pullSource?: string;
 	breaking: boolean;
 };
 
@@ -140,7 +142,10 @@ export function getGroupedCommits(
 					.filter(commit => commit.trim())
 					.reduce(
 						(prev, commit) => {
-							const node = parser.sync(commit);
+							const node = parser.sync(commit, {
+								mergePattern: /^(Merge) pull request #(\d+) from (.*)$/,
+								mergeCorrespondence: ["type", "pullId", "pullSource"]
+							});
 							const extra = node.extra.split("\n");
 
 							const breaking =
