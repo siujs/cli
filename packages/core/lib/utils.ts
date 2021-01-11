@@ -48,10 +48,10 @@ export async function adjustSiuConfigCWD() {
 
 /**
  *
- * 生成当前hook的标识
+ * get hook unique key
  *
- * @param action 操作名称
- * @param lifeCycle 操作周期
+ * @param action plugin command
+ * @param lifeCycle plugin command lifecycle
  */
 /* istanbul ignore next */
 export function getHookId(action: PluginCommand, lifeCycle: PluginCommandLifecycle) {
