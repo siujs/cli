@@ -11,6 +11,7 @@ const DEBUG_Filter = process.env.SIU_DEBUG_FILER;
  * @param ns namespace string
  * @param onlyWhenFocused [optional] default: true
  */
+/* istanbul ignore next */
 export function createDebugger(ns: string, onlyWhenFocused: boolean | string = false) {
 	const log = debug(ns);
 

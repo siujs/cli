@@ -3,7 +3,7 @@ import sh from "shelljs";
 
 import { loadPlugins, testPlugin } from "../lib";
 import { applyPlugins, clearPlugins } from "../lib/plugin";
-import { createSiuConfigJs } from "./common";
+import { createFooPackage, createSiuConfigJs } from "./common";
 
 const rootCWD = path.resolve(__dirname, "../../../");
 
@@ -142,6 +142,8 @@ test(" apply plugins => `next(ex)`", async done => {
 });
 
 test(" apply plugins => get `pkg` ", async done => {
+	createFooPackage(targetCWD);
+
 	await applyPlugins(
 		{
 			cmd: "build",
@@ -153,10 +155,16 @@ test(" apply plugins => get `pkg` ", async done => {
 			plugins: ["../plugins/pkg"]
 		}
 	);
+
+	const ctx = await testPlugin("build", "start", "foo");
+
+	expect(ctx.scopedKeys("foo")).toBe("1");
+
 	done();
 });
 
 test(" apply plugins => refresh `pkg` ", async done => {
+	createFooPackage(targetCWD);
 	await applyPlugins(
 		{
 			cmd: "build",

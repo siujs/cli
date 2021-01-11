@@ -27,31 +27,55 @@ test(" sortPkgs ", async done => {
 	done();
 });
 
-test("adjustSiuConfigCWD", async done => {
-	let hasErr = false;
-	try {
-		await adjustSiuConfigCWD();
-	} catch {
-		hasErr = true;
-	}
-	expect(hasErr).toBe(true);
+const rootCWD = path.resolve(__dirname, "../../../");
+const currentCWD = path.resolve(__dirname, "__jest__.utils");
+const testCWD = path.resolve(currentCWD, "lookup");
 
-	done();
+describe(` adjustSiuConfigCWD in different workspace `, () => {
+	const lookupStartPointCWD = path.resolve(testCWD, "inner");
+
+	beforeAll(() => {
+		sh.mkdir("-p", currentCWD, testCWD, lookupStartPointCWD);
+	});
+
+	afterAll(() => {
+		process.chdir(rootCWD);
+	});
+
+	test(` should throw error when not lookup siu config `, async done => {
+		let hasErr = false;
+		try {
+			await adjustSiuConfigCWD();
+		} catch {
+			hasErr = true;
+		}
+		expect(hasErr).toBe(true);
+
+		done();
+	});
+
+	test(" should return value of testCWD when lookuped siu config ", async done => {
+		const clean = await createSiuConfigTs(currentCWD);
+
+		process.chdir(lookupStartPointCWD);
+
+		await adjustSiuConfigCWD();
+
+		expect(process.cwd()).toBe(currentCWD);
+
+		clean();
+
+		done();
+	});
 });
 
 describe("lookup with `siu.config.x` or `siu` in package.json", () => {
-	const rootCWD = path.resolve(__dirname, "../../../");
-
-	const currentCWD = path.resolve(__dirname, "__jest__.utils");
-
-	const testCWD = path.resolve(currentCWD, "lookup");
-
-	beforeEach(() => {
+	beforeAll(() => {
 		sh.mkdir("-p", currentCWD, testCWD);
 		process.chdir(testCWD);
 	});
 
-	afterEach(() => {
+	afterAll(() => {
 		process.chdir(rootCWD);
 		sh.rm("-rf", currentCWD);
 	});

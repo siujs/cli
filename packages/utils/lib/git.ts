@@ -100,6 +100,7 @@ export function getCommittedFiles(startHash: string, endHash = "HEAD", cwd: stri
 						.map(it => path.resolve(cwd, it))
 				);
 			}
+			/* istanbul ignore if */
 			reject(stderr);
 		});
 	});
@@ -188,6 +189,7 @@ export function getGroupedCommits(
 export function getFirstCommitId(isShort?: boolean): Promise<string> {
 	return new Promise((resolve, reject) => {
 		sh.exec(`git log --format=%${isShort ? "h" : "H"} --reverse`, { silent: true }, (code, stdout, stderr) => {
+			/* istanbul ignore if */
 			if (stderr) return reject(stderr);
 
 			const ids = stdout.split("\n").filter(Boolean);
@@ -206,6 +208,7 @@ export function getFirstCommitId(isShort?: boolean): Promise<string> {
 export async function getGitRemoteUrl(cwd: string, originName = "origin"): Promise<string> {
 	return new Promise((resolve, reject) => {
 		sh.exec(`git remote get-url ${originName}`, { silent: true, cwd }, (code, stdout, stderr) => {
+			/* istanbul ignore if */
 			if (stderr) return reject(stderr);
 			const urls = stdout.split("\n").filter(Boolean);
 			resolve(urls[0]);

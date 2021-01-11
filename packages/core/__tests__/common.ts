@@ -50,10 +50,6 @@ export function createFooPackage(cwd: string) {
 	fs.writeJSONSync(path.resolve(cwd, "packages/foo/package.json"), {
 		name: "@xxx/foo"
 	});
-
-	return (rmAll = false) => {
-		sh.rm("-rf", path.resolve(cwd, rmAll ? "packages" : "packages/foo"));
-	};
 }
 
 export async function createFooNode_Modules(cwd: string) {

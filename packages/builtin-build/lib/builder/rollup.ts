@@ -192,7 +192,7 @@ export class SiuRollupBuilder {
 		this.pkgData = pkgData;
 		this.config = new Config();
 		this.browserConfig = new Config();
-		this.hooks = { ...DEFAULT_HOOKS, ...(hooks || {}) };
+		this.hooks = { ...DEFAULT_HOOKS, ...(hooks || /* istanbul ignore next */ {}) };
 	}
 
 	private initCommonConfig(config: Config) {

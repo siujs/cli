@@ -75,6 +75,7 @@ export async function transform(
 
 	try {
 		const result = await service.transform(src, opts);
+		/* istanbul ignore if */
 		if (result.warnings.length) {
 			console.error(`[esbuild] warnings while transforming ${file}:`);
 			result.warnings.forEach(warning => onwarn(warning, file, src));
@@ -109,7 +110,7 @@ export interface SiuEsBuildPluginOptions extends Omit<TransformOptions, "loader"
 export function asRollupPlugin() {
 	return (options: SiuEsBuildPluginOptions = {}) => {
 		const { include, exclude, loaders, onwarn = printMessage, importeeAlias, closeImmediate, ...esbuildOptions } =
-			options || {};
+			options || /* istanbul ignore next */ {};
 
 		debug("esbuild options:", esbuildOptions);
 
@@ -170,11 +171,13 @@ export function asRollupPlugin() {
 				}
 			},
 			transform(code: string, id: string) {
+				/* istanbul ignore if */
 				if (!filter(id)) return null;
 
 				const ext = path.extname(id);
 				const loader = aliasLoaders[ext];
 
+				/* istanbul ignore if */
 				if (!loader || !_service) return null;
 
 				debug("esbuild file id:", id, " loader: ", loader);

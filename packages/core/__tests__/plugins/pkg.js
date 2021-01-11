@@ -4,6 +4,10 @@ const path = require("path");
 
 /* istanbul ignore next */
 module.exports = api => {
+	api.build.start(ctx => {
+		ctx.scopedKeys("foo", "1");
+	});
+
 	api.build.process(ctx => {
 		const pkgData = ctx.pkg();
 
