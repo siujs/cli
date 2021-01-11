@@ -2,65 +2,42 @@ import path from "path";
 import sh from "shelljs";
 
 import { loadPlugins, testPlugin } from "../lib";
-import { resolvePlugins } from "../lib/config";
 import { applyPlugins, clearPlugins } from "../lib/plugin";
-import { createFooPackage, createSiuConfigJs } from "./common";
+import { createSiuConfigJs } from "./common";
 
-const oldCWD = process.cwd();
+const rootCWD = path.resolve(__dirname, "../../../");
 
-let clean: (rmAll?: boolean) => void;
+const targetCWD = path.resolve(__dirname, "__jest__.plugin");
+
 beforeAll(() => {
-	process.chdir(__dirname);
-	clean = createFooPackage(__dirname);
+	sh.mkdir("-p", targetCWD, path.resolve(targetCWD, "packages"));
+	process.chdir(targetCWD);
 });
 
 afterAll(() => {
-	process.chdir(oldCWD);
-	clean && clean(true);
+	process.chdir(rootCWD);
+	sh.rm("-rf", targetCWD);
 });
 
 afterEach(() => {
 	clearPlugins();
 });
 
-describe(" siu-config / loadPlugins", () => {
-	let clean: (rmAll?: boolean) => void;
+test(" should have cli options ", async done => {
+	const clean = await createSiuConfigJs(targetCWD);
 
-	beforeEach(() => {
-		sh.rm("-rf", [path.resolve(__dirname, "siu.config.ts"), path.resolve(__dirname, "siu.config.js")]);
-		clean = createSiuConfigJs(__dirname);
-	});
+	const { applyPlugins, resolveCLIOptions } = await loadPlugins();
 
-	afterEach(() => {
-		clean && clean();
-	});
+	await applyPlugins("deps", {});
 
-	test(" should have cli options ", async done => {
-		const { applyPlugins, resolveCLIOptions } = await loadPlugins();
+	const options = await resolveCLIOptions();
 
-		await applyPlugins("deps", {});
+	clean();
 
-		const options = await resolveCLIOptions();
-
-		expect(options).toHaveProperty("create");
-		expect(options.create.length).toBe(1);
-		expect(options.create[0].description).toBe(`Foo [support by ${path.resolve(process.cwd(), "./plugins/cli-opts")}]`);
-		expect(options.create[0].defaultValue).toBe("1");
-
-		done();
-	});
-});
-
-test(" test plugin", async done => {
-	process.env.NODE_ENV = "SIU_TEST";
-
-	await resolvePlugins({
-		plugins: ["./plugins/keys"]
-	});
-
-	const ctx = await testPlugin("create", "start");
-
-	expect(ctx.scopedKeys("foo")).toBe("2");
+	expect(options).toHaveProperty("create");
+	expect(options.create.length).toBe(1);
+	expect(options.create[0].description).toBe(`Foo [support by ${path.resolve(targetCWD, "../plugins/cli-opts")}]`);
+	expect(options.create[0].defaultValue).toBe("1");
 
 	done();
 });
@@ -76,7 +53,7 @@ test(" apply plugins => `opts`", async done => {
 		{
 			plugins: [
 				[
-					"./plugins/opts",
+					"../plugins/opts",
 					{
 						custom: {
 							create: {
@@ -108,9 +85,13 @@ test(" apply plugins => `keys`", async done => {
 			}
 		},
 		{
-			plugins: ["./plugins/keys"]
+			plugins: ["../plugins/keys"]
 		}
 	);
+
+	const ctx = await testPlugin("create", "start");
+
+	expect(ctx.scopedKeys("foo")).toBe("2");
 
 	done();
 });
@@ -124,7 +105,7 @@ test(" apply plugins => `next start=>process`", async done => {
 			}
 		},
 		{
-			plugins: ["./plugins/next-start2process"]
+			plugins: ["../plugins/next-start2process"]
 		}
 	);
 	done();
@@ -139,7 +120,7 @@ test(" apply plugins => `next process=>complete`", async done => {
 			}
 		},
 		{
-			plugins: ["./plugins/next-process2complete"]
+			plugins: ["../plugins/next-process2complete"]
 		}
 	);
 	done();
@@ -154,7 +135,7 @@ test(" apply plugins => `next(ex)`", async done => {
 			}
 		},
 		{
-			plugins: ["./plugins/next-err"]
+			plugins: ["../plugins/next-err"]
 		}
 	);
 	done();
@@ -169,7 +150,7 @@ test(" apply plugins => get `pkg` ", async done => {
 			}
 		},
 		{
-			plugins: ["./plugins/pkg"]
+			plugins: ["../plugins/pkg"]
 		}
 	);
 	done();
@@ -184,7 +165,7 @@ test(" apply plugins => refresh `pkg` ", async done => {
 			}
 		},
 		{
-			plugins: ["./plugins/pkg-refresh"]
+			plugins: ["../plugins/pkg-refresh"]
 		}
 	);
 	done();
@@ -199,7 +180,7 @@ test(" apply plugins : deps ", async done => {
 			}
 		},
 		{
-			plugins: ["./plugins/deps"]
+			plugins: ["../plugins/deps"]
 		}
 	);
 	done();

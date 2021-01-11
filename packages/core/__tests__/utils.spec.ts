@@ -3,7 +3,7 @@ import sh from "shelljs";
 
 import { adjustSiuConfigCWD } from "../lib";
 import { lookupSiu, sortPkgs } from "../lib/utils";
-import { createSiuConfigJs, createSiuPackageJSON } from "./common";
+import { createSiuConfigJs, createSiuConfigTs, createSiuPackageJSON } from "./common";
 
 test(" sortPkgs ", async done => {
 	let dirs = await sortPkgs("auto", "");
@@ -39,53 +39,55 @@ test("adjustSiuConfigCWD", async done => {
 	done();
 });
 
-describe(" core / lookupSiu with siu.config.x ", () => {
-	const oldCWD = process.cwd();
-	let clean: () => void;
-	const cwd = path.resolve(__dirname, "lookup");
+describe("lookup with `siu.config.x` or `siu` in package.json", () => {
+	const rootCWD = path.resolve(__dirname, "../../../");
+
+	const currentCWD = path.resolve(__dirname, "__jest__.utils");
+
+	const testCWD = path.resolve(currentCWD, "lookup");
 
 	beforeEach(() => {
-		sh.mkdir("-p", cwd);
-		process.chdir(cwd);
-		clean = createSiuConfigJs(__dirname);
+		sh.mkdir("-p", currentCWD, testCWD);
+		process.chdir(testCWD);
 	});
 
 	afterEach(() => {
-		process.chdir(oldCWD);
-		sh.rm("-rf", cwd);
-		clean && clean();
+		process.chdir(rootCWD);
+		sh.rm("-rf", currentCWD);
 	});
 
-	test(" in __dirname ", async done => {
-		const targetCWD = await lookupSiu(cwd);
+	test(" lookup siu.config.ts ", async done => {
+		const clean = await createSiuConfigTs(currentCWD);
 
-		expect(targetCWD).toBe(__dirname);
+		const targetCWD = await lookupSiu(testCWD);
+
+		expect(targetCWD).toBe(currentCWD);
+
+		clean();
 
 		done();
 	});
-});
 
-describe(" core / lookupSiu with `siu` in package.json ", () => {
-	const oldCWD = process.cwd();
-	let clean: () => void;
-	const cwd = path.resolve(__dirname, "lookup");
+	test(" lookup siu.config.js ", async done => {
+		const clean = await createSiuConfigJs(currentCWD);
 
-	beforeEach(() => {
-		sh.mkdir(cwd);
-		process.chdir(cwd);
-		clean = createSiuPackageJSON(__dirname);
+		const targetCWD = await lookupSiu(testCWD);
+
+		expect(targetCWD).toBe(currentCWD);
+
+		clean();
+
+		done();
 	});
 
-	afterEach(() => {
-		process.chdir(oldCWD);
-		sh.rm("-rf", cwd);
-		clean && clean();
-	});
+	test(" lookup 'siu' in package.json ", async done => {
+		const clean = await createSiuPackageJSON(currentCWD);
 
-	test(" in __dirname ", async done => {
-		const targetCWD = await lookupSiu(cwd);
+		const targetCWD = await lookupSiu(testCWD);
 
-		expect(targetCWD).toBe(__dirname);
+		expect(targetCWD).toBe(currentCWD);
+
+		clean();
 
 		done();
 	});
