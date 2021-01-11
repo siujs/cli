@@ -19,9 +19,9 @@
 
 ##### 使用
 
-- `siu init @foo/bar` : will download template files from `https://github.com/foo/bar`
-- `siu init bar` : will download template files from `https://github.com/bar`
-- `siu init foo#dev`: will download template files from `https://github.com/foo` and branch `dev`
-- `siu init git@foo`: will download template files from `git@foo`
-- `siu init https://xxx/foo`: will download template files from `https://xxx/foo`;
-- `siu init foo --source=gitee`: will download template files from `https://gitee.com/foo`
+- `siu init @foo/bar .` : will download template files from `https://github.com/foo/bar`
+- `siu init bar .` : will download template files from `https://github.com/bar`
+- `siu init foo#dev .`: will download template files from `https://github.com/foo` and branch `dev`
+- `siu init git@foo .`: will download template files from `git@foo`
+- `siu init https://xxx/foo .`: will download template files from `https://xxx/foo`;
+- `siu init foo --source=gitee .`: will download template files from `https://gitee.com/foo`

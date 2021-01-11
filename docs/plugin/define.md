@@ -38,6 +38,9 @@
 ## 编写插件
 
 ```js
+
+import { CLIOptionHandlerParams PluginApi } from "@siujs/core";
+
 export default (api: PluginApi) => {
 	api.create.cli((option: CLIOptionHandlerParams) => {
 		option("-d, --deps <deps>", "name of siblings package, e.g. `pkg1` or `pkg1,pkg2`");
@@ -127,6 +130,8 @@ export default (api: PluginApi) => {
 
 - 获取: `const err = ctx.ex()`
 - 设置： `ctx.ex(new Error('xxxx'))` or `ctx.ex('msg')`
+
+Note: 只要在`start`、`process`周期中使用了异常记录，那么就认为当前命令处理流程发生了异常，会停止向下流转；
 
 #### ctx.pkg
 
