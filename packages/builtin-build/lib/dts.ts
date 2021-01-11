@@ -15,6 +15,7 @@ import { PkgData } from "@siujs/utils";
  * @property {string} pkgData.name current package name
  * @property {Record<string,any>} [pkgData.meta] current package.json data of package
  */
+/* istanbul ignore next */
 export async function generateDTS(pkgData: PkgData) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const { Extractor, ExtractorConfig } = require("@microsoft/api-extractor");
@@ -63,6 +64,7 @@ export async function generateDTS(pkgData: PkgData) {
  * @property {string} pkgData.name current package name
  * @property {Record<string,any>} [pkgData.meta] current package.json data of package
  */
+/* istanbul ignore next */
 export async function generateDTSWithTSC(pkgData: PkgData) {
 	const pkgRoot = path.resolve(pkgData.path, "../../");
 

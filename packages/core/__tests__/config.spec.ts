@@ -72,7 +72,7 @@ describe("use `resolveConfig`", () => {
 	});
 
 	test(`should be ok with analysising 'siu.config.ts'、'siu.config.js'、'siu' in 'package.json'`, async done => {
-		let clean = createSiuConfigTs();
+		let clean = createSiuConfigTs(__dirname);
 		let config = await resolveConfig();
 		expect(config).toHaveProperty("pkgsOrder");
 		expect(config.pkgsOrder).toBe("auto");
@@ -82,7 +82,7 @@ describe("use `resolveConfig`", () => {
 		expect(config.plugins[1]).toBe("./plugins/cli-opts");
 		clean && clean();
 
-		clean = createSiuConfigJs();
+		clean = createSiuConfigJs(__dirname);
 		config = await resolveConfig();
 		expect(config).toHaveProperty("pkgsOrder");
 		expect(config.pkgsOrder).toBe("auto");
@@ -92,7 +92,7 @@ describe("use `resolveConfig`", () => {
 		expect(config.plugins[1]).toBe("./plugins/cli-opts");
 		clean && clean();
 
-		clean = createSiuPackageJSON();
+		clean = createSiuPackageJSON(__dirname);
 		config = await resolveConfig();
 		expect(config).toHaveProperty("pkgsOrder");
 		expect(config.pkgsOrder).toBe("auto");
@@ -103,10 +103,10 @@ describe("use `resolveConfig`", () => {
 		clean && clean();
 
 		done();
-	});
+	}, 60000);
 
 	test(" analysisPlugins ", () => {
-		const clean = createFooPackage();
+		const clean = createFooPackage(__dirname);
 
 		let plugs = analysisPlugins(null as any);
 		expect(plugs.length).toBe(0);

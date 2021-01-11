@@ -11,7 +11,7 @@ const oldCWD = process.cwd();
 let clean: (rmAll?: boolean) => void;
 beforeAll(() => {
 	process.chdir(__dirname);
-	clean = createFooPackage();
+	clean = createFooPackage(__dirname);
 });
 
 afterAll(() => {
@@ -28,7 +28,7 @@ describe(" siu-config / loadPlugins", () => {
 
 	beforeEach(() => {
 		sh.rm("-rf", [path.resolve(__dirname, "siu.config.ts"), path.resolve(__dirname, "siu.config.js")]);
-		clean = createSiuConfigJs();
+		clean = createSiuConfigJs(__dirname);
 	});
 
 	afterEach(() => {

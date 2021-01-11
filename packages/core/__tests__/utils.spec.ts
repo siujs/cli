@@ -45,9 +45,9 @@ describe(" core / lookupSiu with siu.config.x ", () => {
 	const cwd = path.resolve(__dirname, "lookup");
 
 	beforeEach(() => {
-		sh.mkdir(cwd);
+		sh.mkdir("-p", cwd);
 		process.chdir(cwd);
-		clean = createSiuConfigJs();
+		clean = createSiuConfigJs(__dirname);
 	});
 
 	afterEach(() => {
@@ -73,7 +73,7 @@ describe(" core / lookupSiu with `siu` in package.json ", () => {
 	beforeEach(() => {
 		sh.mkdir(cwd);
 		process.chdir(cwd);
-		clean = createSiuPackageJSON();
+		clean = createSiuPackageJSON(__dirname);
 	});
 
 	afterEach(() => {
