@@ -458,9 +458,10 @@ export async function applyPlugins(
 	const hasHooks = plugs.reduce((prev, plug) => prev || plug.hasCommandHooks(args.cmd), false);
 
 	if (!hasHooks) {
+		/* istanbul ignore if */
 		if (!fallback || typeof fallback !== "function") return;
 
-		fallback(definePlugin(DEFAULT_PLUGIN_ID)[args.cmd]);
+		fallback(definePlugin(plugs[0].id)[args.cmd]);
 	}
 
 	if (noPkgEffectCmds.includes(args.cmd)) {
@@ -498,6 +499,8 @@ export async function applyPlugins(
 		}, {} as Record<string, SiuPlugin[]>);
 
 		const pkgs = Object.keys(kv);
+
+		debug("final pkgs:", pkgs);
 
 		for (let i = 0; i < pkgs.length; i++) {
 			const plugs = kv[pkgs[i]];
