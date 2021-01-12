@@ -237,7 +237,14 @@ export async function chooseVersion(cwd: string, pkg?: string) {
 	}
 }
 
-function changelogMsgNormalize(item: GroupedCommitsItem, remoteUrl?: string) {
+/**
+ *
+ *
+ *
+ * @param item commit item
+ * @param remoteUrl [optional] git remote url
+ */
+export function normalizeChangeLogInlineMsg(item: GroupedCommitsItem, remoteUrl?: string) {
 	const ref = /\(#\d+\)/.test(item.header)
 		? ""
 		: ` ([${item.extra.hash.substring(0, 7)}](${remoteUrl}/commit/${item.extra.hash}))`;
@@ -254,12 +261,13 @@ function changelogMsgNormalize(item: GroupedCommitsItem, remoteUrl?: string) {
 export async function getNewChangedLog(
 	version: string,
 	opts: {
+		versionPrefix?: string;
 		allowTypes?: string[];
 		type2Title?: Record<string, string>;
 		normalizeCommitMsg?: (item: GroupedCommitsItem, remoteUrl?: string) => string;
 	} = {}
 ) {
-	let tag = await getPreTag();
+	let tag = await getPreTag(opts.versionPrefix);
 
 	!tag && (tag = await getFirstCommitId(false));
 
@@ -279,7 +287,7 @@ export async function getNewChangedLog(
 			perf: "Performance Improvements",
 			refactor: "Code Refactoring"
 		},
-		normalizeCommitMsg = changelogMsgNormalize
+		normalizeCommitMsg = normalizeChangeLogInlineMsg
 	} = opts;
 
 	let arr: string[];
@@ -304,28 +312,14 @@ export async function getNewChangedLog(
 
 /**
  *
- * Update `CHANGELOG.md` content
+ * Append new content to CHANGELOG.md
  *
- * @param version new version string, no `v` prefix
- * @param cwd current workspace directory - monorepo project root of specific monorepo package root
- * @param pkg [option] specific monorepo package name
- * @param isDryRun whether is dry run
+ * @param newLog new changelog content
+ * @param cwd current workspace directory
+ *
+ * @returns full content
  */
-export async function updateChangelog(version: string, cwd: string, pkg?: string, isDryRun?: boolean) {
-	const newLog = await getNewChangedLog(
-		version,
-		pkg
-			? {
-					normalizeCommitMsg(item: GroupedCommitsItem, remoteUrl?: string) {
-						if (pkg && item.scope !== pkg) return "";
-						return changelogMsgNormalize(item, remoteUrl);
-					}
-			  }
-			: {}
-	);
-
-	if (isDryRun) return newLog;
-
+export async function appendChangedLog(newLog: string, cwd: string) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const meta = require(path.resolve(cwd, "package.json"));
 
@@ -340,5 +334,34 @@ export async function updateChangelog(version: string, cwd: string, pkg?: string
 	await fs.writeFile(logPath, content, {
 		encoding: "utf-8"
 	});
+
 	return content;
+}
+
+/**
+ *
+ * Update `CHANGELOG.md` content
+ *
+ * @param version new version string, no `v` prefix
+ * @param cwd current workspace directory - monorepo project root of specific monorepo package root
+ * @param pkg [option] specific monorepo package name
+ * @param isDryRun whether is dry run
+ */
+export async function updateChangelog(version: string, cwd: string, pkg?: string, isDryRun?: boolean) {
+	const newLog = await getNewChangedLog(
+		version,
+		pkg
+			? {
+					versionPrefix: pkg + "-",
+					normalizeCommitMsg(item: GroupedCommitsItem, remoteUrl?: string) {
+						if (pkg && item.scope !== pkg) return "";
+						return normalizeChangeLogInlineMsg(item, remoteUrl);
+					}
+			  }
+			: {}
+	);
+
+	if (isDryRun) return newLog;
+
+	return await appendChangedLog(newLog, cwd);
 }
