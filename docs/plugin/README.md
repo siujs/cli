@@ -24,6 +24,12 @@ module.exports = {
 
 ```js
 module.exports = {
-	plugins: ["./siu-plugin-xxxx"]
+	plugins: ["./siujs-plugin-xxxx"]
+};
+```
+
+```typescript
+export default {
+	plugins: ["./siujs-plugin-xxxx"]
 };
 ```

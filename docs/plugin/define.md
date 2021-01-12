@@ -37,9 +37,8 @@
 
 ## 编写插件
 
-```js
-
-import { CLIOptionHandlerParams PluginApi } from "@siujs/core";
+```typescript
+import { CLIOptionHandlerParams, PluginApi } from "@siujs/core";
 
 export default (api: PluginApi) => {
 	api.create.cli((option: CLIOptionHandlerParams) => {
@@ -74,7 +73,6 @@ export default (api: PluginApi) => {
 	api.create.start(async (ctx: HookHandlerContext) => {
 		// do something
 		// ctx: 插件上下文
-		// next: 处理插件的流程流转
 	});
 
 	api.create.process(async (ctx: HookHandlerContext) => {
@@ -97,9 +95,9 @@ export default (api: PluginApi) => {
 
 ### 插件上下文
 
-插件上下文是`@siujs/core`提供给插件开发者用来在当前命令流程处理中辅助的`api`:
+插件上下文`ctx:HookHandlerContext)`是`@siujs/core`提供给插件开发者用来在当前命令流程处理中的辅助`api`:
 
-#### ctx.opts(key)
+#### ctx.opts(key?)
 
 获取插件在当前命令的配置信息`A`中指定名称的数据；
 
@@ -109,6 +107,24 @@ export default (api: PluginApi) => {
 2. 通过`siu.config.js|ts`中自定义的配置参数
 
 最终： `A = deepMerge(1,2)`
+
+使用如下:
+
+```typescript
+/**
+ * opts:
+ * {
+ *   "foo": "2"
+ * }
+ *
+ */
+
+ctx.opts<string>("foo");
+// will output "2";
+
+ctx.opts<{ foo: string }>();
+// will output {foo:"2"}
+```
 
 #### ctx.keys
 
