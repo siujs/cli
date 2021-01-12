@@ -27,7 +27,7 @@ export async function changeDeps(pkg: string, depStr: string, action: "add" | "r
 
 	debug("transformed dep:", depsMap);
 
-	if (!depsMap) return;
+	if (!depsMap || ((!depsMap.deps || !depsMap.deps.length) && (!depsMap.devDeps || !depsMap.devDeps.length))) return;
 
 	debug(`start "${action}" deps on "${pkg}" `);
 
@@ -39,8 +39,8 @@ export async function changeDeps(pkg: string, depStr: string, action: "add" | "r
 
 	if (action === "rm") {
 		shell.exec(
-			`yarn -W remove ${(deps || [])
-				.concat(devDeps || [])
+			`yarn -W remove ${deps
+				.concat(devDeps)
 				.map(it => it.name)
 				.join(" ")}`,
 			{ cwd }

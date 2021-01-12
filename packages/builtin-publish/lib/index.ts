@@ -141,14 +141,14 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 
 	if (opts.valid !== false) {
 		const isOK = await fs.pathExists(path.resolve(cwd, "package.json"));
-
+		/* istanbul ignore if */
 		if (!isOK) {
 			console.warn(chalk.yellow(`[siu] Warning: '${pkg}'`) + "is not a valid package,missing package.json");
 			return;
 		}
 
 		const meta = await fs.readJSON(path.resolve(cwd, "package.json"));
-
+		/* istanbul ignore if */
 		if (meta && meta.private) {
 			console.warn(
 				chalk.yellow(`[siu] Warning: '${pkg}'`) + "is a private package that does not allowed to be published"
@@ -161,9 +161,8 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 
 	let targetVersion: string;
 
-	if (!tag) {
-		targetVersion = await chooseVersion(cwd, pkg);
-	} else {
+	/* istanbul ignore if */
+	if (tag) {
 		const commitFiles = await getCommittedFiles(tag, "HEAD", cwd);
 
 		const hasPkgFile = commitFiles.filter(p => {
@@ -173,10 +172,14 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 		if (hasPkgFile) {
 			targetVersion = await chooseVersion(cwd, pkg);
 		}
+	} else {
+		targetVersion = await chooseVersion(cwd, pkg);
 	}
 
+	/* istanbul ignore if */
 	if (!targetVersion) return;
 
+	/* istanbul ignore if */
 	if (!semver.valid(targetVersion)) {
 		throw new Error(`invalid target version: ${targetVersion}`);
 	}
@@ -234,8 +237,10 @@ export async function release(opts: ReleaseOptions) {
 
 		const targetVersion = version || (await chooseVersion(cwd));
 
+		/* istanbul ignore if */
 		if (!targetVersion) return;
 
+		/* istanbul ignore if */
 		if (!semver.valid(targetVersion)) {
 			throw new Error(`invalid target version: ${targetVersion}`);
 		}
@@ -246,6 +251,7 @@ export async function release(opts: ReleaseOptions) {
 
 		// private:true package can't be published
 		for (let l = pkgs.length; l--; ) {
+			/* istanbul ignore if */
 			if (pkgDatas[l].private) {
 				log(chalk`{magenta Warning}: "${pkgs[l]}" is a private package that does not allowed to be published`);
 				pkgs.splice(l, 1);
@@ -253,6 +259,7 @@ export async function release(opts: ReleaseOptions) {
 			}
 		}
 
+		/* istanbul ignore if */
 		if (!pkgs.length) {
 			log(chalk`{red [siu] Error:} No package that to be published!`);
 			return;

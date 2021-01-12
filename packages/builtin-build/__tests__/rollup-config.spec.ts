@@ -3,7 +3,7 @@ import { TreeshakingOptions } from "rollup";
 import { asRollupPlugin, SiuEsBuildPluginOptions } from "../lib";
 import { Config } from "../lib/config/rollup/Config";
 
-test(" config input ", () => {
+it("should get `config.input` from config.input when use config.input('config.input')", () => {
 	const config = new Config();
 
 	config.input("config.input");

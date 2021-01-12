@@ -16,7 +16,7 @@ describe(" build monorepo packages with rollup", () => {
 		"umd-min": ".min.js"
 	};
 
-	test(" should exists xxx.mjs with 'es' format ", async done => {
+	it("should exists dist/index.(mjs|cjs|js)", async done => {
 		const pkgsRoot = path.resolve(__dirname, "packages");
 		sh.mkdir("-p", pkgsRoot);
 		sh.mkdir("-p", path.resolve(pkgsRoot, "foo/lib"), path.resolve(pkgsRoot, "bar/lib"));

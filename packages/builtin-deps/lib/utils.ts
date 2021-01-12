@@ -4,7 +4,6 @@ import shell from "shelljs";
 
 import { getPackagePath, isWindows } from "@siujs/utils";
 
-/* istanbul ignore next */
 export function detectYarn() {
 	if (!shell.which("yarn")) {
 		shell.exec(isWindows ? `npm i -g yarn` : `sudo npm i -g yarn`);
@@ -65,8 +64,8 @@ export function normalizeDepStr(deps: string) {
 export async function getPkgMeta(pkgName: string) {
 	const meta = await fs.readJSON(path.resolve(getPackagePath(pkgName), "package.json"));
 
-	meta.dependencies = meta.dependencies || {};
-	meta.devDependencies = meta.devDependencies || {};
+	meta.dependencies = meta.dependencies || /* istanbul ignore next */ {};
+	meta.devDependencies = meta.devDependencies || /* istanbul ignore next */ {};
 
 	return meta;
 }
@@ -80,7 +79,7 @@ let pkgMetas: Record<string, any>[];
  * @param depName target dependency package name
  * @param workspace [optional] specific workspace directory name
  */
-export async function isLocalPackage(depName: string, workspace = "packages") {
+export async function isLocalPackage(depName: string, workspace = "packages"): Promise<string> {
 	if (!pkgMetas) {
 		const pkgsRoots = path.resolve(process.cwd(), workspace);
 
@@ -95,7 +94,6 @@ export async function isLocalPackage(depName: string, workspace = "packages") {
 	return item ? item.version : "";
 }
 
-/* istanbul ignore next */
 export async function addDeps(
 	deps: { name: string; version: string }[],
 	cwd: string,
