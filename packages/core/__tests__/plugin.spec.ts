@@ -1,7 +1,8 @@
+import inquirer from "inquirer";
 import path from "path";
 import sh from "shelljs";
 
-import { loadPlugins, testPlugin } from "../lib";
+import { HookHandlerContext, loadPlugins, testPlugin } from "../lib";
 import { applyPlugins, clearPlugins } from "../lib/plugin";
 import { createFooPackage, createSiuConfigJs } from "./common";
 
@@ -23,23 +24,59 @@ afterEach(() => {
 	clearPlugins();
 });
 
-test(" should have cli options ", async done => {
-	const clean = await createSiuConfigJs(targetCWD);
+describe(" resolve cli options ", () => {
+	let backup: any;
 
-	const { applyPlugins, resolveCLIOptions } = await loadPlugins();
+	beforeAll(() => {
+		backup = inquirer.prompt;
+		inquirer.prompt = ((questions: any) => Promise.resolve({ skip: ["lint", "build"] })) as any;
+	});
 
-	await applyPlugins("deps", {});
+	afterAll(() => {
+		inquirer.prompt = backup;
+	});
 
-	const options = await resolveCLIOptions();
+	test(" should have `create` options and prompts ", async done => {
+		const clean = await createSiuConfigJs(targetCWD);
 
-	clean();
+		const { applyPlugins, resolveCLIOptions } = await loadPlugins();
 
-	expect(options).toHaveProperty("create");
-	expect(options.create.length).toBe(1);
-	expect(options.create[0].description).toBe(`Foo [support by ${path.resolve(targetCWD, "../plugins/cli-opts")}]`);
-	expect(options.create[0].defaultValue).toBe("1");
+		await applyPlugins("deps", {});
 
-	done();
+		const options = await resolveCLIOptions();
+
+		clean();
+
+		expect(options).toHaveProperty("create");
+		expect(options.create.length).toBe(2);
+		expect(options.create[0].description).toBe(`Foo [support by ${path.resolve(targetCWD, "../plugins/cli-opts")}]`);
+		expect(options.create[0].defaultValue).toBe("1");
+		expect(options.create[1].description).toBe(
+			`Will skip steps: lint | build | publish | commit | push , support comma join [support by ${path.resolve(
+				targetCWD,
+				"../plugins/cli-opts"
+			)}]`
+		);
+		expect(options.create[1].flags).toBe("-s, --skip <skip>");
+
+		const opts = options.create[1].prompt.questions as any;
+
+		expect(opts).toHaveProperty("type");
+		expect(opts.type).toBe("checkbox");
+		expect(opts.name).toBe("skip");
+		expect(opts.message).toBe("Select skip steps:");
+		expect(opts.choices.length).toBe(5);
+
+		const prompt = options.create[1].prompt;
+
+		const output = (await inquirer.prompt(prompt.questions, prompt.initialAnswers)) as Record<string, any>;
+
+		const skipValue = prompt.answerTransform ? prompt.answerTransform(output.skip) : output.skip;
+
+		expect(skipValue).toBe("lint,build");
+
+		done();
+	});
 });
 
 test(" apply plugins => `opts`", async done => {
@@ -146,18 +183,25 @@ test(" apply plugins => get `pkg` ", async done => {
 
 	await applyPlugins(
 		{
-			cmd: "build",
+			cmd: "create",
 			opts: {
 				pkg: "foo"
 			}
 		},
 		{
 			plugins: ["../plugins/pkg"]
+		},
+		api => {
+			api.start((ctx: HookHandlerContext) => {
+				ctx.scopedKeys("_lifecycle", "create.start");
+			});
 		}
 	);
 
-	const ctx = await testPlugin("build", "start", "foo");
+	let ctx = await testPlugin("create", "start", "foo");
+	expect(ctx.scopedKeys("_lifecycle")).toBe("create.start");
 
+	ctx = await testPlugin("build", "start", "foo");
 	expect(ctx.scopedKeys("foo")).toBe("1");
 
 	done();

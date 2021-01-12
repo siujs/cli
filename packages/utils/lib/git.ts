@@ -36,7 +36,7 @@ export function downloadGit(gitUrl: string, branch: string, dest: string) {
  */
 export function getStagedFiles(cwd: string): Promise<string[]> {
 	return new Promise((resolve, reject) => {
-		sh.exec("git diff --name-only --cached", { silent: true }, (code, stdout, stderr) => {
+		sh.exec("git diff --name-only --cached", { silent: true, cwd }, (code, stdout, stderr) => {
 			if (code === 0) {
 				return resolve(
 					stdout
@@ -45,6 +45,7 @@ export function getStagedFiles(cwd: string): Promise<string[]> {
 						.map(it => path.resolve(cwd, it))
 				);
 			}
+			/* istanbul ignore next */
 			reject(stderr);
 		});
 	});
@@ -74,6 +75,7 @@ export function getPreTag(versionPrefix?: string): Promise<string> {
 
 				resolve(latestTag);
 			})
+			/* istanbul ignore next */
 			.on("error", (err: Error) => {
 				reject(err);
 			});
@@ -91,7 +93,7 @@ export function getPreTag(versionPrefix?: string): Promise<string> {
  */
 export function getCommittedFiles(startHash: string, endHash = "HEAD", cwd: string = process.cwd()): Promise<string[]> {
 	return new Promise((resolve, reject) => {
-		sh.exec(`git diff --name-only ${startHash} ${endHash}`, { silent: true }, (code, stdout, stderr) => {
+		sh.exec(`git diff --name-only ${startHash} ${endHash}`, { silent: true, cwd }, (code, stdout, stderr) => {
 			if (code === 0) {
 				return resolve(
 					stdout
@@ -100,7 +102,7 @@ export function getCommittedFiles(startHash: string, endHash = "HEAD", cwd: stri
 						.map(it => path.resolve(cwd, it))
 				);
 			}
-			/* istanbul ignore if */
+			/* istanbul ignore next */
 			reject(stderr);
 		});
 	});
@@ -135,6 +137,7 @@ export function getGroupedCommits(
 			`git --no-pager log ${startHash}..${endHash} --format=%B%n-extra-%n%H%n%an%n%ae%n%ci💨💨💨`,
 			{ silent: true },
 			(code, stdout, stderr) => {
+				/* istanbul ignore if */
 				if (code !== 0) {
 					return reject(stderr);
 				}

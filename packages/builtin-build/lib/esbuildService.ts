@@ -86,6 +86,7 @@ export async function transform(
 			map: result.map
 		};
 	} catch (e) {
+		/* istanbul ignore next */
 		debug("esbuild err", e);
 
 		console.error(chalk.red(`[esbuild] error while transforming ${file}:`));

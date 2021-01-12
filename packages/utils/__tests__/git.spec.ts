@@ -8,22 +8,27 @@ import {
 	getFirstCommitId,
 	getGitRemoteUrl,
 	getGroupedCommits,
-	getPreTag
+	getPreTag,
+	getStagedFiles
 } from "../lib/git";
 
-test(" getFirstCommitId ", async done => {
-	const expectedId = "289e90072966ebc2c549a01aab426ffd8b0940b3";
+describe(" getFirstCommitId test ", () => {
+	const expectedFirstCommitId = "289e90072966ebc2c549a01aab426ffd8b0940b3";
 
-	let id = await getFirstCommitId();
-	expect(id).toBe(expectedId);
+	test(" should return full length commit hash ", async done => {
+		const id = await getFirstCommitId();
+		expect(id).toBe(expectedFirstCommitId);
+		done();
+	});
 
-	id = await getFirstCommitId(true);
-	expect(id).toBe(expectedId.substring(0, 7));
-
-	done();
+	test(" should return the correct 7-bit short hash", async done => {
+		const id = await getFirstCommitId(true);
+		expect(id).toBe(expectedFirstCommitId.substring(0, 7));
+		done();
+	});
 });
 
-test("download Git", async done => {
+test("should exist `siu.config.js` from https://gitee.com/siujs/tpls#master ", async done => {
 	const dest = path.resolve(__dirname, "./tpls");
 	await downloadGit("https://gitee.com/siujs/tpls", "master", dest);
 
@@ -38,7 +43,7 @@ test("download Git", async done => {
 	done();
 }, 600000);
 
-test(" getGitRemoteUrl ", async done => {
+test(" should be `https://github.com/siujs/cli` ", async done => {
 	const url = await getGitRemoteUrl(process.cwd());
 
 	expect(url).toBe("https://github.com/siujs/cli");
@@ -74,14 +79,44 @@ test(" getCommittedFiles ", async done => {
 });
 
 test(" getGroupedCommits ", async done => {
-	const commits = await getGroupedCommits(
+	let commits = await getGroupedCommits(
 		"199972e856978b9194db3fec9c3d94bb1445f7ab",
 		"18889daf229505554ce55d4e9e4c4e4a92b9dce3"
 	);
-
 	expect(commits).toHaveProperty("release");
-
 	expect(commits.release.length).toBe(1);
+
+	commits = await getGroupedCommits("199972e856978b9194db3fec9c3d94bb1445f7ab");
+	expect(commits).toHaveProperty("release");
+	expect(commits).toHaveProperty("breaking");
+	expect(commits).toHaveProperty("feat");
+	expect(commits).toHaveProperty("fix");
+	expect(commits).toHaveProperty("refactor");
+	expect(commits).toHaveProperty("types");
+	expect(commits).toHaveProperty("docs");
+	done();
+});
+
+test(" getStagedFiles ", async done => {
+	const testCWD = path.resolve(__dirname, "git.test");
+
+	sh.mkdir("-p", testCWD);
+
+	sh.exec("git init", { cwd: testCWD });
+	sh.exec("git remote add test https://github.com/siujs/cli", { cwd: testCWD });
+
+	await fs.writeJSON(path.resolve(testCWD, "package.json"), {
+		name: "xxx"
+	});
+
+	sh.exec("git add .", { cwd: testCWD });
+
+	const files = await getStagedFiles(testCWD);
+
+	expect(files.length).toBe(1);
+	expect(files[0]).toBe(path.resolve(testCWD, "package.json"));
+
+	sh.rm("-rf", testCWD);
 
 	done();
 });
