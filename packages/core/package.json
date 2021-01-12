@@ -29,6 +29,8 @@
     "@siujs/utils": "1.0.0-beta.8"
   },
   "dependencies": {
+    "@siujs/builtin-build": "1.0.0-beta.8",
+    "@siujs/utils": "1.0.0-beta.8",
     "chalk": "^4.1.0",
     "fs-extra": "^9.0.1",
     "inquirer": "^7.3.3"
