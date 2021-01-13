@@ -68,3 +68,14 @@ export function testPlugin(
 
 	return plugs[0].callHookForTest(cmd, lifecycle, pkg);
 }
+
+/**
+ *
+ * Define plugin
+ *
+ * @param factory factory of define plugin
+ */
+/* istanbul ignore next */
+export function definePlugin(factory: (api: PluginApi) => void) {
+	return factory;
+}
