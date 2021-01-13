@@ -5,7 +5,6 @@ import inquirer from "inquirer";
 import path from "path";
 import validProjectName from "validate-npm-package-name";
 
-import { initApp } from "@siujs/cli-init";
 import { adjustSiuConfigCWD, loadPlugins, PluginCommand, SiuConfig } from "@siujs/core";
 import { filterUnExistsPkgs, getPackageDirs, isPkgExists } from "@siujs/utils";
 
@@ -66,7 +65,8 @@ export async function initCLI(isStrict?: boolean) {
 
 	async function runCmd(cmd: PluginCommand | "init", opts: Record<string, any>) {
 		if (cmd === "init") {
-			await initApp(opts as any);
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			await require("@siujs/cli-init").initApp(opts as any);
 			return;
 		}
 
