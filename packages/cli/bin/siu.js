@@ -21,7 +21,7 @@ program.version(fs.readJSONSync(path.resolve(__dirname, "../package.json")).vers
 		.action(async (template, app, cmd) => {
 			const usrStdin = {
 				appName: app,
-				cwd: path.resolve(process.cwd(), app),
+				cwd: process.cwd(),
 				template,
 				source: cmd.source,
 				skipInstall: cmd.skipInstall
@@ -42,7 +42,7 @@ program.version(fs.readJSONSync(path.resolve(__dirname, "../package.json")).vers
 				]);
 
 				if (!ok) return;
-			} else if (fs.pathExistsSync(usrStdin.cwd)) {
+			} else if (fs.pathExistsSync(path.resolve(usrStdin.cwd, usrStdin.appName))) {
 				console.log(chalk.red(`Target directory is not empty!`));
 				return;
 			}
