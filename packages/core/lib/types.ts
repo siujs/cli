@@ -10,7 +10,7 @@ export type PluginCommand = "create" | "doc" | "demo" | "serve" | "test" | "buil
 
 export type PluginCommandLifecycle = "cli" | "start" | "process" | "complete" | "error" | "clean";
 
-export type PluginHookKey = string; //`${PluginCommand}.${PluginCommandLifecycle}`;
+export type PluginHookKey = `${PluginCommand}.${PluginCommandLifecycle}`;
 
 export type HookHandlerOpts = <T extends any>(key: string) => T;
 
