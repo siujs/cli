@@ -21,5 +21,9 @@ export async function lintWithGHooks(
 ) {
 	const newArg = typeof extra === "string" ? { cwd: extra || process.cwd() } : { cwd: process.cwd(), ...extra };
 	const instance = new GitClientHooks(newArg.cwd, newArg.handlers);
-	await instance[hookName]();
+	const rslt = await instance[hookName]();
+
+	if (!rslt) {
+		process.exit(1);
+	}
 }

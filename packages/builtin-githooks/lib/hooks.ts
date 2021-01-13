@@ -83,6 +83,10 @@ const DEFAULT_HOOK_HNDS = {
 	}
 };
 
+function isFunc(obj: any) {
+	return Object.prototype.toString.call(obj) === `[object ${Function}]`;
+}
+
 export class GitClientHooks {
 	protected cwd: string;
 	protected hnds: GitClientHooksHandlers;
@@ -93,32 +97,25 @@ export class GitClientHooks {
 
 	async preCommit() {
 		const files = await getStagedFiles(this.cwd);
-
-		if (this.hnds.preCommit && typeof this.hnds.preCommit === "function") {
-			const rslt = await this.hnds.preCommit(files, this.cwd);
-
-			if (!rslt) {
-				process.exit(1);
-			}
-		}
+		return this.hnds.preCommit && isFunc(this.hnds.preCommit) ? await this.hnds.preCommit(files, this.cwd) : true;
 	}
 
 	async prepareCommitMsg() {
 		let msgPath = process.env.HUSKY_GIT_PARAMS || process.env.GIT_PARAMS;
 
-		if (!msgPath) return;
+		if (!msgPath) return false;
 
 		msgPath = msgPath.split(" ").shift();
 
 		const commitMsg = fs.readFileSync(msgPath, "utf-8").trim();
 
-		if (this.hnds.prepareCommitMsg && typeof this.hnds.prepareCommitMsg === "function") {
+		if (this.hnds.prepareCommitMsg && isFunc(this.hnds.prepareCommitMsg)) {
 			const newCommitMsg = await this.hnds.prepareCommitMsg(commitMsg, this.cwd);
-
-			if (!newCommitMsg) return;
-
+			if (!newCommitMsg) return false;
 			fs.writeFileSync(msgPath, newCommitMsg);
 		}
+
+		return true;
 	}
 
 	async commitMsg() {
@@ -127,7 +124,7 @@ export class GitClientHooks {
 		if (!msgPath) {
 			console.log();
 			console.error(`${chalk.bgRed.white(" ERROR: ")} ${chalk.red(`Can't find temp commit-msg-path!`)}`);
-			process.exit(1);
+			return false;
 		}
 
 		msgPath = msgPath.split(" ").shift();
@@ -137,16 +134,10 @@ export class GitClientHooks {
 		if (!commitMsg) {
 			console.log();
 			console.error(`${chalk.bgRed.white(" ERROR: ")} ${chalk.red(`Empty commit message is not allowed!`)}`);
-			process.exit(1);
+			return false;
 		}
 
-		if (this.hnds.commitMsg && typeof this.hnds.commitMsg === "function") {
-			const rslt = await this.hnds.commitMsg(commitMsg, this.cwd);
-
-			if (!rslt) {
-				process.exit(1);
-			}
-		}
+		return this.hnds.commitMsg && isFunc(this.hnds.commitMsg) ? await this.hnds.commitMsg(commitMsg, this.cwd) : true;
 	}
 
 	async postCommit() {
@@ -155,7 +146,7 @@ export class GitClientHooks {
 		if (format.code !== 0) {
 			console.log();
 			console.log(chalk.red("ERROR: " + format.stderr));
-			process.exit(1);
+			return false;
 		}
 
 		const arr = format.stdout.split(/\(|\)|,/g).filter(Boolean);
@@ -167,25 +158,14 @@ export class GitClientHooks {
 			time: arr[3],
 			shortMsg: arr[4],
 			msg: arr[4] + "\n" + arr[5],
-			files: [] as string[]
+			files: await getCommittedFiles("HEAD^", "HEAD", this.cwd)
 		};
 
-		const files = await getCommittedFiles("HEAD^", "HEAD", this.cwd);
-		commitKV.files = files;
-
-		if (this.hnds.postCommit && typeof this.hnds.postCommit === "function") {
-			await this.hnds.postCommit(commitKV, this.cwd);
-		}
+		return this.hnds.postCommit && isFunc(this.hnds.postCommit) ? await this.hnds.postCommit(commitKV, this.cwd) : true;
 	}
 
 	async postMerge() {
 		const mergedFiles = await getCommittedFiles("HEAD^", "HEAD", this.cwd);
-
-		if (this.hnds.postMerge && typeof this.hnds.postMerge === "function") {
-			const rslt = await this.hnds.postMerge(mergedFiles, this.cwd);
-			if (!rslt) {
-				process.exit(1);
-			}
-		}
+		return this.hnds.postMerge && isFunc(this.hnds.postMerge) ? await this.hnds.postMerge(mergedFiles, this.cwd) : true;
 	}
 }
