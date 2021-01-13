@@ -36,6 +36,15 @@ export interface ReleaseChangelogHookArgs extends ReleaseHookArgs {
 	commits: any[];
 }
 
+export interface ReleaseHooks {
+	lint?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
+	build?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
+	changelog?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
+	commit?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
+	addGitTag?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
+	publish?: (opts: { cwd: string; repo: string; dryRun?: boolean }) => Promise<void>;
+}
+
 export interface ReleaseOptions {
 	/**
 	 *
@@ -84,12 +93,7 @@ export interface ReleaseOptions {
 	/**
 	 * custom hooks
 	 */
-	hooks?: {
-		lint?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
-		build?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
-		changelog?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
-		publish?: (opts: { cwd: string; repo: string; dryRun?: boolean }) => Promise<void>;
-	};
+	hooks?: ReleaseHooks;
 	/**
 	 * current workspace name, default: packages
 	 */
@@ -109,15 +113,24 @@ const DEFAULT_HOOKS = {
 			log(chalk`{yellow [dryrun] New ChangeLog}: \n ${content}`);
 		}
 	},
+	async commit({ cwd, version, pkg, dryRun }) {
+		if (pkg) {
+			await commitChangesOfPackage(version, cwd, dryRun);
+		} else {
+			await commitChanges(version, cwd, dryRun);
+		}
+	},
+	async addGitTag({ cwd, version, pkg, dryRun }) {
+		if (pkg) {
+			await addGitTagOfPackage(version, cwd, dryRun);
+		} else {
+			await addGitTag(version, cwd, dryRun);
+		}
+	},
 	async publish({ cwd, repo, dryRun }: { cwd: string; repo: string; dryRun?: boolean }) {
 		await npmPublish(cwd, repo, dryRun);
 	}
-} as {
-	lint?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
-	build?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
-	changelog?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
-	publish?: (opts: { cwd: string; repo: string; dryRun?: boolean }) => Promise<void>;
-};
+} as ReleaseHooks;
 
 const officalNpmRepo = "https://registry.npmjs.org";
 
@@ -197,9 +210,15 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 		opts.hooks.changelog &&
 		(await opts.hooks.changelog({ cwd, version: targetVersion, dryRun: opts.dryRun, pkg }));
 
-	!opts.skipCommit && (await commitChangesOfPackage(targetVersion, cwd, opts.dryRun));
+	!opts.skipCommit &&
+		opts.hooks &&
+		opts.hooks.commit &&
+		(await opts.hooks.commit({ version: targetVersion, cwd, dryRun: opts.dryRun, pkg }));
 
-	!opts.skipPush && (await addGitTagOfPackage(targetVersion, cwd, opts.dryRun));
+	!opts.skipPush &&
+		opts.hooks &&
+		opts.hooks.addGitTag &&
+		(await opts.hooks.addGitTag({ version: targetVersion, cwd, dryRun: opts.dryRun, pkg }));
 
 	log(chalk.green(`Successfully publish package(${pkg}) version:\`${targetVersion}\`!`));
 }
@@ -228,6 +247,7 @@ export async function release(opts: ReleaseOptions) {
 
 	if (version === "independent" || (!version && pkg)) {
 		const pkgs = pkg ? pkg.split(",") : await getSortedPkgByPriority(process.cwd(), opts.workspace);
+
 		for (let l = pkgs.length; l--; ) {
 			await releasePackage(pkgs[l], opts);
 		}
@@ -284,10 +304,14 @@ export async function release(opts: ReleaseOptions) {
 
 		hooks && hooks.changelog && (await hooks.changelog({ version: targetVersion, cwd, dryRun }));
 
-		!skips.skipCommit && (await commitChanges(targetVersion, cwd, dryRun));
+		!skips.skipCommit &&
+			opts.hooks &&
+			opts.hooks.commit &&
+			(await opts.hooks.commit({ version: targetVersion, cwd, dryRun }));
 
 		if (!skips.skipPush) {
-			await addGitTag(targetVersion, cwd, dryRun);
+			opts.hooks && opts.hooks.addGitTag && (await opts.hooks.addGitTag({ version: targetVersion, cwd, dryRun }));
+
 			await gitPush(dryRun);
 		}
 
