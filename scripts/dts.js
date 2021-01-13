@@ -9,8 +9,8 @@ const packagesRoot = path.resolve(__dirname, "../packages/");
 
 const pkgDirList = [
 	"utils",
-	"core",
 	"builtin-build",
+	"core",
 	"builtin-deps",
 	"builtin-githooks",
 	"builtin-publish",
