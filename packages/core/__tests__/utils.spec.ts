@@ -10,7 +10,7 @@ test(" sortPkgs ", async done => {
 	expect(dirs.join(",")).toBe("builtin-build,builtin-deps,builtin-githooks,builtin-publish,cli,cli-init,core,utils");
 
 	dirs = await sortPkgs("priority", "");
-	expect(dirs.join(",")).toBe("utils,core,builtin-build,cli-init,builtin-deps,builtin-githooks,builtin-publish,cli");
+	expect(dirs.join(",")).toBe("utils,builtin-build,builtin-deps,builtin-githooks,builtin-publish,cli-init,core,cli");
 
 	dirs = await sortPkgs(["core,cli,cli-init"], "");
 	expect(dirs.join(",")).toBe("core,cli,cli-init");
@@ -19,7 +19,7 @@ test(" sortPkgs ", async done => {
 	expect(dirs.join(",")).toBe("builtin-build,core,utils");
 
 	dirs = await sortPkgs("priority", "core,utils,builtin-build");
-	expect(dirs.join(",")).toBe("utils,core,builtin-build");
+	expect(dirs.join(",")).toBe("utils,builtin-build,core");
 
 	dirs = await sortPkgs(["core", "cli", "cli-init"], "core,utils,builtin-build");
 	expect(dirs.join(",")).toBe("core");
