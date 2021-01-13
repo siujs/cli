@@ -150,32 +150,29 @@ export function getPkgData(pkgName: string, cwd = process.cwd(), workspace = DEF
 export async function getSortedPkgByPriority(cwd = process.cwd(), workspace = DEFAULT_WORKSPACE) {
 	const pkgPaths = await getPackagePaths(cwd, workspace);
 
-	const kv = {} as Record<string, number>;
+	const pkgMetas = await Promise.all(pkgPaths.map(pkgPath => fs.readJSON(path.resolve(pkgPath, "package.json"))));
 
-	const pkgMetaNames = [] as string[];
+	const pkgMetaNames = pkgMetas.map(meta => meta.name);
 
-	for (let l = pkgPaths.length; l--; ) {
-		const meta = await fs.readJSON(path.resolve(pkgPaths[l], "package.json"));
-		pkgMetaNames.push(meta.name);
-		if (!kv[meta.name]) {
-			kv[meta.name] = 0;
-		}
+	const kv = pkgMetas.reduce((prev, meta) => {
+		prev[meta.name] = prev[meta.name] || 0;
 
 		const deps = Object.keys({
 			...(meta.dependencies || {}),
 			...(meta.peerDependencies || {})
-		});
+		}).filter(p => pkgMetaNames.includes(p));
 
 		if (deps.length) {
-			deps.reduce((prev, cur) => {
-				prev[cur] = kv[meta.name] + 1;
-				return prev;
-			}, kv);
+			deps.reduce((kv, dep) => {
+				kv[dep] = (kv[dep] || 0) + 1;
+				return kv;
+			}, prev);
 		}
-	}
+
+		return prev;
+	}, <Record<string, number>>{});
 
 	return Object.keys(kv)
-		.filter(key => pkgMetaNames.includes(key))
 		.reduce((prev, cur) => {
 			prev[kv[cur]] = prev[kv[cur]] || [];
 			prev[kv[cur]].push(getPkgDirName(cur));

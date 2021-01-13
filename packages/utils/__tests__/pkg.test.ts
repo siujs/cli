@@ -103,12 +103,12 @@ test("getSortedPkgByPriority", async done => {
 	expect(JSON.stringify(sortedPkgs)).toBe(
 		JSON.stringify([
 			"utils",
-			"core",
 			"builtin-build",
-			"cli-init",
 			"builtin-deps",
 			"builtin-githooks",
 			"builtin-publish",
+			"cli-init",
+			"core",
 			"cli"
 		])
 	);
