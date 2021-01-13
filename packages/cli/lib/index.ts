@@ -6,7 +6,7 @@ import path from "path";
 import validProjectName from "validate-npm-package-name";
 
 import { adjustSiuConfigCWD, loadPlugins, PluginCommand, SiuConfig } from "@siujs/core";
-import { filterUnExistsPkgs, getPackageDirs, isPkgExists } from "@siujs/utils";
+import { camelize, filterUnExistsPkgs, getPackageDirs, isPkgExists } from "@siujs/utils";
 
 import { cliFallback, cmdFallback } from "./builtins";
 
@@ -187,7 +187,9 @@ export async function initCLI(isStrict?: boolean) {
 						message: "Select git lifecycle hook:",
 						choices: ["pre-commit", "prepare-commit-msg", "commit-msg", "post-commit", "post-merge"]
 					});
-					opts.hook = hook;
+					opts.hook = camelize(hook);
+				} else {
+					opts.hook = camelize(opts.hook);
 				}
 
 				await runCmd("glint", opts);
