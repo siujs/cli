@@ -1,5 +1,4 @@
 const camelizeRE = /-(\w)/g;
-const unCamelizeRE = /([A-Z])/g;
 
 /**
  *
