@@ -12,9 +12,9 @@
 - `demo`: 本地 demo 运行
 - `serve`: 本地开发环境启动
 - `test`: unit-test、e2e
-- `build`: 构建
-- `publish`: 发布
-- `glint`: git commit lint
+- `build`: 构建模块
+- `publish`: 发布模块
+- `glint`:  一般用于处理`git add`的`lintStaged`和`git commit`的msg验证
 
 ## 插件命令操作周期
 
@@ -29,18 +29,19 @@
 
 <div style="background:yellow;">注意：</div>
 
-- `clean`无论流程是否发生异常都会执行
-- `start`流程是可选的
-- `@siujs/core`内部已经在流程最外层捕获了异常，所有如果需要处理异常信息的话，请在`error`里面执行`ctx.ex()`获取异常信息
+- `start`流程如果没有定义的话就默认先执行`process`
+- `start`和`process`必须二者定义一个或者都定义，要不然流程无法启动
+- `@siujs/core`内部已经在流程最外层捕获了异常，所以如果需要处理异常信息的话，请在`error`里面执行`ctx.ex()`获取异常信息
+- `clean`无论流程是否发生异常都会执行，这样设计的初衷主要是有一些情况下例如dts的生成就需要其他模块构建过程中产生的临时文件，所以为了兼容这样的情况，清理操作全部放在最后执行;
 
 ![整个流程周期如下图所示](/siu-plugin-flow.png)
 
 ## 编写插件
 
-```typescript
-import { CLIOptionHandlerParams, PluginApi } from "@siujs/core";
+```js
+import { definePlugin, CLIOptionHandlerParams, PluginApi } from "@siujs/core";
 
-export default (api: PluginApi) => {
+export default definePlugin((api: PluginApi) => {
 	api.create.cli((option: CLIOptionHandlerParams) => {
 		option("-d, --deps <deps>", "name of siblings package, e.g. `pkg1` or `pkg1,pkg2`");
 	});
@@ -90,7 +91,7 @@ export default (api: PluginApi) => {
 	api.create.clean(async (ctx: HookHandlerContext) => {
 		// do something
 	});
-};
+});
 ```
 
 ### 插件上下文
@@ -110,7 +111,7 @@ export default (api: PluginApi) => {
 
 使用如下:
 
-```typescript
+```js
 /**
  * opts:
  * {
@@ -118,7 +119,6 @@ export default (api: PluginApi) => {
  * }
  *
  */
-
 ctx.opts<string>("foo");
 // will output "2";
 
@@ -131,6 +131,17 @@ ctx.opts<{ foo: string }>();
 获取/设置插件全局可使用的临时键值对， 主要为了实现数据跨步骤甚至跨命令共享；
 
 最常用的使用场景是在`start`周期中使用`ctx.keys("startTime",Date.now())`记录流程开始时间，在`complete`周期中使用`const diffTime = Date.now() - ctx.keys("startTime")`来得到当前命令所花费的时间`diffTime`；
+
+使用如下：
+
+```js
+// set value to `startTime`
+ctx.keys("startTime",new Date().getTime());
+
+// get value of `startTime`
+const startTime = ctx.keys<number>("startTime");
+
+```
 
 <div style="background:yellow;">注意：</div>
 
@@ -147,7 +158,7 @@ ctx.opts<{ foo: string }>();
 - 获取: `const err = ctx.ex()`
 - 设置： `ctx.ex(new Error('xxxx'))` or `ctx.ex('msg')`
 
-Note: 只要在`start`、`process`周期中使用了异常记录，那么就认为当前命令处理流程发生了异常，会停止向下流转；
+**Note**: 只要在`start`、`process`周期中使用了异常记录，那么就认为当前命令处理流程发生了异常，会停止向下流转；
 
 #### ctx.pkg
 
@@ -155,6 +166,29 @@ Note: 只要在`start`、`process`周期中使用了异常记录，那么就认�
 
 - 获取: `const pkgData = ctx.pkg()`;
 - 设置: `ctx.pkg({...})`
+
+使用如下：
+
+```js
+/**
+* 
+*  get package data
+*
+*/
+const pkgData = ctx.pkg();
+
+
+/**
+* update package.json data of package
+*/
+ctx.pkg({
+    name:"xxx",
+    version:"xxx",
+    dependencies:{
+        ....
+    }
+})
+```
 
 <div style="background:yellow;">注意：</div>
 

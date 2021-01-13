@@ -1,6 +1,6 @@
 # siu build
 
-> 批量处理`package`的代码构建输出, 默认提供`rollup`的支持
+批量处理`package`的代码构建输出, 默认提供`rollup`的支持
 
 ##### 命令
 
@@ -8,8 +8,9 @@
 用法: build [options] [pkg]
 
 选项:
-  -S, --no-strict        非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录
-  -f, --format <format>  输出模式: es、cjs、umd、umd-min
+	-S, --no-strict        		非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录
+	-w, --workspace [workspace]	指定工作区的文件夹名称 (default: "packages")
+	-f, --format <format>		输出模式: es、cjs、umd、umd-min
 ```
 
 ##### <span style="color:red">\*\*注意\*\*</span>

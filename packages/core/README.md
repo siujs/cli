@@ -1,11 +1,13 @@
 # `@siujs/core`
 
-> TODO: description
-
 ## Usage
 
-```
-const core = require('@siujs/core');
+```js
+import { definePlugin } from "@siujs/core";
 
-// TODO: DEMONSTRATE API
+export default definePlugin(api => {
+	api.create.start(() => {
+		// do something
+	});
+});
 ```

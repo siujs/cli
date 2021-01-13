@@ -1,6 +1,6 @@
 # siu create
 
-> 创建基于`monorepo`的`package`模块
+创建基于`monorepo`的`package`模块
 
 ##### 命令
 
@@ -8,8 +8,9 @@
 用法：create [options] <pkg>
 
 选项：
-  -S, --no-strict   非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录）
-  -d, --deps <deps> 需要依赖的同级package的名称
+	-S, --no-strict				非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录）
+	-w, --workspace [workspace]	指定工作区的文件夹名称 (default: "packages")
+	-d, --deps <deps>			需要依赖的同级package的名称
 ```
 
 ##### 使用

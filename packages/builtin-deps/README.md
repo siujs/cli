@@ -1,11 +1,3 @@
 # `@siujs/builtin-deps`
 
-> TODO: description
-
-## Usage
-
-```
-const deps = require('@siujs/builtin-deps');
-
-// TODO: DEMONSTRATE API
-```
+Please goto [siu/builtin/deps](https://siujs.github.io/cli/#/builtin/?id=siujsbuiltin-deps)

@@ -1,8 +1,6 @@
 # siu init
 
-> 创建`monorepo`风格项目
-
-> 依赖于`@siujs/cli-init`
+通过下载远程模板仓库地址来初始化项目,依赖于`@siujs/cli-init`
 
 ##### 命令
 
@@ -10,8 +8,9 @@
 用法: init [options] <template> <app>
 
 选项:
-
-  -s, --source <source> 项目模板来源： gitlab、github、gitee 或者私人git地址
+	-s, --source <source> 项目模板来源： gitlab、github、gitee 或者私人git地址
+	--skipInstall         是否跳过yarn/npm的install过程
+	-h, --help            显示命令帮助文档
 
 ```
 

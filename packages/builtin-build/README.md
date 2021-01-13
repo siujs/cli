@@ -1,11 +1,3 @@
 # `@siujs/builtin-build`
 
-> TODO: description
-
-## Usage
-
-```
-const rollup = require('@siujs/builtin-build');
-
-// TODO: DEMONSTRATE API
-```
+Please goto [siu/builtin/build](https://siujs.github.io/cli/#/builtin/?id=siujsbuiltin-build)

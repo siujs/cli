@@ -1,5 +1,5 @@
-# `@siu/cli-shared`
+# `@siujs/utils`
 
-#### Introduction
+Scaffolding help method collection module
 
-Utils for @siu/xxxx
+## Apis

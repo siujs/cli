@@ -1,11 +1,3 @@
-# `@siujs/git-lint`
+# `@siujs/builtin-githooks
 
-> TODO: description
-
-## Usage
-
-```
-const gitLint = require('@siujs/git-lint');
-
-// TODO: DEMONSTRATE API
-```
+Please goto [siu/builtin/githooks](https://siujs.github.io/cli/#/builtin/?id=siujsbuiltin-githooks)

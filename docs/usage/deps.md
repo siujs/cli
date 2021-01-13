@@ -1,6 +1,6 @@
 # siu deps
 
-> 针对`package`执行`add/remove dev/dependencies`操作
+针对`package`执行`add/remove dev/dependencies`操作
 
 ##### 命令
 

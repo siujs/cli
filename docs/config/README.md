@@ -3,7 +3,7 @@
 通过`siu` CLI 创建的项目都会在根目录创建`siu.config.xx`的配置文件,这个配置文件是可选的；如果项目的(和`package.json`同级的)根目录中存在这个文件，那么它就会被`@siujs/core`自动加载。
 当然也可以使用`package.json`中的`siu`字段,但是注意这种写法需要严格遵照 JSON 的格式来写;
 
-当然，更推荐是直接使用`siu.config.js|ts`的形式来处理;
+当然，更推荐是直接使用`siu.config.js|ts`的形式来处理，`@siujs/cli`提供了`defineConfig`方法来增强大家配置时候的智能提示
 
 这个文件应该导出一个包含了选项的对象：
 
@@ -17,10 +17,8 @@ module.exports = {
 export default {
 	// 选项...
 };
-```
 
-```json
-// package.json
+// in package.json
 {
 	"siu": {
 		// 选项...
@@ -51,10 +49,8 @@ module.exports = {
 	}
 	// foo不参与所有插件的build命令处理中，bar不参与所有插件的publish命令处理中
 };
-```
 
-```json
-// package.json
+// in package.json
 {
 	"siu": {
 		"excludePkgs": {
@@ -80,10 +76,13 @@ module.exports = {
 module.exports = {
 	plugins: ["@siujs/foo", "bar"]
 };
-```
 
-```json
-// package.json
+// siu.config.ts
+export default = {
+	plugins: ["@siujs/foo", "bar"]
+}；
+
+// in package.json
 {
 	"siu": {
 		"plugins": ["@siujs/foo", "bar"]

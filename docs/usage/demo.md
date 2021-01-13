@@ -1,16 +1,14 @@
-# siu doc
+# siu demo
 
-此命令主要是服务于代码的文档构建，尤其体现在类库项目的说明文档或 api 文档的构建工作上
+处理`package`的本地案例运行等
 
 ##### 命令
 
 ```bash
-用法: doc [options] [pkg]
-
-Generate docs of target monorepo's package
+用法: test [options] [pkg]
 
 选项:
-	-S, --no-strict				非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录
+	-S, --no-strict  			非严格模式（不需要去强制检查siu.config.(js|ts)的所在目录
 	-w, --workspace [workspace]	指定工作区的文件夹名称 (default: "packages")
 ```
 
