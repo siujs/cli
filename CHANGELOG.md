@@ -1,5 +1,27 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.9](https://github.com/siujs/cli/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2021-01-13)
+
+### Bug Fixes
+
+-  **cli**: error `cwd` cause repeat `appName` dirs ([d9e1a1f](https://github.com/siujs/cli/commit/d9e1a1f3ed205749e7f5d91f7372a95f840cbdc0))
+- `peerDependencies` not to be auto installed ([6eb67ae](https://github.com/siujs/cli/commit/6eb67aefdbabf566c6d56a0d054eb1356e2efd56))
+-  **core**: plugID binding error in fallback ([5c1a402](https://github.com/siujs/cli/commit/5c1a402dcfcba55cc91895316d7165d97acaf2ee))
+-  **utils**: can't set `type` in mergeCorrespondence ([74fddc9](https://github.com/siujs/cli/commit/74fddc94dd36bbf345862bec0bf2accca162cd84))
+
+### Performance Improvements
+
+-  **cli**: load @siujs/cli-init on demand ([8fa98e1](https://github.com/siujs/cli/commit/8fa98e1fa97050e29756e4671ec1dcbf4a5fb151))
+
+### Features
+
+-  **core**: add `definePlugin` output api ([1245557](https://github.com/siujs/cli/commit/1245557fde64de5794ce65860dbc6dc1c8c46a28))
+
+### Code Refactoring
+
+-  **builtin-publish**: adjust updateChangelog ([7db15b1](https://github.com/siujs/cli/commit/7db15b171a99a126e829d8840e89d677c8cd20cc))
+-  **core**: set `cwd` optional of resolveConfig ([cc80df4](https://github.com/siujs/cli/commit/cc80df4fef4aaaa5f4afccaf394f6372b28c0f1b))
+
 ## [v1.0.0-beta.8](https://github.com/siujs/cli/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2021-01-11)
 
 ### Bug Fixes
