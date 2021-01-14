@@ -12,8 +12,8 @@ export async function detectGlobalCommand(cmd: string) {
 	try {
 		await execa(cmd, ["--help"]);
 		return true;
-	} catch (err) {
-		return !err.stderr;
+	} catch {
+		return false;
 	}
 }
 
