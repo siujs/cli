@@ -1,14 +1,14 @@
-jest.mock("shelljs", () => {
-	return {
-		which: jest.fn(name => name !== "yarn"),
-		exec: jest.fn((bin, args, options) => {
-			console.log(bin, args, options);
-		})
-	};
+jest.mock("execa", () => {
+	return jest.fn((bin, args, options) => {
+		console.log(bin, args, options);
+		return {
+			stdout: "stdout"
+		};
+	});
 });
 
+import exec from "execa";
 import path from "path";
-import { exec, which } from "shelljs";
 
 import { changeDeps } from "../lib/index";
 import { getPkgMeta, isLocalPackage, normalizeDepStr, transformDepStr } from "../lib/utils";
@@ -122,34 +122,30 @@ describe(" test 'getPkgMeta' ", () => {
 });
 
 describe(" test 'changeDeps' ", () => {
-	it("should be called 2 time of 'sh.exec' when use action=rm", async done => {
+	it("should be called 1 time of 'exec' when use action=rm", async done => {
 		await changeDeps("builtin-deps", "debug", "rm");
-		expect(which).toHaveBeenCalled();
 		expect(exec).toHaveBeenCalled();
-		expect(exec).toHaveBeenCalledTimes(2);
+		expect(exec).toHaveBeenCalledTimes(1);
 		done();
 	});
 
-	it("should not be called of 'sh.exec' when use action=add and valid dep string ", async done => {
+	it("should not be called of 'exec' when use action=add and valid dep string ", async done => {
 		await changeDeps("builtin-deps", "@xx", "add");
-		expect(which).not.toHaveBeenCalled();
 		expect(exec).not.toHaveBeenCalled();
 		done();
 	});
 
-	it("should be called 2 times of 'sh.exec' when use action=add and dep string without ':D' ", async done => {
+	it("should be called 1 times of 'exec' when use action=add and dep string without ':D' ", async done => {
 		await changeDeps("builtin-deps", "debug");
-		expect(which).toHaveBeenCalled();
 		expect(exec).toHaveBeenCalled();
-		expect(exec).toHaveBeenCalledTimes(2);
+		expect(exec).toHaveBeenCalledTimes(1);
 		done();
 	});
 
-	it("should be called 3 times of 'sh.exec' when use action=add and dep string with ':D' ", async done => {
+	it("should be called 2 times of 'exec' when use action=add and dep string with ':D' ", async done => {
 		await changeDeps("builtin-deps", "@siujs/utils,foo:D");
-		expect(which).toHaveBeenCalled();
 		expect(exec).toHaveBeenCalled();
-		expect(exec).toHaveBeenCalledTimes(3);
+		expect(exec).toHaveBeenCalledTimes(2);
 		done();
 	});
 
@@ -158,6 +154,6 @@ describe(" test 'changeDeps' ", () => {
 	});
 
 	afterAll(() => {
-		jest.unmock("shelljs");
+		jest.unmock("execa");
 	});
 });

@@ -1,14 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
-import shell from "shelljs";
 
-import { getPackagePath, isWindows } from "@siujs/utils";
-
-export function detectYarn() {
-	if (!shell.which("yarn")) {
-		shell.exec(isWindows ? `npm i -g yarn` : `sudo npm i -g yarn`);
-	}
-}
+import { exec, getPackagePath } from "@siujs/utils";
 
 export function transformDepStr(str: string) {
 	let normalStr = str.replace(":D", "");
@@ -107,5 +100,9 @@ export async function addDeps(
 		}
 	}
 
-	shell.exec(`yarn -W${isDev ? "D" : ""} add ${deps.map(dep => `${dep.name}@${dep.version}`).join(" ")}`, { cwd });
+	return exec(
+		"yarn",
+		["-W", isDev ? "-D" : "", "add"].concat(deps.map(dep => `${dep.name}@${dep.version}`).join(" ")).filter(Boolean),
+		{ cwd }
+	);
 }

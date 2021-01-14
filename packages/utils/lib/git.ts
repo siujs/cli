@@ -1,6 +1,26 @@
 import parser, { Commit } from "conventional-commits-parser";
+import { Options } from "execa";
 import path from "path";
-import sh from "shelljs";
+import rm from "rimraf";
+
+import { exec } from "./exec";
+
+/**
+ * Explicitly never recurse commands into submodules, overriding local/global configuration.
+ * @see https://git-scm.com/docs/git-config#Documentation/git-config.txt-submodulerecurse
+ */
+const NO_SUBMODULE_RECURSE = ["-c", "submodule.recurse=false"];
+
+/**
+ *
+ * Exec git command
+ *
+ * @param cmd git command string array
+ * @param options execa options
+ */
+export async function execGit(cmd: string[], options: Options<string> = {}) {
+	return await exec("git", NO_SUBMODULE_RECURSE.concat(cmd), options);
+}
 
 /**
  *
@@ -10,45 +30,35 @@ import sh from "shelljs";
  * @param branch branch name
  * @param dest dest path
  */
-export function downloadGit(gitUrl: string, branch: string, dest: string) {
-	return new Promise((resolve, reject) => {
-		sh.exec(`git clone -b ${branch} ${gitUrl} ${dest}`, { silent: true }, (code, stdout, stderr) => {
-			if (code === 0) {
-				/**
-				 * remove unused directory `.git`
-				 */
-				sh.rm("-rf", path.resolve(dest, "./.git"));
-				resolve(stdout);
-			} else {
-				/* istanbul ignore next */
-				reject(stderr);
-			}
-		});
-	});
+export async function downloadGit(gitUrl: string, branch: string, dest: string) {
+	await execGit(["clone", "-b", branch, gitUrl, dest]);
+
+	await new Promise((resolve, reject) =>
+		rm(path.resolve(dest, "./.git"), (err: Error) => {
+			err ? /* istanbul ignore next */ reject(err) : resolve(true);
+		})
+	);
 }
 
 /**
  * get changed file paths which in staged changes
  *
- * @param {string} cwd current workspace directory
+ * @param cwd current workspace directory
+ * @param options  git-diff options refer: https://git-scm.com/docs/git-diff#Documentation/git-diff.txt
+ *
  *
  * @return {Promise<string[]} changed file paths
  */
-export function getStagedFiles(cwd: string): Promise<string[]> {
-	return new Promise((resolve, reject) => {
-		sh.exec("git diff --name-only --cached", { silent: true, cwd }, (code, stdout, stderr) => {
-			if (code === 0) {
-				return resolve(
-					stdout
-						.split("\n")
-						.filter(Boolean)
-						.map(it => path.resolve(cwd, it))
-				);
-			}
-			/* istanbul ignore next */
-			reject(stderr);
-		});
-	});
+export async function getStagedFiles(cwd: string, options: string[] = []): Promise<string[]> {
+	const stagedCmds = ["diff", "--staged", "--name-only", "-z", "--diff-filter=ACMR"];
+
+	const lines = await execGit(stagedCmds.concat(options), { cwd });
+
+	return lines
+		.replace(/\u0000$/, "")
+		.split("\u0000")
+		.filter(Boolean)
+		.map(it => path.resolve(cwd, it));
 }
 
 /**
@@ -57,29 +67,12 @@ export function getStagedFiles(cwd: string): Promise<string[]> {
  *
  * @param versionPrefix tag version prefix
  */
-export function getPreTag(versionPrefix?: string): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const child = sh.exec(`git tag --list ${versionPrefix ? `${versionPrefix}v*` : "v*"} --sort -v:refname`, {
-			async: true,
-			silent: true
-		});
+export async function getPreTag(versionPrefix?: string): Promise<string> {
+	const tagCmds = ["tag", "--list", "--sort", "-v:refname"];
 
-		let tags = "";
+	const tags = await execGit(tagCmds.concat([`${versionPrefix ? `${versionPrefix}v*` : "v*"}`]));
 
-		child.stdout
-			.on("data", data => {
-				tags = data + "\n";
-			})
-			.on("end", () => {
-				const [latestTag] = tags.split("\n");
-
-				resolve(latestTag);
-			})
-			/* istanbul ignore next */
-			.on("error", (err: Error) => {
-				reject(err);
-			});
-	});
+	return tags.split("\n").shift();
 }
 
 /**
@@ -91,21 +84,17 @@ export function getPreTag(versionPrefix?: string): Promise<string> {
  *
  * @return {Promise<string[]} commited file paths
  */
-export function getCommittedFiles(startHash: string, endHash = "HEAD", cwd: string = process.cwd()): Promise<string[]> {
-	return new Promise((resolve, reject) => {
-		sh.exec(`git diff --name-only ${startHash} ${endHash}`, { silent: true, cwd }, (code, stdout, stderr) => {
-			if (code === 0) {
-				return resolve(
-					stdout
-						.split("\n")
-						.filter(Boolean)
-						.map(it => path.resolve(cwd, it))
-				);
-			}
-			/* istanbul ignore next */
-			reject(stderr);
-		});
-	});
+export async function getCommittedFiles(
+	startHash: string,
+	endHash = "HEAD",
+	cwd: string = process.cwd()
+): Promise<string[]> {
+	const lines = await execGit(["diff", "--name-only", "-z", startHash, endHash], { cwd });
+	return lines
+		.replace(/\u0000$/, "")
+		.split("\u0000")
+		.filter(Boolean)
+		.map(it => path.resolve(cwd, it));
 }
 
 export type GroupedCommitsItem = Commit & {
@@ -128,77 +117,68 @@ export type GroupedCommitsItem = Commit & {
  * @param endHash - end commit id ,default: HEAD
  *
  */
-export function getGroupedCommits(
+export async function getGroupedCommits(
 	startHash: string,
 	endHash = "HEAD"
 ): Promise<Record<"breaking" | string, GroupedCommitsItem[]>> {
-	return new Promise((resolve, reject) => {
-		sh.exec(
-			`git --no-pager log ${startHash}..${endHash} --format=%B%n-extra-%n%H%n%an%n%ae%n%ci💨💨💨`,
-			{ silent: true },
-			(code, stdout, stderr) => {
-				/* istanbul ignore if */
-				if (code !== 0) {
-					return reject(stderr);
-				}
-				const commits = stdout
-					.split("💨💨💨")
-					.filter(commit => commit.trim())
-					.reduce(
-						(prev, commit) => {
-							const node = parser.sync(commit, {
-								mergePattern: /^Merge pull request #(\d+) from (.*)$/,
-								mergeCorrespondence: ["pullId", "pullSource"]
-							});
-							const extra = node.extra.split("\n");
+	const lines = await execGit([
+		"--no-pager",
+		"log",
+		`${startHash}...${endHash}`,
+		"--format=%B%n-extra-%n%H%n%an%n%ae%n%ci💨💨💨"
+	]);
 
-							const breaking =
-								/(BREAKING CHANGE)|(Breaking Change)/.test(node.body || node.footer) || /!:/.test(node.header);
+	return lines
+		.split("💨💨💨")
+		.filter(commit => commit.trim())
+		.reduce(
+			(prev, commit) => {
+				const node = parser.sync(commit, {
+					mergePattern: /^Merge pull request #(\d+) from (.*)$/,
+					mergeCorrespondence: ["pullId", "pullSource"]
+				});
+				const extra = (node.extra || "").split("\n");
 
-							const kv = {
-								...node,
-								extra: {
+				const breaking =
+					/(BREAKING CHANGES)|(Breaking Changes)/.test(node.body || node.footer) || /!:/.test(node.header);
+
+				const kv = {
+					...node,
+					extra:
+						extra.length >= 4
+							? {
 									hash: extra[0],
 									userName: extra[1],
 									userEmail: extra[2],
 									time: extra[3]
-								},
-								breaking
-							} as GroupedCommitsItem;
+							  }
+							: {},
+					breaking
+				} as GroupedCommitsItem;
 
-							if (breaking) {
-								prev.breaking.push(kv);
-							} else if (node.merge) {
-								prev.merge = prev.merge || [];
-								prev.merge.push(kv);
-							} else {
-								prev[node.type] = prev[node.type] || [];
-								prev[node.type].push(kv);
-							}
-							return prev;
-						},
-						{ breaking: [] } as Record<"breaking" | string, GroupedCommitsItem[]>
-					);
-
-				resolve(commits);
-			}
+				if (breaking) {
+					prev.breaking.push(kv);
+				} else if (node.merge) {
+					prev.merge = prev.merge || [];
+					prev.merge.push(kv);
+				} else if (node.type) {
+					prev[node.type] = prev[node.type] || [];
+					prev[node.type].push(kv);
+				}
+				return prev;
+			},
+			{ breaking: [] } as Record<"breaking" | string, GroupedCommitsItem[]>
 		);
-	});
 }
 
 /**
  * Get first commit id
+ *
+ * @param isShort Whether get short commit hash id
  */
-export function getFirstCommitId(isShort?: boolean): Promise<string> {
-	return new Promise((resolve, reject) => {
-		sh.exec(`git log --format=%${isShort ? "h" : "H"} --reverse`, { silent: true }, (code, stdout, stderr) => {
-			/* istanbul ignore if */
-			if (stderr) return reject(stderr);
-
-			const ids = stdout.split("\n").filter(Boolean);
-			resolve(ids[0]);
-		});
-	});
+export async function getFirstCommitId(isShort?: boolean): Promise<string> {
+	const lines = await execGit(["log", "--reverse", `--format=%${isShort ? "h" : "H"}`]);
+	return lines.split("\n").shift();
 }
 
 /**
@@ -209,12 +189,6 @@ export function getFirstCommitId(isShort?: boolean): Promise<string> {
  * @param originName  git origin name ,default: origin
  */
 export async function getGitRemoteUrl(cwd: string, originName = "origin"): Promise<string> {
-	return new Promise((resolve, reject) => {
-		sh.exec(`git remote get-url ${originName}`, { silent: true, cwd }, (code, stdout, stderr) => {
-			/* istanbul ignore if */
-			if (stderr) return reject(stderr);
-			const urls = stdout.split("\n").filter(Boolean);
-			resolve(urls[0]);
-		});
-	});
+	const lines = await execGit(["remote", "get-url", originName], { cwd });
+	return lines.split("\n").shift();
 }

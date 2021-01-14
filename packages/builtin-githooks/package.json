@@ -33,7 +33,6 @@
 	},
 	"dependencies": {
 		"@siujs/utils": "1.0.0-beta.9",
-		"chalk": "^4.1.0",
-		"shelljs": "^0.8.4"
+		"chalk": "^4.1.0"
 	}
 }

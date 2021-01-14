@@ -1,17 +1,17 @@
 import fs from "fs-extra";
 import path from "path";
-import sh from "shelljs";
+import rm from "rimraf";
 
 import { downloadTpl } from "../lib/utils";
 
 const dest = path.resolve(__dirname, "./tpls");
 
 beforeEach(() => {
-	sh.rm("-rf", dest);
+	rm.sync(dest);
 });
 
 afterEach(() => {
-	sh.rm("-rf", dest);
+	rm.sync(dest);
 });
 
 test(" downloadTpl ", async done => {

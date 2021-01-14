@@ -1,8 +1,6 @@
-import shell from "shelljs";
+import { createDebugger, exec, getPackagePath } from "@siujs/utils";
 
-import { createDebugger, getPackagePath } from "@siujs/utils";
-
-import { addDeps, detectYarn, normalizeDepStr } from "./utils";
+import { addDeps, normalizeDepStr } from "./utils";
 
 const debug = createDebugger("siu:deps");
 
@@ -31,18 +29,21 @@ export async function changeDeps(pkg: string, depStr: string, action: "add" | "r
 
 	debug(`start "${action}" deps on "${pkg}" `);
 
-	detectYarn();
-
 	const cwd = pkg ? getPackagePath(pkg, workspace) : process.cwd();
 
 	const { deps = [], devDeps = [] } = depsMap;
 
 	if (action === "rm") {
-		shell.exec(
-			`yarn -W remove ${deps
-				.concat(devDeps)
-				.map(it => it.name)
-				.join(" ")}`,
+		await exec(
+			"yarn",
+			[
+				"-W",
+				"remove",
+				...deps
+					.concat(devDeps)
+					.map(it => it.name)
+					.join(" ")
+			],
 			{ cwd }
 		);
 	} else {

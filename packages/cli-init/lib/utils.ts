@@ -1,9 +1,8 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
-import shell from "shelljs";
 
-import { isWindows, startSpinner } from "@siujs/utils";
+import { detectGlobalCommand, downloadGit, exec, execGit, installGlobalNodeModule, startSpinner } from "@siujs/utils";
 
 const HostMap = {
 	github: "github.com",
@@ -40,9 +39,9 @@ export interface InitAppOptios {
 
 export async function downloadTpl(opts: InitAppOptios) {
 	/* istanbul ignore if */
-	if (!shell.which("git")) {
-		shell.echo(chalk.redBright("Sorry, you need install `git`"));
-		shell.exit(1);
+	if (!(await detectGlobalCommand("git"))) {
+		console.log(chalk.redBright("Sorry, you need install `git`"));
+		return;
 	}
 
 	const spinner = startSpinner(chalk.greenBright(`Cloning files... `));
@@ -51,20 +50,13 @@ export async function downloadTpl(opts: InitAppOptios) {
 
 	const dest = path.resolve(opts.cwd, opts.appName);
 
-	await new Promise((resolve, reject) => {
-		shell.exec(`git clone -b ${branch} ${gitPath} ${dest}`, { silent: true }, (code, stdout, stderr) => {
-			/* istanbul ignore if */
-			if (code !== 0) {
-				spinner.fail("Failed clone template files, reason: " + stderr);
-				shell.exit(1);
-			}
-			shell
-				.rm("-rf", path.resolve(dest, "./.git"))
-				.exec("git init", { silent: true, cwd: dest }, (code, stdout, stderr) => {
-					code !== 0 ? reject(stderr) : resolve(stdout);
-				});
-		});
-	});
+	try {
+		await downloadGit(gitPath, branch, dest);
+		await execGit(["init"], { cwd: dest });
+	} catch (err) {
+		/* istanbul ignore next */
+		return spinner.fail("Failed clone template files, reason: " + err);
+	}
 
 	const siuConfigPath = path.resolve(dest, "./siu.config.js");
 
@@ -74,7 +66,6 @@ export async function downloadTpl(opts: InitAppOptios) {
 	if (!hasSiuConfig) {
 		await fs.writeFile(siuConfigPath, `module.exports={ excludePkgs:[], plugins:[] }`);
 	}
-
 	spinner.succeed(chalk.green(`${chalk.bold("Cloned")} files in ${chalk.bold(path.resolve(opts.cwd, opts.appName))}!`));
 }
 
@@ -82,19 +73,12 @@ export async function downloadTpl(opts: InitAppOptios) {
 export async function installDeps(opts: { cwd: string }) {
 	const spinner = startSpinner(chalk.greenBright(`☕ Installing packages, it will take a while `));
 
-	if (!shell.which("yarn")) {
+	if (!(await detectGlobalCommand("yarn"))) {
 		spinner.warn(chalk.yellowBright(`Warning: Missing \`yarn\`, and we will install it --global`));
-		shell.exec(`${isWindows ? "" : "sudo "}npm i -g yarn`);
+		await installGlobalNodeModule("yarn");
 	}
 
-	await new Promise((resolve, reject) => {
-		shell.exec("yarn", { silent: true, cwd: opts.cwd }, code => {
-			if (code !== 0) {
-				reject(false);
-			}
-			resolve(true);
-		});
-	});
+	await exec("yarn", { cwd: opts.cwd, stdio: "ignore" });
 
 	spinner.succeed(chalk.green(`${chalk.bold("Installed")} packages!`));
 }

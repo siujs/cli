@@ -1,9 +1,10 @@
 import fs from "fs-extra";
 import path from "path";
-import sh from "shelljs";
+import rm from "rimraf";
 
 import {
 	downloadGit,
+	execGit,
 	getCommittedFiles,
 	getFirstCommitId,
 	getGitRemoteUrl,
@@ -38,7 +39,7 @@ test("should exist `siu.config.js` from https://gitee.com/siujs/tpls#master ", a
 	exists = fs.pathExistsSync(path.resolve(dest, ".git"));
 	expect(exists).toBe(false);
 
-	sh.rm("-rf", dest);
+	rm.sync(dest);
 
 	done();
 }, 600000);
@@ -54,9 +55,9 @@ test(" should be `https://github.com/siujs/cli` ", async done => {
 test(" getPreTag ", async done => {
 	const tag = await getPreTag();
 
-	const { stdout } = sh.exec("git tag --list v* --sort -v:refname");
+	const lines = await execGit(["tag", "--list", "--sort", "-v:refname", "v*"], { all: true });
 
-	const tags = stdout.split("\n");
+	const tags = lines.split("\n");
 
 	expect(!!tags).toBe(true);
 	expect(tag).toBe(tags[0]);
@@ -97,26 +98,31 @@ test(" getGroupedCommits ", async done => {
 	done();
 });
 
-test(" getStagedFiles ", async done => {
+describe(" getStagedFiles ", () => {
 	const testCWD = path.resolve(__dirname, "git.test");
 
-	sh.mkdir("-p", testCWD);
-
-	sh.exec("git init", { cwd: testCWD });
-	sh.exec("git remote add test https://github.com/siujs/cli", { cwd: testCWD });
-
-	await fs.writeJSON(path.resolve(testCWD, "package.json"), {
-		name: "xxx"
+	beforeAll(() => {
+		fs.mkdirSync(testCWD, { recursive: true });
 	});
 
-	sh.exec("git add .", { cwd: testCWD });
+	afterAll(() => {
+		rm.sync(testCWD);
+	});
 
-	const files = await getStagedFiles(testCWD);
+	it("should get `packages/utils/__tests__/git.test/package.json`", async done => {
+		await fs.writeJSON(path.resolve(testCWD, "package.json"), {
+			name: "xxx"
+		});
 
-	expect(files.length).toBe(1);
-	expect(files[0]).toBe(path.resolve(testCWD, "package.json"));
+		await execGit(["add", path.resolve(testCWD, "package.json")], { cwd: testCWD });
 
-	sh.rm("-rf", testCWD);
+		const files = await getStagedFiles(path.resolve(__dirname, "../../../"));
 
-	done();
+		await execGit(["restore", "--staged", path.resolve(testCWD, "package.json")], { cwd: testCWD });
+
+		expect(files.length).toBe(1);
+		expect(files[0]).toBe(path.resolve(testCWD, "package.json"));
+
+		done();
+	});
 });

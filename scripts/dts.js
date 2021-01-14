@@ -3,7 +3,7 @@
 const path = require("path");
 const fs = require("fs-extra");
 const chalk = require("chalk");
-const shelljs = require("shelljs");
+const exec = require("execa");
 
 const packagesRoot = path.resolve(__dirname, "../packages/");
 
@@ -59,7 +59,7 @@ async function runApiExtractor(pkgName) {
 
 (async () => {
 	for (let i = 0; i < pkgDirList.length; i++) {
-		shelljs.exec("tsc --emitDeclarationOnly", {
+		await exec("tsc", ["--emitDeclarationOnly"], {
 			cwd: path.resolve(packagesRoot, pkgDirList[i])
 		});
 		await runApiExtractor(pkgDirList[i]);

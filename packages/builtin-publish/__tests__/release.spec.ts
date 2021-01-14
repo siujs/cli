@@ -1,6 +1,24 @@
 jest.mock("execa", () => {
-	return jest.fn((bin, args, options) => {
+	return jest.fn((bin: string, args: string[], options) => {
 		console.log(bin, args, options);
+
+		const exec = jest.requireActual("execa");
+
+		args = args || [];
+
+		const isGetGroupedCommittedFiles = args.some((p: string) => p.endsWith("--no-pager"));
+
+		const isGetPreTag = args.some((p: string) => p === "-v:refname");
+
+		const isGetFirstCommitId = args.some((p: string) => p === "--reverse");
+
+		if (isGetGroupedCommittedFiles || isGetPreTag || isGetFirstCommitId) {
+			return exec(bin, args, options);
+		}
+
+		return {
+			stdout: "stdout"
+		};
 	});
 });
 
@@ -37,17 +55,17 @@ describe(" test 'release' and 'releasePackage' ", () => {
 		beforeEach(() => {
 			jest.clearAllMocks();
 		});
-		it("should not be called of 'execa' when dryRun", async done => {
+		it("should be called 3 times of 'execa' when dryRun", async done => {
 			await release({
 				dryRun: true
 			});
 
-			expect(execa).not.toHaveBeenCalled();
+			expect(execa).toHaveBeenCalledTimes(3);
 
 			done();
 		});
 
-		it("should not be called of 'execa' when skipping all", async done => {
+		it("should be called 3 times of 'execa' when skipping all", async done => {
 			await release({
 				skipLint: true,
 				skipBuild: true,
@@ -56,46 +74,16 @@ describe(" test 'release' and 'releasePackage' ", () => {
 				skipPush: true
 			});
 
-			expect(execa).not.toHaveBeenCalled();
+			expect(execa).toHaveBeenCalledTimes(3);
 
 			done();
 		});
 
-		it("should be called 1 times of 'execa' when not skip lint ", async done => {
+		it("should be called 4 times of 'execa' when not skip lint ", async done => {
 			await release({
 				skipLint: false,
 				skipBuild: true,
 				skipCommit: true,
-				skipPublish: true,
-				skipPush: true
-			});
-
-			expect(execa).toHaveBeenCalled();
-			expect(execa).toHaveBeenCalledTimes(1);
-
-			done();
-		});
-
-		it("should be called 2 times of 'execa' when not skip lint and build ", async done => {
-			await release({
-				skipLint: false,
-				skipBuild: false,
-				skipCommit: true,
-				skipPublish: true,
-				skipPush: true
-			});
-
-			expect(execa).toHaveBeenCalled();
-			expect(execa).toHaveBeenCalledTimes(2);
-
-			done();
-		});
-
-		it("should be called 4 times of 'execa' when skip publish and push ", async done => {
-			await release({
-				skipLint: false,
-				skipBuild: false,
-				skipCommit: false,
 				skipPublish: true,
 				skipPush: true
 			});
@@ -106,7 +94,36 @@ describe(" test 'release' and 'releasePackage' ", () => {
 			done();
 		});
 
-		it("should be called 12 times of 'execa' when skip push ", async done => {
+		it("should be called 5 times of 'execa' when not skip lint and build ", async done => {
+			await release({
+				skipLint: false,
+				skipBuild: false,
+				skipCommit: true,
+				skipPublish: true,
+				skipPush: true
+			});
+
+			expect(execa).toHaveBeenCalled();
+			expect(execa).toHaveBeenCalledTimes(5);
+
+			done();
+		});
+
+		it("should be called 7 times of 'execa' when skip publish and push ", async done => {
+			await release({
+				skipLint: false,
+				skipBuild: false,
+				skipCommit: false,
+				skipPublish: true,
+				skipPush: true
+			});
+
+			expect(execa).toHaveBeenCalledTimes(7);
+
+			done();
+		});
+
+		it("should be called 15 times of 'execa' when skip push ", async done => {
 			await release({
 				skipLint: false,
 				skipBuild: false,
@@ -115,13 +132,12 @@ describe(" test 'release' and 'releasePackage' ", () => {
 				skipPush: true
 			});
 
-			expect(execa).toHaveBeenCalled();
-			expect(execa).toHaveBeenCalledTimes(12);
+			expect(execa).toHaveBeenCalledTimes(15);
 
 			done();
 		});
 
-		it("should be called 12 times of 'execa' when skip nothing ", async done => {
+		it("should be called 18 times of 'execa' when skip nothing ", async done => {
 			await release({
 				skipLint: false,
 				skipBuild: false,
@@ -130,8 +146,7 @@ describe(" test 'release' and 'releasePackage' ", () => {
 				skipPush: false
 			});
 
-			expect(execa).toHaveBeenCalled();
-			expect(execa).toHaveBeenCalledTimes(15);
+			expect(execa).toHaveBeenCalledTimes(18);
 
 			done();
 		});
@@ -141,15 +156,20 @@ describe(" test 'release' and 'releasePackage' ", () => {
 		beforeEach(() => {
 			jest.clearAllMocks();
 		});
-		it("should not be called 'execa' when use version:independent and dryRun", async done => {
+		it("should be called 'execa' 40 times when use version:independent and dryRun", async done => {
 			await release({ version: "independent", dryRun: true });
-
-			expect(execa).not.toHaveBeenCalled();
+			/**
+			 *  valid can release package: 1
+			 * 	changelog: 4
+			 *
+			 *  8*(valid can release package + changelog)
+			 */
+			expect(execa).toHaveBeenCalledTimes(40);
 
 			done();
 		});
 
-		it("should be called 1 times when skip lint、publish 、commit and push", async done => {
+		it("should be called 41 times when skip lint、publish 、commit and push", async done => {
 			await release({
 				version: "independent",
 				skipPublish: true,
@@ -157,19 +177,21 @@ describe(" test 'release' and 'releasePackage' ", () => {
 				skipCommit: true
 			});
 
-			expect(execa).toHaveBeenCalled();
-			expect(execa).toHaveBeenCalledTimes(1);
+			expect(execa).toHaveBeenCalledTimes(41);
 
 			done();
 		});
 
-		it("should be called 9 times when skip lint、commit and push", async done => {
+		it("should be called 49 times when skip lint、commit and push", async done => {
 			/**
 			 *  lint: 0
 			 *  build: 1
 			 *  publish: 1
 			 *
-			 *  total= lint + build + 8*(publish)
+			 *  valid can release package: 1
+			 * 	changelog: 4
+			 *
+			 *  total= lint + build + 8*(publish) + 8*(valid can release package + changelog)
 			 */
 
 			await release({
@@ -178,20 +200,22 @@ describe(" test 'release' and 'releasePackage' ", () => {
 				skipCommit: true
 			});
 
-			expect(execa).toHaveBeenCalled();
-			expect(execa).toHaveBeenCalledTimes(9);
+			expect(execa).toHaveBeenCalledTimes(49);
 
 			done();
 		});
 
-		it("should be called 25 times when skip lint+push", async done => {
+		it("should be called 45 times when skip lint+push", async done => {
 			/**
 			 *  lint: 0
 			 *  build: 1
 			 *  publish: 1
 			 *  commit: 2
 			 *
-			 *  total= lint + build + 8*(publish + commit)
+			 *  valid can release package: 1
+			 * 	changelog: 4
+			 *
+			 *  total= lint + build + 8*(publish + commit) + 8*(valid can release package + changelog)
 			 */
 
 			await release({
@@ -199,13 +223,12 @@ describe(" test 'release' and 'releasePackage' ", () => {
 				skipPush: true
 			});
 
-			expect(execa).toHaveBeenCalled();
-			expect(execa).toHaveBeenCalledTimes(25);
+			expect(execa).toHaveBeenCalledTimes(65);
 
 			done();
 		});
 
-		it("should be called 35 times when skip lint", async done => {
+		it("should be called 75 times when skip lint", async done => {
 			/**
 			 *  lint: 0
 			 *  build: 1
@@ -214,15 +237,17 @@ describe(" test 'release' and 'releasePackage' ", () => {
 			 *  addTag: 1
 			 *  push: 2
 			 *
-			 *  total= lint + build + 8*(publish + commit + addTag) + push
+			 *  valid can release package: 1
+			 * 	changelog: 4
+			 *
+			 *  total= lint + build + 8*(publish + commit + addTag) + push + 8*(valid can release package + changelog)
 			 */
 
 			await release({
 				version: "independent"
 			});
 
-			expect(execa).toHaveBeenCalled();
-			expect(execa).toHaveBeenCalledTimes(35);
+			expect(execa).toHaveBeenCalledTimes(75);
 
 			done();
 		});

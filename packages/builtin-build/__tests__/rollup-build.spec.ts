@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import sh from "shelljs";
+import rm from "rimraf";
 
 import { getPkgData } from "@siujs/utils";
 
@@ -16,11 +16,21 @@ describe(" build monorepo packages with rollup", () => {
 		"umd-min": ".min.js"
 	};
 
+	const pkgsRoot = path.resolve(__dirname, "packages");
+
+	beforeEach(() => {
+		rm.sync(pkgsRoot);
+	});
+
+	afterEach(() => {
+		rm.sync(pkgsRoot);
+	});
+
 	it("should exists dist/index.(mjs|cjs|js)", async done => {
-		const pkgsRoot = path.resolve(__dirname, "packages");
-		sh.mkdir("-p", pkgsRoot);
-		sh.mkdir("-p", path.resolve(pkgsRoot, "foo/lib"), path.resolve(pkgsRoot, "bar/lib"));
-		fs.writeFileSync(
+		await fs.mkdir(pkgsRoot);
+		await fs.mkdir(path.resolve(pkgsRoot, "foo/lib"), { recursive: true });
+		await fs.mkdir(path.resolve(pkgsRoot, "bar/lib"), { recursive: true });
+		await fs.writeFile(
 			path.resolve(pkgsRoot, "foo/lib/index.ts"),
 			`import path from "path";
 
@@ -28,18 +38,18 @@ export function getFileName(file:string){
 	return path.basename(file);
 }`
 		);
-		fs.writeJSONSync(path.resolve(pkgsRoot, "foo/packages.json"), {
+		await fs.writeJSON(path.resolve(pkgsRoot, "foo/packages.json"), {
 			name: "foo",
 			main: "dist/index.cjs",
 			module: "dist/index.mjs"
 		});
-		fs.writeFileSync(
+		await fs.writeFile(
 			path.resolve(pkgsRoot, "bar/lib/index.ts"),
 			`import {getFileName} from "../../foo/lib/index";
 
 export const fileName = getFileName(__dirname);`
 		);
-		fs.writeJSONSync(path.resolve(pkgsRoot, "bar/packages.json"), {
+		await fs.writeJSON(path.resolve(pkgsRoot, "bar/packages.json"), {
 			name: "bar",
 			main: "dist/index.cjs",
 			module: "dist/index.mjs"
@@ -61,8 +71,6 @@ export const fileName = getFileName(__dirname);`
 			expect(fs.pathExistsSync(path.resolve(pkgsRoot, "foo/dist/index.mjs"))).toBe(true);
 			expect(fs.pathExistsSync(path.resolve(pkgsRoot, "foo/dist/index.js"))).toBe(true);
 		} catch {}
-
-		sh.rm("-rf", pkgsRoot);
 
 		done();
 	});

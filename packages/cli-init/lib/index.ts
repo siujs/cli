@@ -1,7 +1,7 @@
 import chalk from "chalk";
+import fs from "fs-extra";
 import path from "path";
 import ms from "pretty-ms";
-import shell from "shelljs";
 
 import { createDebugger } from "@siujs/utils";
 
@@ -12,7 +12,7 @@ const debug = createDebugger("siu:init");
 export async function initApp(opts: InitAppOptios) {
 	debug("options:", opts);
 
-	shell.mkdir(opts.cwd);
+	await fs.mkdir(opts.cwd, { recursive: true });
 
 	const startTime = Date.now();
 

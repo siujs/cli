@@ -1,9 +1,8 @@
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
-import shell from "shelljs";
 
-import { getCommittedFiles, getStagedFiles, isWindows } from "@siujs/utils";
+import { exec, execGit, getCommittedFiles, getStagedFiles } from "@siujs/utils";
 
 import { GitClientHooksHandlers } from "./types";
 
@@ -27,46 +26,39 @@ function findConfigPath(cwd: string, target: "prettier" | "eslint") {
 
 	for (let i = 0, l = configPaths.length; i < l; i++) {
 		const p = path.resolve(cwd, configPaths[i]);
-		if (fs.existsSync(p)) {
-			return p;
-		}
+		if (fs.existsSync(p)) return p;
 	}
-	return "";
 }
 
 const commitRE = /^(revert: )?(feat|wip|fix|to|upd|docs|style|refactor|perf|types|test|wf|chore|ci|build|release)(\(.+\))?: .{1,50}/;
 
+const bin = (name: string) => path.resolve(process.cwd(), "./node_modules/.bin", name);
+
 const DEFAULT_HOOK_HNDS = {
 	async preCommit(stagedFiles: string[], cwd: string) {
-		if (!shell.which("prettier")) {
-			shell.exec((isWindows ? "" : "sudo") + "npm i -g prettier");
-		}
+		try {
+			let cfgPath = findConfigPath(cwd, "prettier");
 
-		let execRslt: { code: number };
+			const tmpFiles = stagedFiles.map(file => path.normalize(file.replace(cwd, "."))).join(",");
 
-		let cfgPath = findConfigPath(cwd, "prettier");
+			const files = `${path.resolve(cwd, stagedFiles.length > 1 ? `{${tmpFiles}}` : tmpFiles)}`;
 
-		execRslt = shell.exec(
-			`prettier ${cfgPath ? `--config ${cfgPath}` : ""} --write ${stagedFiles.join(" ")} --color=always`
-		);
+			await exec(
+				bin("prettier"),
+				[cfgPath ? `--config=${cfgPath}` : "", "--color=always", "--write", files].filter(Boolean),
+				{ stdio: "inherit" }
+			);
 
-		if (execRslt.code !== 0) {
+			cfgPath = findConfigPath(cwd, "eslint");
+
+			await exec(bin("eslint"), [cfgPath ? `--config=${cfgPath}` : "", "--fix", ...stagedFiles].filter(Boolean), {
+				stdio: "inherit"
+			});
+
+			return true;
+		} catch (ex) {
 			return false;
 		}
-
-		if (!shell.which("eslint")) {
-			shell.exec((isWindows ? "" : "sudo") + "npm i -g eslint");
-		}
-
-		cfgPath = findConfigPath(cwd, "eslint");
-
-		execRslt = shell.exec(`eslint ${cfgPath ? `-c ${cfgPath}` : ""} --fix ${stagedFiles.join(" ")} --color=always`);
-
-		if (execRslt.code !== 0) {
-			return false;
-		}
-
-		return true;
 	},
 	async commitMsg(commitMsg: string) {
 		if (!commitRE.test(commitMsg)) {
@@ -83,10 +75,6 @@ const DEFAULT_HOOK_HNDS = {
 	}
 };
 
-function isFunc(obj: any) {
-	return Object.prototype.toString.call(obj) === `[object ${Function}]`;
-}
-
 export class GitClientHooks {
 	protected cwd: string;
 	protected hnds: GitClientHooksHandlers;
@@ -97,7 +85,7 @@ export class GitClientHooks {
 
 	async preCommit() {
 		const files = await getStagedFiles(this.cwd);
-		return this.hnds.preCommit && isFunc(this.hnds.preCommit) ? await this.hnds.preCommit(files, this.cwd) : true;
+		return this.hnds.preCommit ? await this.hnds.preCommit(files, this.cwd) : true;
 	}
 
 	async prepareCommitMsg() {
@@ -109,7 +97,7 @@ export class GitClientHooks {
 
 		const commitMsg = fs.readFileSync(msgPath, "utf-8").trim();
 
-		if (this.hnds.prepareCommitMsg && isFunc(this.hnds.prepareCommitMsg)) {
+		if (this.hnds.prepareCommitMsg) {
 			const newCommitMsg = await this.hnds.prepareCommitMsg(commitMsg, this.cwd);
 			if (!newCommitMsg) return false;
 			fs.writeFileSync(msgPath, newCommitMsg);
@@ -137,19 +125,13 @@ export class GitClientHooks {
 			return false;
 		}
 
-		return this.hnds.commitMsg && isFunc(this.hnds.commitMsg) ? await this.hnds.commitMsg(commitMsg, this.cwd) : true;
+		return this.hnds.commitMsg ? await this.hnds.commitMsg(commitMsg, this.cwd) : true;
 	}
 
 	async postCommit() {
-		const format = shell.exec(`git log -1 --pretty=format:(%H)(%an,%ae)(%ci)(%s)(%b)`);
+		const lines = await execGit(["log", "-1", "--pretty=format:(%H)(%an,%ae)(%ci)(%s)(%b)"]);
 
-		if (format.code !== 0) {
-			console.log();
-			console.log(chalk.red("ERROR: " + format.stderr));
-			return false;
-		}
-
-		const arr = format.stdout.split(/\(|\)|,/g).filter(Boolean);
+		const arr = lines.split(/\(|\)|,/g).filter(Boolean);
 
 		const commitKV = {
 			id: arr[0],
@@ -161,11 +143,11 @@ export class GitClientHooks {
 			files: await getCommittedFiles("HEAD^", "HEAD", this.cwd)
 		};
 
-		return this.hnds.postCommit && isFunc(this.hnds.postCommit) ? await this.hnds.postCommit(commitKV, this.cwd) : true;
+		return this.hnds.postCommit ? await this.hnds.postCommit(commitKV, this.cwd) : true;
 	}
 
 	async postMerge() {
 		const mergedFiles = await getCommittedFiles("HEAD^", "HEAD", this.cwd);
-		return this.hnds.postMerge && isFunc(this.hnds.postMerge) ? await this.hnds.postMerge(mergedFiles, this.cwd) : true;
+		return this.hnds.postMerge ? await this.hnds.postMerge(mergedFiles, this.cwd) : true;
 	}
 }

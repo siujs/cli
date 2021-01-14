@@ -1,9 +1,8 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
-import shell from "shelljs";
 
-import { PkgData } from "@siujs/utils";
+import { exec, PkgData } from "@siujs/utils";
 
 /**
  *
@@ -76,9 +75,7 @@ export async function generateDTSWithTSC(pkgData: PkgData) {
 		throw new Error(`[@siujs/builtin-build] Error: Cant't find typescript in \`${pkgRoot}\``);
 	}
 
-	shell.exec(`${tscCmdPath} --emitDeclarationOnly`, {
-		cwd: pkgData.path
-	});
+	await exec(tscCmdPath, ["--emitDeclarationOnly"], { cwd: pkgData.path, stdio: "ignore" });
 
 	await generateDTS(pkgData);
 }

@@ -34,8 +34,7 @@
 		"@siujs/utils": "1.0.0-beta.9",
 		"chalk": "^4.1.0",
 		"fs-extra": "^9.0.1",
-		"pretty-ms": "^7.0.1",
-		"shelljs": "^0.8.4"
+		"pretty-ms": "^7.0.1"
 	},
 	"devDependencies": {
 		"@types/fs-extra": "^9.0.6"

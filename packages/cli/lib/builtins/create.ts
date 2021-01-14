@@ -2,7 +2,7 @@ import chalk from "chalk";
 import fs from "fs-extra";
 import inquirer from "inquirer";
 import path from "path";
-import sh from "shelljs";
+import rm from "rimraf";
 
 import { HookHandlerContext, PluginApi, ValueOf } from "@siujs/core";
 import { getPkgDirName } from "@siujs/utils";
@@ -50,39 +50,42 @@ export function asCreationFallback(api: ValueOf<PluginApi>) {
 		const deps = ctx.scopedKeys<string[]>("deps");
 		const pkgData = ctx.pkg();
 
-		sh.mkdir(pkgData.path, path.resolve(pkgData.path, "lib"), path.resolve(pkgData.path, "__tests__"));
+		await fs.mkdir(pkgData.path, { recursive: true });
 
-		sh.touch(path.resolve(pkgData.path, "lib/index.ts"));
-		sh.touch(path.resolve(pkgData.path, "package.json"));
+		await Promise.all([
+			fs.mkdir(path.resolve(pkgData.path, "lib"), { recursive: true }),
+			fs.mkdir(path.resolve(pkgData.path, "__tests__"), { recursive: true }),
+			fs.writeJSON(
+				path.resolve(pkgData.path, "package.json"),
+				{
+					name: pkgData.name,
+					version: "0.0.0",
+					description: pkgData.name,
 
-		await fs.writeJSON(
-			path.resolve(pkgData.path, "package.json"),
-			{
-				name: pkgData.name,
-				version: "0.0.0",
-				description: pkgData.name,
-
-				license: "MIT",
-				directories: {
-					lib: "lib",
-					test: "__tests__"
+					license: "MIT",
+					directories: {
+						lib: "lib",
+						test: "__tests__"
+					},
+					files: ["lib"],
+					dependencies:
+						deps && deps.length
+							? deps.reduce((prev, dep) => {
+									prev[dep] = `file:../${getPkgDirName(dep)}`;
+									return prev;
+							  }, {} as any)
+							: {}
 				},
-				files: ["lib"],
-				dependencies:
-					deps && deps.length
-						? deps.reduce((prev, dep) => {
-								prev[dep] = `file:../${getPkgDirName(dep)}`;
-								return prev;
-						  }, {} as any)
-						: {}
-			},
-			{ spaces: 2 }
-		);
+				{ spaces: 2 }
+			)
+		]);
+
+		await Promise.all([fs.writeFile(path.resolve(pkgData.path, "lib/index.ts"), "")]);
 
 		console.log(chalk`{green Successfully created {bold ${pkgData.dirName}}}!`);
 	});
 
 	api.error((ctx: HookHandlerContext) => {
-		sh.rm("-rf", ctx.pkg().path);
+		rm.sync(ctx.pkg().path);
 	});
 }

@@ -1,11 +1,11 @@
 import chalk from "chalk";
-import execa from "execa";
 import fs from "fs-extra";
 import inquirer from "inquirer";
 import path from "path";
 import semver from "semver";
 
 import {
+	exec,
 	getFirstCommitId,
 	getGitRemoteUrl,
 	getGroupedCommits,
@@ -22,7 +22,7 @@ export function runWhetherDry(isDryRun?: boolean) {
 				(execFnCache.dryRun = (bin: string, args: string[], opts = {}) =>
 					console.log(chalk.yellow(`[dryrun] ${bin} ${args.join(" ")}`), opts))
 		: execFnCache.run ||
-				(execFnCache.run = (bin: string, args: string[], opts = {}) => execa(bin, args, { stdio: "inherit", ...opts }));
+				(execFnCache.run = (bin: string, args: string[], opts = {}) => exec(bin, args, { stdio: "inherit", ...opts }));
 }
 
 /**
@@ -230,6 +230,7 @@ export async function chooseVersion(cwd: string, pkg?: string) {
 					default: currentVersion
 				})
 			).version;
+		/* istanbul ignore next */
 		case "cancel":
 			return;
 		default:

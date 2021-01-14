@@ -1,5 +1,5 @@
 export * from "./debugger";
-export * from "./env";
+export * from "./exec";
 export * from "./git";
 export * from "./object";
 export * from "./pkg";
