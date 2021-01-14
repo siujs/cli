@@ -29,7 +29,7 @@
 	"homepage": "https://github.com/siujs/siu#readme",
 	"peerDependencies": {
 		"@siujs/utils": "1.0.0-beta.9",
-		"esbuild": "^0.8.31",
+		"esbuild": "^0.8.32",
 		"rollup": "^2.36.1"
 	},
 	"dependencies": {
@@ -40,7 +40,7 @@
 		"@rollup/pluginutils": "^4.1.0",
 		"@siujs/utils": "1.0.0-beta.9",
 		"chalk": "^4.1.0",
-		"esbuild": "^0.8.31",
+		"esbuild": "^0.8.32",
 		"fs-extra": "^9.0.1",
 		"pretty-ms": "^7.0.1",
 		"rollup": "^2.36.1",
