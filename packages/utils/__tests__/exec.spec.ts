@@ -19,10 +19,10 @@ describe(" detectGlobalCommand ", () => {
 });
 
 describe(" exec ", () => {
-	it("should return v14.15.4 when `exec('node',['-v'])`", async done => {
-		const version = await exec("node", ["-v"]);
+	it("should return https://github.com/siujs/cli when `exec('git',['ls-remote','--get-url'])`", async done => {
+		const version = await exec("git", ["ls-remote", "--get-url"]);
 
-		expect(version).toBe("v14.15.4");
+		expect(version).toBe("https://github.com/siujs/cli");
 
 		done();
 	});
