@@ -170,14 +170,14 @@ export async function initCLI(isStrict?: boolean) {
 				});
 			}),
 		glint: program
-			.command("glint")
+			.command("glint [COMMIT_EDITMSG]")
 			.description("Lint for git action")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option(
 				"-h, --hook <hook>",
 				"Git lifecycle hook: pre-commit、prepare-commit-msg、commit-msg、post-commit、post-merge"
 			)
-			.action(async cmd => {
+			.action(async (COMMIT_EDITMSG, cmd) => {
 				const opts = cmd.opts();
 
 				if (!cmd.hook) {
@@ -191,6 +191,8 @@ export async function initCLI(isStrict?: boolean) {
 				} else {
 					opts.hook = camelize(opts.hook);
 				}
+
+				opts.commitEditMsg = COMMIT_EDITMSG;
 
 				await runCmd("glint", opts);
 			}),
