@@ -110,18 +110,19 @@ describe(" getStagedFiles ", () => {
 	});
 
 	it("should get `packages/utils/__tests__/git.test/package.json`", async done => {
-		await fs.writeJSON(path.resolve(testCWD, "package.json"), {
+		const filePath = path.resolve(testCWD, "package.json");
+
+		await fs.writeJSON(filePath, {
 			name: "xxx"
 		});
 
-		await execGit(["add", path.resolve(testCWD, "package.json")], { cwd: testCWD });
+		await execGit(["add", filePath], { cwd: testCWD });
 
 		const files = await getStagedFiles(path.resolve(__dirname, "../../../"));
 
-		await execGit(["restore", "--staged", path.resolve(testCWD, "package.json")], { cwd: testCWD });
+		await execGit(["restore", "--staged", filePath], { cwd: testCWD });
 
-		expect(files.length).toBe(1);
-		expect(files[0]).toBe(path.resolve(testCWD, "package.json"));
+		expect(files.some(file => file === filePath)).toBeTruthy();
 
 		done();
 	});
