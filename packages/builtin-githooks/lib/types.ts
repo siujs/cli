@@ -65,7 +65,7 @@ export interface GitClientHooksHandlers {
 	 *
 	 * @return {Promise<void>}
 	 */
-	postCommit?: (commitedInfo: CommittedInfo, cwd: string) => void | Promise<void>;
+	postCommit?: (commitedInfo: CommittedInfo, cwd: string) => boolean | Promise<boolean>;
 	/**
 	 * git hook `post-merge`
 	 *
