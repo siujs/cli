@@ -157,7 +157,7 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 		/* istanbul ignore if */
 		if (!isOK) {
 			console.warn(chalk.yellow(`[siu] Warning: '${pkg}'`) + "is not a valid package,missing package.json");
-			return;
+			return false;
 		}
 
 		const meta = await fs.readJSON(path.resolve(cwd, "package.json"));
@@ -166,7 +166,7 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 			console.warn(
 				chalk.yellow(`[siu] Warning: '${pkg}'`) + "is a private package that does not allowed to be published"
 			);
-			return;
+			return false;
 		}
 	}
 
@@ -190,7 +190,7 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 	}
 
 	/* istanbul ignore if */
-	if (!targetVersion) return;
+	if (!targetVersion) return false;
 
 	/* istanbul ignore if */
 	if (!semver.valid(targetVersion)) {
@@ -221,6 +221,8 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 		(await opts.hooks.addGitTag({ version: targetVersion, cwd, dryRun: opts.dryRun, pkg }));
 
 	log(chalk.green(`Successfully publish package(${pkg}) version:\`${targetVersion}\`!`));
+
+	return true;
 }
 
 export async function release(opts: ReleaseOptions) {
@@ -248,10 +250,13 @@ export async function release(opts: ReleaseOptions) {
 	if (version === "independent" || (!version && pkg)) {
 		const pkgs = pkg ? pkg.split(",") : await getSortedPkgByPriority(process.cwd(), opts.workspace);
 
+		let flag = false;
+
 		for (let l = pkgs.length; l--; ) {
-			await releasePackage(pkgs[l], opts);
+			const rslt = await releasePackage(pkgs[l], opts);
+			rslt && (flag = true);
 		}
-		!skips.skipPush && (await gitPush(dryRun));
+		flag && !skips.skipPush && (await gitPush(dryRun));
 	} else {
 		const pkgsRoot = path.resolve(cwd, opts.workspace || DEFAULT_OPTIONS.workspace);
 
