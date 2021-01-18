@@ -11,12 +11,14 @@ describe(" client git hooks: commit-msg ", () => {
 	beforeEach(() => {
 		process.env = { ...OLD_ENV }; // make a copy
 		rm.sync(".git/index.lock");
+		rm.sync(".git/COMMIT_EDITMSG");
 		jest.resetModules();
 	});
 
 	afterEach(() => {
 		process.env = OLD_ENV; // restore old env
 		rm.sync(".git/index.lock");
+		rm.sync(".git/COMMIT_EDITMSG");
 	});
 
 	it("should return false when commit msg is not valid ", async done => {

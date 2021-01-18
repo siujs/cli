@@ -1,4 +1,5 @@
 import fs from "fs";
+import rm from "rimraf";
 
 import { lintWithGHooks } from "../lib";
 
@@ -7,6 +8,11 @@ process.env.DEBUG = "siu:githooks";
 describe(" client git hooks: prepare-commit-msg ", () => {
 	beforeEach(() => {
 		jest.resetModules();
+		rm.sync(".git/COMMIT_EDITMSG2");
+	});
+
+	afterEach(() => {
+		rm.sync(".git/COMMIT_EDITMSG2");
 	});
 
 	it("should return appended message ", async done => {

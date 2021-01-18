@@ -22,11 +22,13 @@ describe(" client git hooks: post-commit ", () => {
 	beforeEach(() => {
 		jest.resetModules();
 		rm.sync(".git/index.lock");
+		rm.sync(".git/COMMIT_EDITMSG");
 	});
 
 	afterAll(() => {
 		rm.sync(tmpFile);
 		execa.sync("git", ["reset", "--mixed", "HEAD^"]);
+		rm.sync(".git/COMMIT_EDITMSG");
 	});
 
 	it("should get valid commit info  ", async done => {
