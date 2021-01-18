@@ -115,8 +115,8 @@ export async function initCLI(isStrict?: boolean) {
 			.description("Create monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
-			.action(async (pkg, cmd) => {
-				await validWorkspace(cmd.workspace);
+			.action(async (pkg, options) => {
+				await validWorkspace(options.workspace);
 
 				const pkgs = pkg ? pkg.split(",") : [];
 
@@ -128,7 +128,8 @@ export async function initCLI(isStrict?: boolean) {
 						return;
 					}
 				}
-				await runCmd("create", { pkg, ...cmd.opts() });
+
+				await runCmd("create", { pkg, ...options });
 			}),
 		deps: program
 			.command("deps <deps>")
@@ -137,36 +138,33 @@ export async function initCLI(isStrict?: boolean) {
 			.option("-p, --pkg <pkg>", "target package name,e.g. foo、@foo/bar")
 			.option("-r, --rm", "is remove deps from package")
 			.description("Add deps to target monorepo's package, e.g. add foo,foo@1.2.2,foo:D,foo@1.2.2:D ")
-			.action(async (deps, cmd) => {
-				await validWorkspace(cmd.workspace);
+			.action(async (deps, options) => {
+				await validWorkspace(options.workspace);
 
-				if (cmd.pkg) {
-					validPkgName(cmd.pkg);
-					const exists = await isPkgExists(cmd.pkg);
+				if (options.pkg) {
+					validPkgName(options.pkg);
+					const exists = await isPkgExists(options.pkg);
 					if (!exists) {
-						console.log(chalk.red.bold(`[siu] ERROR: \`${cmd.target}\` does not exists! `));
+						console.log(chalk.red.bold(`[siu] ERROR: \`${options.target}\` does not exists! `));
 						return;
 					}
 				}
 				if (!deps) return;
 
-				const opts = cmd.opts();
-
-				if (!cmd.pkg) {
+				if (!options.pkg) {
 					const { pkg } = await inquirer.prompt({
 						name: "pkg",
 						type: "list",
 						message: "Select package that need install deps:",
 						choices: await getPackageDirs()
 					});
-					opts.pkg = pkg;
+					options.pkg = pkg;
 				}
 
 				await runCmd("deps", {
 					deps,
-					pkg: cmd.pkg,
-					action: cmd.rm ? "rm" : "add",
-					...opts
+					action: options.rm ? "rm" : "add",
+					...options
 				});
 			}),
 		glint: program
@@ -177,71 +175,67 @@ export async function initCLI(isStrict?: boolean) {
 				"-h, --hook <hook>",
 				"Git lifecycle hook: pre-commit、prepare-commit-msg、commit-msg、post-commit、post-merge"
 			)
-			.action(async (COMMIT_EDITMSG, cmd) => {
-				const opts = cmd.opts();
-
-				if (!cmd.hook) {
+			.action(async (COMMIT_EDITMSG, options) => {
+				if (!options.hook) {
 					const { hook } = await inquirer.prompt({
 						name: "hook",
 						type: "list",
 						message: "Select git lifecycle hook:",
 						choices: ["pre-commit", "prepare-commit-msg", "commit-msg", "post-commit", "post-merge"]
 					});
-					opts.hook = camelize(hook);
+					options.hook = camelize(hook);
 				} else {
-					opts.hook = camelize(opts.hook);
+					options.hook = camelize(options.hook);
 				}
 
-				opts.commitEditMsg = COMMIT_EDITMSG;
+				options.commitEditMsg = COMMIT_EDITMSG;
 
-				await runCmd("glint", opts);
+				await runCmd("glint", options);
 			}),
 		test: program
 			.command("test [pkg]")
 			.description("Test single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "test")),
+			.action(async (pkg, options) => handleWithPkgAction(pkg, options, "test")),
 		doc: program
 			.command("doc [pkg]")
 			.description("Generate docs of target monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "doc")),
+			.action(async (pkg, options) => handleWithPkgAction(pkg, options, "doc")),
 		serve: program
 			.command("serve [pkg]")
 			.description("Local developement of target monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "serve")),
+			.action(async (pkg, options) => handleWithPkgAction(pkg, options, "serve")),
 		demo: program
 			.command("demo [pkg]")
 			.description("Local demo of target monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "demo")),
+			.action(async (pkg, options) => handleWithPkgAction(pkg, options, "demo")),
 		build: program
 			.command("build [pkg]")
 			.description("Build single or multiple monorepo's package")
 			.option("-S, --no-strict", "No need to force chdir to `siu.config.(ts|js)`'s root", true)
 			.option("-w, --workspace [workspace]", "Specific workspace directory name", "packages")
 			.option("-f, --format <format>", "Output format: es、cjs、umd、umd-min")
-			.action(async (pkg, cmd) => {
-				await validWorkspace(cmd.workspace);
+			.action(async (pkg, options) => {
+				await validWorkspace(options.workspace);
 
-				const opts = cmd.opts();
-
-				if (!cmd.format) {
+				if (!options.format) {
 					const { format } = await inquirer.prompt({
 						name: "format",
 						type: "checkbox",
 						message: "Select output formats:",
 						choices: ["es", "cjs", "umd", "umd-min"]
 					});
-					opts.format = format ? format.join(",") : "";
+					options.format = format ? format.join(",") : "";
 				}
 
-				handleWithPkgAction(pkg, opts, "build");
+				handleWithPkgAction(pkg, options, "build");
 			}),
 		publish: program
 			.command("publish [pkg]")
@@ -251,7 +245,7 @@ export async function initCLI(isStrict?: boolean) {
 			.option("-n, --dry-run", "Whether dry run")
 			.option("-v, --ver <ver>", "Target version: independent or x.x.x or auto choice")
 			.option("-r, --repo <repo>", "Target npm repository url")
-			.action(async (pkg, cmd) => handleWithPkgAction(pkg, cmd.opts(), "publish"))
+			.action(async (pkg, options) => handleWithPkgAction(pkg, options, "publish"))
 	};
 
 	Object.keys(DEFAULT_COMMAND).forEach((key: PluginCommand) => {
