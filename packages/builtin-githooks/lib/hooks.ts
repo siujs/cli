@@ -2,9 +2,11 @@ import chalk from "chalk";
 import fs from "fs";
 import path from "path";
 
-import { exec, execGit, getCommittedFiles, getStagedFiles } from "@siujs/utils";
+import { createDebugger, exec, getCommittedFiles, getGroupedCommits, getStagedFiles } from "@siujs/utils";
 
 import { GitClientHooksHandlers } from "./types";
+
+const debug = createDebugger("siu:githooks");
 
 const ConfigPathsPLaceHolder = [
 	".__T__rc.js",
@@ -36,29 +38,21 @@ const bin = (name: string) => path.resolve(process.cwd(), "./node_modules/.bin",
 
 const DEFAULT_HOOK_HNDS = {
 	async preCommit(stagedFiles: string[], cwd: string) {
-		try {
-			let cfgPath = findConfigPath(cwd, "prettier");
+		let cfgPath = findConfigPath(cwd, "prettier");
 
-			const tmpFiles = stagedFiles.map(file => path.normalize(file.replace(cwd, "."))).join(",");
+		await exec(
+			bin("prettier"),
+			[cfgPath ? `--config=${cfgPath}` : "", "--color=always", "--write", ...stagedFiles].filter(Boolean),
+			{ stdio: "inherit" }
+		);
 
-			const files = `${path.resolve(cwd, stagedFiles.length > 1 ? `{${tmpFiles}}` : tmpFiles)}`;
+		cfgPath = findConfigPath(cwd, "eslint");
 
-			await exec(
-				bin("prettier"),
-				[cfgPath ? `--config=${cfgPath}` : "", "--color=always", "--write", files].filter(Boolean),
-				{ stdio: "inherit" }
-			);
+		await exec(bin("eslint"), [cfgPath ? `--config=${cfgPath}` : "", "--fix", ...stagedFiles].filter(Boolean), {
+			stdio: "inherit"
+		});
 
-			cfgPath = findConfigPath(cwd, "eslint");
-
-			await exec(bin("eslint"), [cfgPath ? `--config=${cfgPath}` : "", "--fix", ...stagedFiles].filter(Boolean), {
-				stdio: "inherit"
-			});
-
-			return true;
-		} catch (ex) {
-			return false;
-		}
+		return true;
 	},
 	async commitMsg(commitMsg: string) {
 		if (!commitRE.test(commitMsg)) {
@@ -85,30 +79,19 @@ export class GitClientHooks {
 
 	async preCommit() {
 		const files = await getStagedFiles(this.cwd);
-		return this.hnds.preCommit ? await this.hnds.preCommit(files, this.cwd) : true;
+
+		debug("staged files:", files);
+
+		return files.length && this.hnds.preCommit ? await this.hnds.preCommit(files, this.cwd) : true;
 	}
 
 	async prepareCommitMsg() {
-		let msgPath = process.env.HUSKY_GIT_PARAMS || process.env.GIT_PARAMS;
+		let msgPath =
+			process.env.SIU_GIT_PARAMS || process.env.HUSKY_GIT_PARAMS || process.env.GIT_PARAMS || ".git/COMMIT_EDITMSG";
 
-		if (!msgPath) return false;
+		debug("[prepare] origin msgPath:", msgPath);
 
-		msgPath = msgPath.split(" ").shift();
-
-		const commitMsg = fs.readFileSync(msgPath, "utf-8").trim();
-
-		if (this.hnds.prepareCommitMsg) {
-			const newCommitMsg = await this.hnds.prepareCommitMsg(commitMsg, this.cwd);
-			if (!newCommitMsg) return false;
-			fs.writeFileSync(msgPath, newCommitMsg);
-		}
-
-		return true;
-	}
-
-	async commitMsg() {
-		let msgPath = process.env.HUSKY_GIT_PARAMS || process.env.GIT_PARAMS;
-
+		/* istanbul ignore if */
 		if (!msgPath) {
 			console.log();
 			console.error(`${chalk.bgRed.white(" ERROR: ")} ${chalk.red(`Can't find temp commit-msg-path!`)}`);
@@ -117,8 +100,49 @@ export class GitClientHooks {
 
 		msgPath = msgPath.split(" ").shift();
 
+		debug("[prepare] transformed msgPath", msgPath);
+
 		const commitMsg = fs.readFileSync(msgPath, "utf-8").trim();
 
+		debug("[prepare] current commit message:", commitMsg);
+
+		if (this.hnds.prepareCommitMsg) {
+			const newCommitMsg = await this.hnds.prepareCommitMsg(commitMsg, this.cwd);
+
+			/* istanbul ignore if */
+			if (!newCommitMsg) {
+				console.log();
+				console.error(`${chalk.bgRed.white(" ERROR: ")} ${chalk.red(`Empty commit message is not allowed!`)}`);
+				return false;
+			}
+			fs.writeFileSync(msgPath, newCommitMsg);
+		}
+
+		return true;
+	}
+
+	async commitMsg() {
+		let msgPath =
+			process.env.SIU_GIT_PARAMS || process.env.HUSKY_GIT_PARAMS || process.env.GIT_PARAMS || ".git/COMMIT_EDITMSG";
+
+		debug("origin msgPath:", msgPath);
+
+		/* istanbul ignore if */
+		if (!msgPath) {
+			console.log();
+			console.error(`${chalk.bgRed.white(" ERROR: ")} ${chalk.red(`Can't find temp commit-msg-path!`)}`);
+			return false;
+		}
+
+		msgPath = msgPath.split(" ").shift();
+
+		debug("transformed msgPath", msgPath);
+
+		const commitMsg = fs.readFileSync(msgPath, "utf-8").trim();
+
+		debug("current commit message:", commitMsg);
+
+		/* istanbul ignore if */
 		if (!commitMsg) {
 			console.log();
 			console.error(`${chalk.bgRed.white(" ERROR: ")} ${chalk.red(`Empty commit message is not allowed!`)}`);
@@ -129,25 +153,20 @@ export class GitClientHooks {
 	}
 
 	async postCommit() {
-		const lines = await execGit(["log", "-1", "--pretty=format:(%H)(%an,%ae)(%ci)(%s)(%b)"]);
+		const committedInfo = await getGroupedCommits("HEAD^", "HEAD", true);
 
-		const arr = lines.split(/\(|\)|,/g).filter(Boolean);
+		debug("current commit key-value:", committedInfo);
 
-		const commitKV = {
-			id: arr[0],
-			userName: arr[1],
-			userEmail: arr[2],
-			time: arr[3],
-			shortMsg: arr[4],
-			msg: arr[4] + "\n" + arr[5],
-			files: await getCommittedFiles("HEAD^", "HEAD", this.cwd)
-		};
-
-		return this.hnds.postCommit ? await this.hnds.postCommit(commitKV, this.cwd) : true;
+		return this.hnds.postCommit
+			? await this.hnds.postCommit(Object.values(committedInfo).flat().shift(), this.cwd)
+			: true;
 	}
 
 	async postMerge() {
 		const mergedFiles = await getCommittedFiles("HEAD^", "HEAD", this.cwd);
+
+		debug("will merged files:", mergedFiles);
+
 		return this.hnds.postMerge ? await this.hnds.postMerge(mergedFiles, this.cwd) : true;
 	}
 }

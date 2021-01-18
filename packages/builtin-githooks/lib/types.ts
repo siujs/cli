@@ -1,33 +1,4 @@
-export interface CommittedInfo {
-	/**
-	 * commit user name
-	 */
-	userName: string;
-	/**
-	 * commit user email
-	 */
-	userEmail: string;
-	/**
-	 * committed id
-	 */
-	id: string;
-	/**
-	 * committed time
-	 */
-	time: string;
-	/**
-	 * commit msg header part
-	 */
-	shortMsg: string;
-	/**
-	 * commit msg all
-	 */
-	msg: string;
-	/**
-	 * committed file paths
-	 */
-	files: string[];
-}
+import { GroupedCommitsItem } from "@siujs/utils";
 
 export interface GitClientHooksHandlers {
 	/**
@@ -65,7 +36,7 @@ export interface GitClientHooksHandlers {
 	 *
 	 * @return {Promise<void>}
 	 */
-	postCommit?: (commitedInfo: CommittedInfo, cwd: string) => boolean | Promise<boolean>;
+	postCommit?: (commitedInfo: GroupedCommitsItem, cwd: string) => boolean | Promise<boolean>;
 	/**
 	 * git hook `post-merge`
 	 *
