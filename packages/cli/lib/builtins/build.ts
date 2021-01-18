@@ -1,6 +1,12 @@
 import path from "path";
 
-import { asRollupPlugin, Config, SiuRollupBuilder, stopService, TOutputFormatKey } from "@siujs/builtin-build";
+import {
+	esbuildRollupPlugin,
+	SiuRollupBuilder,
+	SiuRollupConfig,
+	stopService,
+	TOutputFormatKey
+} from "@siujs/builtin-build";
 import { HookHandlerContext, PluginApi, ValueOf } from "@siujs/core";
 
 export function asBuildFallback(api: ValueOf<PluginApi>) {
@@ -8,8 +14,8 @@ export function asBuildFallback(api: ValueOf<PluginApi>) {
 		const pkgData = ctx.pkg();
 
 		const builder = new SiuRollupBuilder(pkgData, {
-			onConfigTransform: (config: Config, format: TOutputFormatKey) => {
-				config.plugin("esbuild").use(asRollupPlugin());
+			onConfigTransform: (config: SiuRollupConfig, format: TOutputFormatKey) => {
+				config.plugin("esbuild").use(esbuildRollupPlugin());
 				config.output(format).file(path.resolve(pkgData.path, `dist/index.${format === "es" ? "mjs" : "cjs"}`));
 			}
 		});

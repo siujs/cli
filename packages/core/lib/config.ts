@@ -1,7 +1,13 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { asRollupPlugin, Config, genCommonConfig, rollupBuild, SiuEsBuildPluginOptions } from "@siujs/builtin-build";
+import {
+	esbuildRollupPlugin,
+	genRollupCommonConfig,
+	rollupBuild,
+	SiuEsBuildPluginOptions,
+	SiuRollupConfig
+} from "@siujs/builtin-build";
 import { resolvePluginId } from "@siujs/utils";
 
 import { DEFAULT_PLUGIN_ID } from "./consts";
@@ -23,11 +29,13 @@ export async function resolveConfig(cwd = process.cwd()) {
 
 		const outputConfigFile = path.resolve(cwd, "_siu.config.js");
 
-		const config = genCommonConfig(new Config()).input(configFile).treeshake({ moduleSideEffects: true });
+		const config = genRollupCommonConfig(new SiuRollupConfig())
+			.input(configFile)
+			.treeshake({ moduleSideEffects: true });
 
 		config.output("cjs").format("cjs").exports("named").file(outputConfigFile);
 
-		config.plugin("esbuild").use<SiuEsBuildPluginOptions>(asRollupPlugin());
+		config.plugin("esbuild").use<SiuEsBuildPluginOptions>(esbuildRollupPlugin());
 
 		await rollupBuild(config);
 

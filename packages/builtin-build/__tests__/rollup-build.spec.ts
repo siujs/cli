@@ -5,8 +5,8 @@ import rm from "rimraf";
 import { getPkgData } from "@siujs/utils";
 
 import { SiuRollupBuilder } from "../lib/builder/rollup";
-import { Config, TOutputFormatKey } from "../lib/config/rollup/Config";
-import { asRollupPlugin } from "../lib/esbuildService";
+import { SiuRollupConfig, TOutputFormatKey } from "../lib/config/rollup/Config";
+import { esbuildRollupPlugin } from "../lib/esbuildService";
 
 describe(" build monorepo packages with rollup", () => {
 	const extMap = {
@@ -59,8 +59,8 @@ export const fileName = getFileName(__dirname);`
 			const pkgData = getPkgData("foo", __dirname);
 
 			const builder = new SiuRollupBuilder(pkgData, {
-				onConfigTransform: (config: Config, format: TOutputFormatKey) => {
-					config.plugin("esbuild").use(asRollupPlugin());
+				onConfigTransform: (config: SiuRollupConfig, format: TOutputFormatKey) => {
+					config.plugin("esbuild").use(esbuildRollupPlugin());
 					config.output(format).file(path.resolve(pkgData.path, `dist/index${extMap[format]}`));
 				}
 			});

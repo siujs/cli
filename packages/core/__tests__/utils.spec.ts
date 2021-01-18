@@ -1,7 +1,7 @@
 import path from "path";
 import sh from "shelljs";
 
-import { adjustSiuConfigCWD } from "../lib";
+import { fixedCWD } from "../lib";
 import { lookupSiu, sortPkgs } from "../lib/utils";
 import { createSiuConfigJs, createSiuConfigTs, createSiuPackageJSON } from "./common";
 
@@ -31,7 +31,7 @@ const rootCWD = path.resolve(__dirname, "../../../");
 const currentCWD = path.resolve(__dirname, "__jest__.utils");
 const testCWD = path.resolve(currentCWD, "lookup");
 
-describe(` adjustSiuConfigCWD in different workspace `, () => {
+describe(` fixedCWD in different workspace `, () => {
 	const lookupStartPointCWD = path.resolve(testCWD, "inner");
 
 	beforeAll(() => {
@@ -45,7 +45,7 @@ describe(` adjustSiuConfigCWD in different workspace `, () => {
 	test(` should throw error when not lookup siu config `, async done => {
 		let hasErr = false;
 		try {
-			await adjustSiuConfigCWD();
+			await fixedCWD();
 		} catch {
 			hasErr = true;
 		}
@@ -59,7 +59,7 @@ describe(` adjustSiuConfigCWD in different workspace `, () => {
 
 		process.chdir(lookupStartPointCWD);
 
-		await adjustSiuConfigCWD();
+		await fixedCWD();
 
 		expect(process.cwd()).toBe(currentCWD);
 

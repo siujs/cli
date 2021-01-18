@@ -4,15 +4,15 @@ import rollup from "rollup";
 
 import { ChainedMap } from "../ChainedMap";
 
-export interface Plugin<T> extends ChainedMap<T, Function | any[]> {
-	use<O extends any>(plugin: Function, args?: O[]): Plugin<T>;
+export interface SiuRollupPlugin<T> extends ChainedMap<T, Function | any[]> {
+	use<O extends any>(plugin: Function, args?: O[]): SiuRollupPlugin<T>;
 
-	tap<O extends any>(f: (args: O[]) => O[]): Plugin<T>;
+	tap<O extends any>(f: (args: O[]) => O[]): SiuRollupPlugin<T>;
 
 	toConfig(): rollup.Plugin;
 }
 
-export class Plugin<T> extends ChainedMap<T, Function | any[]> {
+export class SiuRollupPlugin<T> extends ChainedMap<T, Function | any[]> {
 	private readonly name: string;
 
 	constructor(parent: T, name: string) {
@@ -20,12 +20,12 @@ export class Plugin<T> extends ChainedMap<T, Function | any[]> {
 		this.name = name;
 	}
 
-	use<O extends any>(plugin: Function, args: O[] = []): Plugin<T> {
+	use<O extends any>(plugin: Function, args: O[] = []): SiuRollupPlugin<T> {
 		this.set("plugin", plugin).set("args", args);
 		return this;
 	}
 
-	tap<O extends any>(f: (args: O[]) => O[]): Plugin<T> {
+	tap<O extends any>(f: (args: O[]) => O[]): SiuRollupPlugin<T> {
 		this.set("args", f((this.get("args") as any[]) || []));
 		return this;
 	}

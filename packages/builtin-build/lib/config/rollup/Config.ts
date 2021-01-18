@@ -2,14 +2,14 @@ import { InputOptions, ModuleSideEffectsOption, OutputOptions, RollupOptions } f
 
 import { ChainedMap } from "../ChainedMap";
 import { ChainedSet } from "../ChainedSet";
-import { Output, TOutputFormatKey } from "./Output";
-import { Plugin } from "./Plugin";
+import { SiuRollupOutput, TOutputFormatKey } from "./Output";
+import { SiuRollupPlugin } from "./Plugin";
 
-export interface Config {
-	input(value: string | Record<string, string>): Config;
-	external: ChainedSet<Config, string | RegExp>;
-	plugin(name: string): Plugin<Config>;
-	output(key: TOutputFormatKey): Output<Config>;
+export interface SiuRollupConfig {
+	input(value: string | Record<string, string>): SiuRollupConfig;
+	external: ChainedSet<SiuRollupConfig, string | RegExp>;
+	plugin(name: string): SiuRollupPlugin<SiuRollupConfig>;
+	output(key: TOutputFormatKey): SiuRollupOutput<SiuRollupConfig>;
 	treeshake(
 		value:
 			| boolean
@@ -20,34 +20,34 @@ export interface Config {
 					tryCatchDeoptimization?: boolean;
 					unknownGlobalSideEffects?: boolean;
 			  }
-	): Config;
+	): SiuRollupConfig;
 }
 
-export class Config extends ChainedMap<void, any> {
-	external: ChainedSet<Config, string | RegExp>;
-	plugins: ChainedMap<Config, Plugin<Config>>;
-	outputs: ChainedMap<Config, Output<Config>>;
+export class SiuRollupConfig extends ChainedMap<void, any> {
+	external: ChainedSet<SiuRollupConfig, string | RegExp>;
+	plugins: ChainedMap<SiuRollupConfig, SiuRollupPlugin<SiuRollupConfig>>;
+	outputs: ChainedMap<SiuRollupConfig, SiuRollupOutput<SiuRollupConfig>>;
 	constructor() {
 		super();
-		this.external = new ChainedSet<Config, string>(this);
+		this.external = new ChainedSet<SiuRollupConfig, string>(this);
 
-		this.plugins = new ChainedMap<Config, Plugin<Config>>(this);
+		this.plugins = new ChainedMap<SiuRollupConfig, SiuRollupPlugin<SiuRollupConfig>>(this);
 
-		this.outputs = new ChainedMap<Config, Output<Config>>(this);
+		this.outputs = new ChainedMap<SiuRollupConfig, SiuRollupOutput<SiuRollupConfig>>(this);
 
 		this.extend(["input", "treeshake"]);
 	}
 
-	output(key: TOutputFormatKey): Output<Config> {
+	output(key: TOutputFormatKey): SiuRollupOutput<SiuRollupConfig> {
 		if (!this.outputs.has(key)) {
-			this.outputs.set(key, new Output(this, key));
+			this.outputs.set(key, new SiuRollupOutput(this, key));
 		}
 		return this.outputs.get(key);
 	}
 
-	plugin(name: string): Plugin<Config> {
+	plugin(name: string): SiuRollupPlugin<SiuRollupConfig> {
 		if (!this.plugins.has(name)) {
-			this.plugins.set(name, new Plugin(this, name));
+			this.plugins.set(name, new SiuRollupPlugin(this, name));
 		}
 		return this.plugins.get(name);
 	}
@@ -93,8 +93,8 @@ export class Config extends ChainedMap<void, any> {
 		return JSON.stringify(this.toConfig(), null, 2);
 	}
 
-	clone(): Config {
-		const config = new Config();
+	clone(): SiuRollupConfig {
+		const config = new SiuRollupConfig();
 
 		Object.entries(this.entries()).forEach(([key, value]) => {
 			config.set(key, value);
@@ -137,3 +137,4 @@ export class Config extends ChainedMap<void, any> {
 }
 
 export * from "./Output";
+export * from "./Plugin";

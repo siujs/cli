@@ -4,7 +4,7 @@ import { CLIOption, HookHandlerContext, PluginApi, PluginCommand, PluginCommandL
 
 export * from "./types";
 
-export { adjustSiuConfigCWD } from "./utils";
+export { fixedCWD } from "./utils";
 
 export async function loadPlugins(fallback?: (api: PluginApi) => void) {
 	const config = await resolveConfig();

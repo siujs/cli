@@ -1,31 +1,31 @@
 import { GlobalsOption, ModuleFormat, OptionsPaths, OutputOptions, PreRenderedAsset, PreRenderedChunk } from "rollup";
 
 import { ChainedMap } from "../ChainedMap";
-import { Plugin } from "./Plugin";
+import { SiuRollupPlugin } from "./Plugin";
 
-export interface Output<T> {
-	plugin(name: string): Plugin<Output<T>>;
+export interface SiuRollupOutput<T> {
+	plugin(name: string): SiuRollupPlugin<SiuRollupOutput<T>>;
 	hasPlugin(name: string): boolean;
 
-	assetFileNames(name: string | ((chunkInfo: PreRenderedChunk) => string)): Output<T>;
-	banner(val: string | ((chunkInfo: PreRenderedAsset) => string)): Output<T>;
-	chunkFileNames(name: string | ((chunkInfo: PreRenderedChunk) => string)): Output<T>;
-	compact(val: boolean): Output<T>;
-	dir(val: string): Output<T>;
-	entryFileNames(name: string | ((chunkInfo: PreRenderedChunk) => string)): Output<T>;
-	esModule(val: boolean): Output<T>;
-	exports(val: "default" | "named" | "none" | "auto"): Output<T>;
-	file(val: string): Output<T>;
-	footer(val: string | (() => string | Promise<string>)): Output<T>;
-	format(fmt: ModuleFormat): Output<T>;
-	freeze(val: boolean): Output<T>;
-	globals: ChainedMap<Output<T>, string>;
-	name(val: string): Output<T>;
-	paths: ChainedMap<Output<T>, string>;
-	sourcemap(val: boolean | "inline" | "hidden"): Output<T>;
-	sourcemapExcludeSources(val: boolean): Output<T>;
-	sourcemapFile(val: string): Output<T>;
-	strict(val: boolean): Output<T>;
+	assetFileNames(name: string | ((chunkInfo: PreRenderedChunk) => string)): SiuRollupOutput<T>;
+	banner(val: string | ((chunkInfo: PreRenderedAsset) => string)): SiuRollupOutput<T>;
+	chunkFileNames(name: string | ((chunkInfo: PreRenderedChunk) => string)): SiuRollupOutput<T>;
+	compact(val: boolean): SiuRollupOutput<T>;
+	dir(val: string): SiuRollupOutput<T>;
+	entryFileNames(name: string | ((chunkInfo: PreRenderedChunk) => string)): SiuRollupOutput<T>;
+	esModule(val: boolean): SiuRollupOutput<T>;
+	exports(val: "default" | "named" | "none" | "auto"): SiuRollupOutput<T>;
+	file(val: string): SiuRollupOutput<T>;
+	footer(val: string | (() => string | Promise<string>)): SiuRollupOutput<T>;
+	format(fmt: ModuleFormat): SiuRollupOutput<T>;
+	freeze(val: boolean): SiuRollupOutput<T>;
+	globals: ChainedMap<SiuRollupOutput<T>, string>;
+	name(val: string): SiuRollupOutput<T>;
+	paths: ChainedMap<SiuRollupOutput<T>, string>;
+	sourcemap(val: boolean | "inline" | "hidden"): SiuRollupOutput<T>;
+	sourcemapExcludeSources(val: boolean): SiuRollupOutput<T>;
+	sourcemapFile(val: string): SiuRollupOutput<T>;
+	strict(val: boolean): SiuRollupOutput<T>;
 }
 
 export type TOutputFormatKey = "umd-min" | "umd" | "cjs" | "es";
@@ -49,25 +49,25 @@ const methods = [
 	"strict"
 ];
 
-export class Output<T> extends ChainedMap<T, any> {
+export class SiuRollupOutput<T> extends ChainedMap<T, any> {
 	protected readonly key: TOutputFormatKey;
 
-	globals: ChainedMap<Output<T>, string>;
-	paths: ChainedMap<Output<T>, string>;
-	plugins: ChainedMap<Output<T>, Plugin<Output<T>>>;
+	globals: ChainedMap<SiuRollupOutput<T>, string>;
+	paths: ChainedMap<SiuRollupOutput<T>, string>;
+	plugins: ChainedMap<SiuRollupOutput<T>, SiuRollupPlugin<SiuRollupOutput<T>>>;
 
 	constructor(parent: T, key: TOutputFormatKey) {
 		super(parent);
 		this.key = key;
-		this.globals = new ChainedMap<Output<T>, string>(this);
-		this.paths = new ChainedMap<Output<T>, string>(this);
-		this.plugins = new ChainedMap<Output<T>, Plugin<Output<T>>>(this);
+		this.globals = new ChainedMap<SiuRollupOutput<T>, string>(this);
+		this.paths = new ChainedMap<SiuRollupOutput<T>, string>(this);
+		this.plugins = new ChainedMap<SiuRollupOutput<T>, SiuRollupPlugin<SiuRollupOutput<T>>>(this);
 		this.extend(methods);
 	}
 
-	plugin(name: string): Plugin<Output<T>> {
+	plugin(name: string): SiuRollupPlugin<SiuRollupOutput<T>> {
 		if (!this.plugins.has(name)) {
-			this.plugins.set(name, new Plugin(this, name));
+			this.plugins.set(name, new SiuRollupPlugin(this, name));
 		}
 		return this.plugins.get(name);
 	}
@@ -76,7 +76,7 @@ export class Output<T> extends ChainedMap<T, any> {
 		return this.plugins.has(name);
 	}
 
-	clear(): Output<T> {
+	clear(): SiuRollupOutput<T> {
 		this.globals.clear();
 		this.paths.clear();
 		this.plugins.clear();

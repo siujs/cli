@@ -56,7 +56,7 @@ const defaultLoaders = {
 } as Record<string, Loader>;
 
 // transform used in server plugins with a more friendly API
-export async function transform(
+export async function esbuildTransform(
 	src: string,
 	file: string,
 	loader: Loader,
@@ -108,7 +108,7 @@ export interface SiuEsBuildPluginOptions extends Omit<TransformOptions, "loader"
 	importeeAlias?: Record<string, string> | ((id: string) => string);
 }
 
-export function asRollupPlugin() {
+export function esbuildRollupPlugin() {
 	return (options: SiuEsBuildPluginOptions = {}) => {
 		const { include, exclude, loaders, onwarn = printMessage, importeeAlias, closeImmediate, ...esbuildOptions } =
 			options || /* istanbul ignore next */ {};
@@ -183,7 +183,7 @@ export function asRollupPlugin() {
 
 				debug("esbuild file id:", id, " loader: ", loader);
 
-				return transform(code, id, loader, esbuildOptions, onwarn);
+				return esbuildTransform(code, id, loader, esbuildOptions, onwarn);
 			},
 			buildEnd() {
 				closeImmediate !== false && stopService();

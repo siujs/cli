@@ -18,7 +18,7 @@
 1. `rollup` + `esbuild`
 
 ```js
-import { asRollupPlugin, Config, SiuRollupBuilder, TOutputFormatKey } from "@siujs/builtin-build";
+import { esbuildRollupPlugin, Config, SiuRollupBuilder, TOutputFormatKey } from "@siujs/builtin-build";
 
 const pkgData = {
     root:"../xxx",
@@ -38,7 +38,7 @@ const extMap = {
 
 const builder = new SiuRollupBuilder(pkgData, {
 	onConfigTransform: (config: Config, format: TOutputFormatKey) => {
-		config.plugin("esbuild").use(asRollupPlugin());
+		config.plugin("esbuild").use(esbuildRollupPlugin());
 		config.output(format).file(path.resolve(pkgData.path, `dist/index${extMap[format]}`));
 	}
 });
@@ -57,7 +57,7 @@ await builder.build({allowFormats:["umd-min"],sizeCalc:false}); // will create f
 2. `rollup`+`esbuild`+multiple packages
 
 ```js
-import { asRollupPlugin, Config, SiuRollupBuilder, stopService, TOutputFormatKey } from "@siujs/builtin-build";
+import { esbuildRollupPlugin, Config, SiuRollupBuilder, stopService, TOutputFormatKey } from "@siujs/builtin-build";
 
 const pkgDatas = [{
     root:"../xxx",
@@ -85,7 +85,7 @@ const extMap = {
 for(let l = pkgDatas.length;l--;){
    const builder = new SiuRollupBuilder(pkgData, {
         onConfigTransform: (config: Config, format: TOutputFormatKey) => {
-            config.plugin("esbuild").use(asRollupPlugin(),[{closeImmediate:false}]);
+            config.plugin("esbuild").use(esbuildRollupPlugin(),[{closeImmediate:false}]);
             config.output(format).file(path.resolve(pkgData.path, `dist/index${extMap[format]}`));
         }
     });
@@ -116,8 +116,6 @@ import { changeDeps } from "@siujs/builtin-deps";
 	// will remove bar(dependencies)、bar2(devDependencies) from package 'foo'
 })();
 ```
-
-
 
 ## `@siujs/builtin-githooks`
 

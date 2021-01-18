@@ -5,7 +5,7 @@ import inquirer from "inquirer";
 import path from "path";
 import validProjectName from "validate-npm-package-name";
 
-import { adjustSiuConfigCWD, loadPlugins, PluginCommand, SiuConfig } from "@siujs/core";
+import { fixedCWD, loadPlugins, PluginCommand, SiuConfig } from "@siujs/core";
 import { camelize, filterUnExistsPkgs, getPackageDirs, isPkgExists } from "@siujs/utils";
 
 import { cliFallback, cmdFallback } from "./builtins";
@@ -56,7 +56,7 @@ function isNullOrUndefined(obj: any) {
 
 export async function initCLI(isStrict?: boolean) {
 	if (isStrict) {
-		await adjustSiuConfigCWD();
+		await fixedCWD();
 	}
 
 	const { applyPlugins, resolveCLIOptions } = await loadPlugins(cliFallback);
@@ -71,7 +71,7 @@ export async function initCLI(isStrict?: boolean) {
 		}
 
 		if (opts.strict) {
-			await adjustSiuConfigCWD();
+			await fixedCWD();
 		}
 
 		try {

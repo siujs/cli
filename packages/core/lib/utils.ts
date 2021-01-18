@@ -38,7 +38,7 @@ export async function lookupSiu(cwd: string, deep = 3): Promise<string> {
  * 调整当前工作区间目录
  *
  */
-export async function adjustSiuConfigCWD() {
+export async function fixedCWD() {
 	const siuConfigCWD = await lookupSiu(process.cwd());
 	if (!siuConfigCWD) {
 		throw new Error(`[siu] ERROR: Cant't find root workspace directory of \`siu.config.js\``);

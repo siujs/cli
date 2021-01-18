@@ -1,10 +1,10 @@
 import { TreeshakingOptions } from "rollup";
 
-import { asRollupPlugin, SiuEsBuildPluginOptions } from "../lib";
-import { Config } from "../lib/config/rollup/Config";
+import { esbuildRollupPlugin, SiuEsBuildPluginOptions } from "../lib";
+import { SiuRollupConfig } from "../lib/config/rollup/Config";
 
 it("should get `config.input` from config.input when use config.input('config.input')", () => {
-	const config = new Config();
+	const config = new SiuRollupConfig();
 
 	config.input("config.input");
 
@@ -24,7 +24,7 @@ it("should get `config.input` from config.input when use config.input('config.in
 });
 
 test(" config treeshake ", () => {
-	const config = new Config();
+	const config = new SiuRollupConfig();
 
 	config.treeshake({
 		moduleSideEffects: true
@@ -42,7 +42,7 @@ test(" config treeshake ", () => {
 });
 
 test(" config external ", () => {
-	const config = new Config();
+	const config = new SiuRollupConfig();
 
 	config.external.add("foo");
 	config.external.add("bar");
@@ -78,9 +78,9 @@ test(" config external ", () => {
 });
 
 test(" config plugins ", () => {
-	const config = new Config();
+	const config = new SiuRollupConfig();
 
-	config.plugin("esbuild").use<SiuEsBuildPluginOptions>(asRollupPlugin(), [
+	config.plugin("esbuild").use<SiuEsBuildPluginOptions>(esbuildRollupPlugin(), [
 		{
 			closeImmediate: true
 		}
@@ -111,7 +111,7 @@ test(" config plugins ", () => {
 });
 
 test(" config output ", () => {
-	const config = new Config();
+	const config = new SiuRollupConfig();
 
 	const output = config.output("cjs").file("output file").format("cjs").globals.set("vue", "Vue").end();
 
@@ -125,7 +125,7 @@ test(" config output ", () => {
 
 	output.globals.set("vue", "Vue");
 
-	output.plugin("esbuild").use(asRollupPlugin());
+	output.plugin("esbuild").use(esbuildRollupPlugin());
 
 	let cfg = output.toConfig();
 
@@ -144,7 +144,7 @@ test(" config output ", () => {
 });
 
 test(" config toInput ", () => {
-	const config = new Config();
+	const config = new SiuRollupConfig();
 
 	config
 		.input("config input")
@@ -156,7 +156,7 @@ test(" config toInput ", () => {
 			moduleSideEffects: true
 		})
 		.plugin("esbuild")
-		.use(asRollupPlugin());
+		.use(esbuildRollupPlugin());
 
 	const inputs = config.toInput();
 
@@ -173,11 +173,11 @@ test(" config toInput ", () => {
 });
 
 test(" config toOutput ", () => {
-	const config = new Config();
+	const config = new SiuRollupConfig();
 
-	config.output("cjs").format("cjs").file("output file").plugin("esbuild").use(asRollupPlugin());
+	config.output("cjs").format("cjs").file("output file").plugin("esbuild").use(esbuildRollupPlugin());
 
-	config.output("es").format("es").file("output file es").plugin("esbuild").use(asRollupPlugin());
+	config.output("es").format("es").file("output file es").plugin("esbuild").use(esbuildRollupPlugin());
 
 	const outputs = config.toOutput();
 
@@ -196,14 +196,14 @@ test(" config toOutput ", () => {
 });
 
 test(" config clone ", () => {
-	const config = new Config();
+	const config = new SiuRollupConfig();
 
 	config
 		.input("input file")
 		.external.add("foo")
 		.end()
 		.plugin("esbuild")
-		.use(asRollupPlugin())
+		.use(esbuildRollupPlugin())
 		.end()
 		.output("cjs")
 		.file("output file")
@@ -213,7 +213,7 @@ test(" config clone ", () => {
 		.globals.set("foo", "Foo")
 		.end()
 		.plugin("esbuild")
-		.use(asRollupPlugin())
+		.use(esbuildRollupPlugin())
 		.end();
 
 	const config2 = config.clone();

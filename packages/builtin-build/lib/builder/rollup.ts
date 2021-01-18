@@ -13,7 +13,7 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import { camelize, createDebugger, PkgData } from "@siujs/utils";
 
-import { Config } from "../config/rollup/Config";
+import { SiuRollupConfig } from "../config/rollup/Config";
 import { TOutputFormatKey } from "../config/rollup/Output";
 
 const debug = createDebugger("siu:build.rollup");
@@ -77,7 +77,11 @@ export interface SiuRollupBuilderHooks {
 	 * @param config browser config or non-browser config
 	 * @param format "browser" | "browser-min" | "module" | "main"
 	 */
-	onConfigTransform: (config: Config, format: TOutputFormatKey, perf: SiuRollupBuilderMonitor) => void | Promise<void>;
+	onConfigTransform: (
+		config: SiuRollupConfig,
+		format: TOutputFormatKey,
+		perf: SiuRollupBuilderMonitor
+	) => void | Promise<void>;
 
 	/**
 	 * 构建开始
@@ -87,12 +91,12 @@ export interface SiuRollupBuilderHooks {
 	/**
 	 * 每个配置构建开始
 	 */
-	onEachBuildStart?: (config: Config, perf: SiuRollupBuilderMonitor) => void | Promise<void>;
+	onEachBuildStart?: (config: SiuRollupConfig, perf: SiuRollupBuilderMonitor) => void | Promise<void>;
 
 	/**
 	 * 每个配置构建完成
 	 */
-	onEachBuildFinished?: (config: Config, perf: SiuRollupBuilderMonitor) => void | Promise<void>;
+	onEachBuildFinished?: (config: SiuRollupConfig, perf: SiuRollupBuilderMonitor) => void | Promise<void>;
 
 	/**
 	 * 构建完成时的调用
@@ -116,7 +120,7 @@ export interface SiuRollupBuilderHooks {
 
 const DEFAULT_HOOKS = {
 	onConfigTransform() {},
-	onEachBuildStart(config: Config) {
+	onEachBuildStart(config: SiuRollupConfig) {
 		const outputs = config.toOutput();
 
 		let input = config.get("input");
@@ -133,7 +137,7 @@ const DEFAULT_HOOKS = {
 			)
 		);
 	},
-	onEachBuildFinished(config: Config, perf: SiuRollupBuilderMonitor) {
+	onEachBuildFinished(config: SiuRollupConfig, perf: SiuRollupBuilderMonitor) {
 		const outputs = config.toOutput();
 		console.log(
 			chalk.green(
@@ -156,7 +160,7 @@ export interface BuilderSizeInfo {
 	brotli: string;
 }
 
-export function genCommonConfig(config: Config) {
+export function genRollupCommonConfig(config: SiuRollupConfig) {
 	config
 		.plugin("nodeResolve")
 		.use(nodeResolve, [{ preferBuiltins: false }])
@@ -178,25 +182,25 @@ export function genCommonConfig(config: Config) {
 	return config;
 }
 
-export async function rollupBuild(config: Config) {
+export async function rollupBuild(config: SiuRollupConfig) {
 	const bundle = await rollup(config.toInput());
 	await Promise.all(config.toOutput().map(bundle.write));
 }
 
 export class SiuRollupBuilder {
 	protected pkgData: PkgData;
-	protected config: Config;
-	protected browserConfig: Config;
+	protected config: SiuRollupConfig;
+	protected browserConfig: SiuRollupConfig;
 	protected hooks: SiuRollupBuilderHooks;
 	constructor(pkgData: PkgData, hooks?: SiuRollupBuilderHooks) {
 		this.pkgData = pkgData;
-		this.config = new Config();
-		this.browserConfig = new Config();
+		this.config = new SiuRollupConfig();
+		this.browserConfig = new SiuRollupConfig();
 		this.hooks = { ...DEFAULT_HOOKS, ...(hooks || /* istanbul ignore next */ {}) };
 	}
 
-	private initCommonConfig(config: Config) {
-		return genCommonConfig(config).input(path.resolve(this.pkgData.path, "lib/index.ts"));
+	private initCommonConfig(config: SiuRollupConfig) {
+		return genRollupCommonConfig(config).input(path.resolve(this.pkgData.path, "lib/index.ts"));
 	}
 
 	private initBrowserConfig(mini?: boolean) {
@@ -317,7 +321,7 @@ export class SiuRollupBuilder {
 
 			debug("build opts:", opts);
 
-			const configs = [] as Config[];
+			const configs = [] as SiuRollupConfig[];
 
 			const monitors = {
 				startTime: Date.now()
