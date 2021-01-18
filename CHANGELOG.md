@@ -1,5 +1,15 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.11](https://github.com/siujs/cli/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2021-01-18)
+
+### BREAKING CHANGES
+
+- change name of output api ([d0e437a](https://github.com/siujs/cli/commit/d0e437a002d90977c3e981f57e265ba3f0c47c82))
+
+### Bug Fixes
+
+-  **cli**: `cmd.opts` is not a function ([77bc62c](https://github.com/siujs/cli/commit/77bc62cf0ca6b21e4dc6bba88b337fe517f49743))
+
 ## [v1.0.0-beta.10](https://github.com/siujs/cli/compare/v1.0.0-beta.9...v1.0.0-beta.10) (2021-01-18)
 
 ### BREAKING CHANGES
