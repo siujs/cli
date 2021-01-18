@@ -65,45 +65,61 @@ test(" getPreTag ", async done => {
 	done();
 });
 
-test(" getCommittedFiles ", async done => {
-	let files = await getCommittedFiles(
-		"199972e856978b9194db3fec9c3d94bb1445f7ab",
-		"18889daf229505554ce55d4e9e4c4e4a92b9dce3"
-	);
+describe(" getCommittedFiles ", () => {
+	it("should exists 'CHANGELOG.md'", async done => {
+		const files = await getCommittedFiles(
+			"199972e856978b9194db3fec9c3d94bb1445f7ab",
+			"18889daf229505554ce55d4e9e4c4e4a92b9dce3"
+		);
 
-	expect(files.some(file => file.endsWith("CHANGELOG.md"))).toBe(true);
-	expect(files.filter(file => file.endsWith("package.json")).length).toBe(9);
+		expect(files.some(file => file.endsWith("CHANGELOG.md"))).toBe(true);
+		expect(files.filter(file => file.endsWith("package.json")).length).toBe(9);
 
-	files = await getCommittedFiles("199972e856978b9194db3fec9c3d94bb1445f7ab");
+		done();
+	});
 
-	expect(files.some(file => file.endsWith("CHANGELOG.md"))).toBe(true);
-	expect(files.some(file => file.endsWith("package.json"))).toBe(true);
+	it("should exists 'CHANGELOG.md', when endHash is HEAD", async done => {
+		const files = await getCommittedFiles("199972e856978b9194db3fec9c3d94bb1445f7ab");
 
-	done();
+		expect(files.some(file => file.endsWith("CHANGELOG.md"))).toBe(true);
+		expect(files.some(file => file.endsWith("package.json"))).toBe(true);
+
+		done();
+	});
 });
 
-test(" getGroupedCommits ", async done => {
-	let commits = await getGroupedCommits(
-		"199972e856978b9194db3fec9c3d94bb1445f7ab",
-		"18889daf229505554ce55d4e9e4c4e4a92b9dce3"
-	);
-	expect(commits).toHaveProperty("release");
-	expect(commits.release.length).toBe(1);
+describe("getGroupedCommits", () => {
+	it("should return have 1 release", async done => {
+		const commits = await getGroupedCommits(
+			"199972e856978b9194db3fec9c3d94bb1445f7ab",
+			"18889daf229505554ce55d4e9e4c4e4a92b9dce3"
+		);
+		expect(commits).toHaveProperty("release");
+		expect(commits.release.length).toBe(1);
 
-	commits = await getGroupedCommits("199972e856978b9194db3fec9c3d94bb1445f7ab");
-	expect(commits).toHaveProperty("release");
-	expect(commits).toHaveProperty("breaking");
-	expect(commits).toHaveProperty("feat");
-	expect(commits).toHaveProperty("fix");
-	expect(commits).toHaveProperty("refactor");
-	expect(commits).toHaveProperty("types");
-	expect(commits).toHaveProperty("docs");
+		done();
+	});
 
-	commits = await getGroupedCommits("199972e856978b9194db3fec9c3d94bb1445f7ab", "HEAD", true);
-	expect(commits.release.length >= 1).toBeTruthy();
-	expect(commits.release[0]).toHaveProperty("files");
-	expect(commits.release[0].files.some(p => p.endsWith("package.json"))).toBeTruthy();
-	done();
+	it("should have 'release'、'breaking'、'feat'、'fix'、'refactor'...", async done => {
+		const commits = await getGroupedCommits("199972e856978b9194db3fec9c3d94bb1445f7ab");
+		expect(commits).toHaveProperty("release");
+		expect(commits).toHaveProperty("breaking");
+		expect(commits).toHaveProperty("feat");
+		expect(commits).toHaveProperty("fix");
+		expect(commits).toHaveProperty("refactor");
+		expect(commits).toHaveProperty("types");
+		expect(commits).toHaveProperty("docs");
+
+		done();
+	});
+
+	it("should have committed files ", async done => {
+		const commits = await getGroupedCommits("199972e856978b9194db3fec9c3d94bb1445f7ab", "HEAD", true);
+		expect(commits.release.length >= 1).toBeTruthy();
+		expect(commits.release[0]).toHaveProperty("files");
+		expect(commits.release[0].files.some(p => p.endsWith("package.json"))).toBeTruthy();
+		done();
+	});
 });
 
 describe(" getStagedFiles ", () => {
@@ -111,6 +127,7 @@ describe(" getStagedFiles ", () => {
 
 	beforeAll(() => {
 		fs.mkdirSync(testCWD, { recursive: true });
+		rm.sync(".git/index.lock");
 	});
 
 	afterAll(() => {
