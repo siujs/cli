@@ -15,6 +15,8 @@ describe(" client git hooks: post-commit ", () => {
 
 	beforeAll(() => {
 		fs.writeFileSync(tmpFile, "");
+		execa.sync("git", ["config", "--add", "user.name", "buns"]);
+		execa.sync("git", ["config", "--add", "user.email", "kuafujs@126.com"]);
 	});
 
 	beforeEach(() => {

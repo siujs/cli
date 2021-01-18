@@ -162,6 +162,7 @@ export class GitClientHooks {
 			: true;
 	}
 
+	/* istanbul ignore next */
 	async postMerge() {
 		const mergedFiles = await getCommittedFiles("HEAD^", "HEAD", this.cwd);
 
