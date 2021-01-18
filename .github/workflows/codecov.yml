@@ -21,6 +21,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
+      - name: Git Global Config
+        run: |
+          git config --global user.email kuafujs@126.com
+          git config --global user.name buns
       - name: Install dependencies
         run: yarn
       - name: Generate coverage report
