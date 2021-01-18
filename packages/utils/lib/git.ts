@@ -104,6 +104,7 @@ export type GroupedCommitsItem = Commit & {
 		userEmail: string;
 		time: string;
 	};
+	files?: string[];
 	pullId?: string;
 	pullSource?: string;
 	breaking: boolean;
@@ -119,7 +120,8 @@ export type GroupedCommitsItem = Commit & {
  */
 export async function getGroupedCommits(
 	startHash: string,
-	endHash = "HEAD"
+	endHash = "HEAD",
+	needFiles = false
 ): Promise<Record<"breaking" | string, GroupedCommitsItem[]>> {
 	const lines = await execGit([
 		"--no-pager",
@@ -128,47 +130,64 @@ export async function getGroupedCommits(
 		"--format=%B%n-extra-%n%H%n%an%n%ae%n%ci💨💨💨"
 	]);
 
-	return lines
+	const commits = lines
 		.split("💨💨💨")
 		.filter(commit => commit.trim())
-		.reduce(
-			(prev, commit) => {
-				const node = parser.sync(commit, {
-					mergePattern: /^Merge pull request #(\d+) from (.*)$/,
-					mergeCorrespondence: ["pullId", "pullSource"]
-				});
-				const extra = (node.extra || "").split("\n");
+		.map(commit => {
+			const node = parser.sync(commit, {
+				mergePattern: /^Merge pull request #(\d+) from (.*)$/,
+				mergeCorrespondence: ["pullId", "pullSource"]
+			});
 
-				const breaking =
-					/(BREAKING CHANGES)|(Breaking Changes)/.test(node.body || node.footer) || /!:/.test(node.header);
+			const breaking = /(BREAKING CHANGES)|(Breaking Changes)/.test(node.body || node.footer) || /!:/.test(node.header);
 
-				const kv = {
-					...node,
-					extra:
-						extra.length >= 4
-							? {
-									hash: extra[0],
-									userName: extra[1],
-									userEmail: extra[2],
-									time: extra[3]
-							  }
-							: {},
-					breaking
-				} as GroupedCommitsItem;
+			const kv = {
+				...node,
+				extra: {},
+				breaking
+			} as GroupedCommitsItem;
 
-				if (breaking) {
-					prev.breaking.push(kv);
-				} else if (node.merge) {
-					prev.merge = prev.merge || [];
-					prev.merge.push(kv);
-				} else if (node.type) {
-					prev[node.type] = prev[node.type] || [];
-					prev[node.type].push(kv);
+			if (node.extra) {
+				const extra = node.extra.split("\n");
+				if (extra.length >= 4) {
+					kv.extra = {
+						hash: extra[0],
+						userName: extra[1],
+						userEmail: extra[2],
+						time: extra[3]
+					};
 				}
-				return prev;
-			},
-			{ breaking: [] } as Record<"breaking" | string, GroupedCommitsItem[]>
+			}
+			return kv;
+		});
+
+	if (needFiles) {
+		await Promise.all(
+			commits
+				.filter(commit => commit.extra && commit.extra.hash)
+				.map(commit =>
+					getCommittedFiles(commit.extra.hash + "^", commit.extra.hash).then(files => {
+						commit.files = files;
+					})
+				)
 		);
+	}
+
+	return commits.reduce(
+		(prev, commit) => {
+			if (commit.breaking) {
+				prev.breaking.push(commit);
+			} else if (commit.merge) {
+				prev.merge = prev.merge || [];
+				prev.merge.push(commit);
+			} else if (commit.type) {
+				prev[commit.type] = prev[commit.type] || [];
+				prev[commit.type].push(commit);
+			}
+			return prev;
+		},
+		{ breaking: [] } as Record<"breaking" | string, GroupedCommitsItem[]>
+	);
 }
 
 /**
