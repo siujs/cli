@@ -66,15 +66,18 @@ test(" getPreTag ", async done => {
 });
 
 test(" getCommittedFiles ", async done => {
-	const files = await getCommittedFiles(
+	let files = await getCommittedFiles(
 		"199972e856978b9194db3fec9c3d94bb1445f7ab",
 		"18889daf229505554ce55d4e9e4c4e4a92b9dce3"
 	);
 
-	expect(files.length).toBe(10);
-
 	expect(files.some(file => file.endsWith("CHANGELOG.md"))).toBe(true);
 	expect(files.filter(file => file.endsWith("package.json")).length).toBe(9);
+
+	files = await getCommittedFiles("199972e856978b9194db3fec9c3d94bb1445f7ab");
+
+	expect(files.some(file => file.endsWith("CHANGELOG.md"))).toBe(true);
+	expect(files.some(file => file.endsWith("package.json"))).toBe(true);
 
 	done();
 });
@@ -95,6 +98,11 @@ test(" getGroupedCommits ", async done => {
 	expect(commits).toHaveProperty("refactor");
 	expect(commits).toHaveProperty("types");
 	expect(commits).toHaveProperty("docs");
+
+	commits = await getGroupedCommits("199972e856978b9194db3fec9c3d94bb1445f7ab", "HEAD", true);
+	expect(commits.release.length >= 1).toBeTruthy();
+	expect(commits.release[0]).toHaveProperty("files");
+	expect(commits.release[0].files.some(p => p.endsWith("package.json"))).toBeTruthy();
 	done();
 });
 
