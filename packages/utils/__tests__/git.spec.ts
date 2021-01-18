@@ -85,7 +85,7 @@ describe(" getCommittedFiles ", () => {
 		expect(files.some(file => file.endsWith("package.json"))).toBe(true);
 
 		done();
-	});
+	}, 60000);
 });
 
 describe("getGroupedCommits", () => {
@@ -119,7 +119,7 @@ describe("getGroupedCommits", () => {
 		expect(commits.release[0]).toHaveProperty("files");
 		expect(commits.release[0].files.some(p => p.endsWith("package.json"))).toBeTruthy();
 		done();
-	});
+	}, 60000);
 });
 
 describe(" getStagedFiles ", () => {
