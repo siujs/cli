@@ -17,7 +17,6 @@ fs.writeFileSync(tmpFile, `export default;`);
 describe(" git client hook: pre-commit ", () => {
 	beforeEach(() => {
 		jest.resetModules();
-		rm.sync(".git/index.lock");
 	});
 
 	afterEach(() => {
