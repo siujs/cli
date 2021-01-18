@@ -1,67 +1,67 @@
 {
-	"name": "@siujs/cli",
-	"version": "1.0.0-beta.9",
-	"description": "cli of siujs",
-	"keywords": [
-		"cli",
-		"siu",
-		"siujs"
-	],
-	"author": "buns <kuafujs@126.com>",
-	"license": "MIT",
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
-	"types": "dist/cli.d.ts",
-	"typings": "dist/cli.d.ts",
-	"directories": {
-		"lib": "lib",
-		"test": "__tests__"
-	},
-	"bin": {
-		"siu": "./bin/siu.js"
-	},
-	"files": [
-		"bin",
-		"dist"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/siujs/siu.git"
-	},
-	"scripts": {
-		"build": "tsc -b tsconfig.json"
-	},
-	"bugs": {
-		"url": "https://github.com/siujs/siu/issues"
-	},
-	"homepage": "https://github.com/siujs/siu#readme",
-	"peerDependencies": {
-		"@siujs/builtin-build": "1.0.0-beta.9",
-		"@siujs/builtin-deps": "1.0.0-beta.9",
-		"@siujs/builtin-githooks": "1.0.0-beta.9",
-		"@siujs/builtin-publish": "1.0.0-beta.9",
-		"@siujs/cli-init": "1.0.0-beta.9",
-		"@siujs/core": "1.0.0-beta.9",
-		"@siujs/utils": "1.0.0-beta.9"
-	},
-	"dependencies": {
-		"@siujs/builtin-build": "1.0.0-beta.9",
-		"@siujs/builtin-deps": "1.0.0-beta.9",
-		"@siujs/builtin-githooks": "1.0.0-beta.9",
-		"@siujs/builtin-publish": "1.0.0-beta.9",
-		"@siujs/cli-init": "1.0.0-beta.9",
-		"@siujs/core": "1.0.0-beta.9",
-		"@siujs/utils": "1.0.0-beta.9",
-		"chalk": "^4.1.0",
-		"commander": "^7.0.0",
-		"fs-extra": "^9.0.1",
-		"inquirer": "^7.3.3",
-		"rimraf": "^3.0.2",
-		"validate-npm-package-name": "^3.0.0"
-	},
-	"devDependencies": {
-		"@types/fs-extra": "^9.0.6",
-		"@types/rimraf": "^3.0.0",
-		"@types/validate-npm-package-name": "^3.0.2"
-	}
+  "name": "@siujs/cli",
+  "version": "1.0.0-beta.10",
+  "description": "cli of siujs",
+  "keywords": [
+    "cli",
+    "siu",
+    "siujs"
+  ],
+  "author": "buns <kuafujs@126.com>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/cli.d.ts",
+  "typings": "dist/cli.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "bin": {
+    "siu": "./bin/siu.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siujs/siu.git"
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json"
+  },
+  "bugs": {
+    "url": "https://github.com/siujs/siu/issues"
+  },
+  "homepage": "https://github.com/siujs/siu#readme",
+  "peerDependencies": {
+    "@siujs/builtin-build": "1.0.0-beta.10",
+    "@siujs/builtin-deps": "1.0.0-beta.10",
+    "@siujs/builtin-githooks": "1.0.0-beta.10",
+    "@siujs/builtin-publish": "1.0.0-beta.10",
+    "@siujs/cli-init": "1.0.0-beta.10",
+    "@siujs/core": "1.0.0-beta.10",
+    "@siujs/utils": "1.0.0-beta.10"
+  },
+  "dependencies": {
+    "@siujs/builtin-build": "1.0.0-beta.10",
+    "@siujs/builtin-deps": "1.0.0-beta.10",
+    "@siujs/builtin-githooks": "1.0.0-beta.10",
+    "@siujs/builtin-publish": "1.0.0-beta.10",
+    "@siujs/cli-init": "1.0.0-beta.10",
+    "@siujs/core": "1.0.0-beta.10",
+    "@siujs/utils": "1.0.0-beta.10",
+    "chalk": "^4.1.0",
+    "commander": "^7.0.0",
+    "fs-extra": "^9.0.1",
+    "inquirer": "^7.3.3",
+    "rimraf": "^3.0.2",
+    "validate-npm-package-name": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.6",
+    "@types/rimraf": "^3.0.0",
+    "@types/validate-npm-package-name": "^3.0.2"
+  }
 }

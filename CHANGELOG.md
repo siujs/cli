@@ -1,5 +1,32 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.10](https://github.com/siujs/cli/compare/v1.0.0-beta.9...v1.0.0-beta.10) (2021-01-18)
+
+### BREAKING CHANGES
+
+- replace `shelljs` with `execa` ([95bd3a0](https://github.com/siujs/cli/commit/95bd3a076294b7ffceb6f34c43195228d2bf09ac))
+
+### Bug Fixes
+
+-  **builtin-publish**: unhandle no pkg publish ([2190322](https://github.com/siujs/cli/commit/2190322b17b946bae11159555c2cab5e97c8e375))
+-  **cli**: not received COMMIT_EDITMSG ([cd5ca4c](https://github.com/siujs/cli/commit/cd5ca4cb31f566670e9083d9d9c5bbdfb3601290))
+-  **utils**: `stderr` may be empty when catching ex ([da21e6f](https://github.com/siujs/cli/commit/da21e6fc31d0800ff146729670b1c92ea1ff27ba))
+-  **cli**: `hook` has not been converted to camel's ([fc8aba1](https://github.com/siujs/cli/commit/fc8aba13ab954aca063dae978233a4daf2f82dbc))
+-  **utils**: error sorted pkg name with `priority` ([5c407f3](https://github.com/siujs/cli/commit/5c407f31627e80c0cbebbfc528ec9b5171c6d8d1))
+
+### Features
+
+-  **builtin-githooks**: improve logic ([541e690](https://github.com/siujs/cli/commit/541e6907a35fe8e80634685ec47baf8c3f02ffbd))
+-  **utils**: add `needFiles` arg ([80ac8aa](https://github.com/siujs/cli/commit/80ac8aa10ef77d13a55815f21a8a1b56b26cf7e5))
+-  **builtin-publish**: expand release hooks ([7998ecc](https://github.com/siujs/cli/commit/7998ecc426fb6967e9ec5d6591d820c7bca1a16f))
+
+### Code Refactoring
+
+-  **builtin-publish**: improve `getNewChangedLog` ([b6b68cf](https://github.com/siujs/cli/commit/b6b68cfa6b8fee05410332b8e15ce80002407845))
+- adjust args of `lintWithGHooks` ([261eb21](https://github.com/siujs/cli/commit/261eb2138fc9b7938e58d9eb0e760f1e521cc5bf))
+-  **builtin-githooks**: mv out `process.exit` ([f94dd8f](https://github.com/siujs/cli/commit/f94dd8f9b7bb331c377221331a040602a3db6856))
+-  **builtin-githooks**: adjust `cwd` argument ([fc1bc80](https://github.com/siujs/cli/commit/fc1bc809116e3225a048479d5d1ad8e2d161c4a4))
+
 ## [v1.0.0-beta.9](https://github.com/siujs/cli/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2021-01-13)
 
 ### Bug Fixes
