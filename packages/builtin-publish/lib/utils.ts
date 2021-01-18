@@ -262,21 +262,21 @@ export function normalizeChangeLogInlineMsg(item: GroupedCommitsItem, remoteUrl?
 export async function getNewChangedLog(
 	version: string,
 	opts: {
+		cwd?: string;
 		versionPrefix?: string;
 		allowTypes?: string[];
 		type2Title?: Record<string, string>;
 		normalizeCommitMsg?: (item: GroupedCommitsItem, remoteUrl?: string) => string;
-	} = {}
+	} = {
+		cwd: process.cwd()
+	}
 ) {
-	let tag = await getPreTag(opts.versionPrefix);
+	let tag,
+		remoteUrl = "";
+
+	[tag, remoteUrl] = await Promise.all([getPreTag(opts.versionPrefix), getGitRemoteUrl(opts.cwd || process.cwd())]);
 
 	!tag && (tag = await getFirstCommitId(false));
-
-	const remoteUrl = await getGitRemoteUrl(process.cwd());
-
-	const [date] = new Date().toISOString().split("T");
-
-	const newLog = [`## [v${version}](${remoteUrl}/compare/${tag}...v${version}) (${date})`];
 
 	const groupedCommits = await getGroupedCommits(tag);
 
@@ -292,6 +292,10 @@ export async function getNewChangedLog(
 	} = opts;
 
 	let arr: string[];
+
+	const [date] = new Date().toISOString().split("T");
+
+	const newLog = [`## [v${version}](${remoteUrl}/compare/${tag}...v${version}) (${date})`];
 
 	if (groupedCommits.breaking.length) {
 		arr = groupedCommits.breaking.map(item => normalizeCommitMsg(item, remoteUrl)).filter(Boolean);
