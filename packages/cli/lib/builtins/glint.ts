@@ -3,7 +3,7 @@ import { HookHandlerContext, PluginApi, ValueOf } from "@siujs/core";
 
 export function asGLintFallback(api: ValueOf<PluginApi>) {
 	api.process(async (ctx: HookHandlerContext) => {
-		const rslt = await lintWithGHooks(ctx.opts<keyof GitClientHooksHandlers>("hookName"), {
+		const rslt = await lintWithGHooks(ctx.opts<keyof GitClientHooksHandlers>("hook"), {
 			cwd: process.cwd(),
 			commitEditMsg: ctx.opts<string>("commitEditMsg")
 		});
