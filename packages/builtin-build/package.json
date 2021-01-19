@@ -1,6 +1,6 @@
 {
   "name": "@siujs/builtin-build",
-  "version": "1.0.0-beta.11",
+  "version": "1.0.0-beta.12",
   "description": "build of siujs",
   "keywords": [
     "build",
@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/siujs/siu#readme",
   "peerDependencies": {
-    "@siujs/utils": "1.0.0-beta.11",
+    "@siujs/utils": "1.0.0-beta.12",
     "esbuild": "^0.8.32",
     "rollup": "^2.36.2"
   },
@@ -38,7 +38,7 @@
     "@rollup/plugin-node-resolve": "^11.1.0",
     "@rollup/plugin-replace": "^2.3.4",
     "@rollup/pluginutils": "^4.1.0",
-    "@siujs/utils": "1.0.0-beta.11",
+    "@siujs/utils": "1.0.0-beta.12",
     "chalk": "^4.1.0",
     "esbuild": "^0.8.32",
     "fs-extra": "^9.0.1",

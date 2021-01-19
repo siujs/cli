@@ -1,5 +1,15 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.12](https://github.com/siujs/cli/compare/v1.0.0-beta.11...v1.0.0-beta.12) (2021-01-19)
+
+### BREAKING CHANGES
+
+- rename api of builtin-build export ([c894748](https://github.com/siujs/cli/commit/c8947481436b67a7145a5b9bd5f9c4d611b4bdca))
+
+### Bug Fixes
+
+-  **cli**: ctx.opts("hookName") is undefined ([c00fb81](https://github.com/siujs/cli/commit/c00fb8154518e0626783642253a4cafa09dd7be1))
+
 ## [v1.0.0-beta.11](https://github.com/siujs/cli/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2021-01-18)
 
 ### BREAKING CHANGES
