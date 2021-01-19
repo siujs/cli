@@ -4,7 +4,7 @@ import {
 	esbuildRollupPlugin,
 	SiuRollupBuilder,
 	SiuRollupConfig,
-	stopService,
+	stopEsBuildService,
 	TOutputFormatKey
 } from "@siujs/builtin-build";
 import { HookHandlerContext, PluginApi, ValueOf } from "@siujs/core";
@@ -30,6 +30,6 @@ export function asBuildFallback(api: ValueOf<PluginApi>) {
 	});
 
 	api.clean(() => {
-		stopService();
+		stopEsBuildService();
 	});
 }

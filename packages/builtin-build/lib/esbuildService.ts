@@ -12,7 +12,7 @@ const debug = createDebugger("siu:build.esbuild");
 // lazy start the service
 let _service: Service;
 
-const ensureService = async () => {
+export const startEsBuildService = async () => {
 	if (!_service) {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		_service = await require("esbuild").startService();
@@ -20,7 +20,7 @@ const ensureService = async () => {
 	return _service;
 };
 
-export const stopService = () => {
+export const stopEsBuildService = () => {
 	_service && _service.stop();
 	_service = undefined;
 };
@@ -63,7 +63,7 @@ export async function esbuildTransform(
 	options: TransformOptions,
 	onwarn: (m: any, file: string, src: string) => void
 ): Promise<TransformResult> {
-	const service = await ensureService();
+	const service = await startEsBuildService();
 
 	const opts = {
 		loader,
@@ -150,7 +150,7 @@ export function esbuildRollupPlugin() {
 		return {
 			name: "esbuild",
 			async buildStart() {
-				ensureService();
+				startEsBuildService();
 			},
 			resolveId(importee, importer) {
 				if (!importer) return;
@@ -186,7 +186,7 @@ export function esbuildRollupPlugin() {
 				return esbuildTransform(code, id, loader, esbuildOptions, onwarn);
 			},
 			buildEnd() {
-				closeImmediate !== false && stopService();
+				closeImmediate !== false && stopEsBuildService();
 			}
 		} as Plugin;
 	};

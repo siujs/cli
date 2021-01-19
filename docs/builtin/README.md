@@ -57,7 +57,7 @@ await builder.build({allowFormats:["umd-min"],sizeCalc:false}); // will create f
 2. `rollup`+`esbuild`+multiple packages
 
 ```js
-import { esbuildRollupPlugin, Config, SiuRollupBuilder, stopService, TOutputFormatKey } from "@siujs/builtin-build";
+import { esbuildRollupPlugin, Config, SiuRollupBuilder, stopEsBuildService, TOutputFormatKey } from "@siujs/builtin-build";
 
 const pkgDatas = [{
     root:"../xxx",
@@ -93,7 +93,7 @@ for(let l = pkgDatas.length;l--;){
     await builder.build({allowFormats:["es"]});
 }
 
-stopService();
+stopEsBuildService();
 
 // 设置closeImmedicate=false,可以让esbuild进程一直激活态，不会去关闭，这样可以可以节省多次开启和关闭带来的损耗；
 // 一般在做批量packages构建使用esbuild的service情况下，都尽量设置closeImmedicate=false
