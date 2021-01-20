@@ -20,8 +20,9 @@ export interface HookHandlerContext {
 	 * 当前插件在当前生命周期钩子下的配置获取
 	 *
 	 * @param key 配置key
+	 * @param defaultValue 自定义默认值，只有当为null| undefined的时候
 	 */
-	opts<T extends any>(key: string): T;
+	opts<T extends any>(key: string, defaultValue?: T): T;
 	/**
 	 *
 	 * 当前插件在当前生命周期钩子下的配置项获取

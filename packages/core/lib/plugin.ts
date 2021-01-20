@@ -99,10 +99,11 @@ export class SiuPlugin {
 	 * get options of current plugin command
 	 *
 	 * @param key key
+	 * @param defaultValue [optional] when origin value is null or undefined, then use this value
 	 */
-	private opts<T>(key?: string) {
+	private opts<T>(key?: string, defaultValue?: T) {
 		return key
-			? (this._opts[this._cmd]?.[key] as T)
+			? (this._opts[this._cmd]?.[key] as T) ?? defaultValue
 			: {
 					...this._opts[this._cmd]
 			  };
