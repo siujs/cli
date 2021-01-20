@@ -258,7 +258,9 @@ export class SiuPlugin {
 
 		debug(`detect error in lifecycle:${this.lifecycle}`);
 
-		console.log(chalk.redBright("\n<ERROR-MSG>\n"), ex, chalk.redBright("\n</ERROR-MSG>\n"));
+		console.log(chalk.redBright.underline.bold("<error>"));
+		console.log(ex);
+		console.log(chalk.redBright.underline.bold("</error>"));
 
 		await this.callHook(getHookId(cmd, (this.lifecycle = "error")));
 
@@ -284,11 +286,17 @@ export class SiuPlugin {
 
 		this._currentPkg = pkgName;
 
-		const logStr = `${pkgName ? `${pkgName}:` : ""}${this.id}:${cmd}`;
+		const logStr = `${this.id}:${cmd}`;
+
+		console.log(chalk.green.bold(`  ${chalk.underline(`<${logStr}>`)}`));
+		console.log();
+
+		const backupLog = console.log;
+
+		console.log = (message?: any, ...optionalParams: any[]) =>
+			backupLog(message ? `    ${message}` : "", ...optionalParams);
 
 		try {
-			console.log(chalk.yellow.bold(`<${logStr}>\n`));
-
 			await this.callHook(getHookId(cmd, this.lifecycle));
 			let flag = await this.whetherGotoError(cmd);
 
@@ -310,8 +318,8 @@ export class SiuPlugin {
 
 			await this.whetherGotoError(this._cmd);
 		}
-
-		console.log(chalk.yellow.bold(`\n</${logStr}>\n`));
+		console.log();
+		(console.log = backupLog)(chalk.green.bold(`  ${chalk.underline(`</${logStr}>`)}`));
 	}
 
 	private option(
@@ -505,9 +513,12 @@ export async function applyPlugins(
 
 		for (let i = 0; i < pkgs.length; i++) {
 			const plugs = kv[pkgs[i]];
+			const pkgName = pkgMetas[pkgs[i]].name;
+			console.log(chalk.green.bold.underline(`\n<${pkgName}>`));
 			for (let j = 0; j < plugs.length; j++) {
-				await plugs[j].process(args.cmd, rest, pkgMetas[pkgs[i]].name);
+				await plugs[j].process(args.cmd, rest, pkgName);
 			}
+			console.log(chalk.green.bold.underline(`</${pkgName}>`));
 		}
 
 		await Promise.all(pkgs.map(pkg => kv[pkg].map(plug => plug.clean(pkg))).flat());
