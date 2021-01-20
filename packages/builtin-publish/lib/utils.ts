@@ -78,9 +78,22 @@ export async function addGitTag(version: string, cwd: string, isDryRun?: boolean
  * @param pkgCwd current workspace directory - specific monorepo package root
  * @param isDryRun whether is dry run
  */
-export async function addGitTagOfPackage(version: string, pkgCwd: string, isDryRun?: boolean) {
-	const run = runWhetherDry(isDryRun);
-	await run("git", ["tag", `${path.basename(pkgCwd)}-v${version}`], { cwd: pkgCwd, stdio: "inherit" });
+export async function addGitTagOfPackage(
+	version: string,
+	pkgCwd: string | { cwd: string; pkgShortName: string },
+	isDryRun?: boolean
+) {
+	let cwd = "",
+		pkgShortName;
+	if (typeof pkgCwd === "string") {
+		cwd = pkgCwd;
+		pkgShortName = path.basename(cwd);
+	} else {
+		cwd = pkgCwd.cwd;
+		pkgShortName = pkgCwd.pkgShortName;
+	}
+
+	await runWhetherDry(isDryRun)("git", ["tag", `${pkgShortName}-v${version}`], { cwd, stdio: "inherit" });
 }
 
 /**
@@ -105,10 +118,24 @@ export async function commitChanges(version: string, cwd: string, isDryRun?: boo
  * @param pkgCwd current  workspace directory - specific monorepo package root
  * @param isDryRun whether is dry run
  */
-export async function commitChangesOfPackage(version: string, pkgCwd: string, isDryRun?: boolean) {
+export async function commitChangesOfPackage(
+	version: string,
+	pkgCwd: string | { cwd: string; pkgShortName: string },
+	isDryRun?: boolean
+) {
 	const run = runWhetherDry(isDryRun);
-	await run("git", ["add", pkgCwd]);
-	await run("git", ["commit", "-m", `chore(release): ${path.basename(pkgCwd)}-v${version}`]);
+	let cwd = "",
+		pkgShortName;
+	if (typeof pkgCwd === "string") {
+		cwd = pkgCwd;
+		pkgShortName = path.basename(cwd);
+	} else {
+		cwd = pkgCwd.cwd;
+		pkgShortName = pkgCwd.pkgShortName;
+	}
+
+	await run("git", ["add", cwd]);
+	await run("git", ["commit", "-m", `chore(release): ${pkgShortName}-v${version}`]);
 }
 
 /**
@@ -352,19 +379,41 @@ export async function appendChangedLog(newLog: string, cwd: string) {
  * @param pkg [option] specific monorepo package name
  * @param isDryRun whether is dry run
  */
-export async function updateChangelog(version: string, cwd: string, pkg?: string, isDryRun?: boolean) {
-	const newLog = await getNewChangedLog(
-		version,
-		pkg
-			? {
-					versionPrefix: pkg + "-",
-					normalizeCommitMsg(item: GroupedCommitsItem, remoteUrl?: string) {
-						if (pkg && item.scope !== pkg) return "";
-						return normalizeChangeLogInlineMsg(item, remoteUrl);
-					}
-			  }
-			: {}
-	);
+export async function updateChangelog(
+	version: string,
+	cwd: string,
+	pkg?: string | { pkg: string; pkgShortName: string; needScope?: boolean },
+	isDryRun?: boolean
+) {
+	let pkgName = "",
+		pkgShortName = "";
+
+	let needScope = true;
+
+	if (typeof pkg === "string") {
+		pkgName = pkg;
+		needScope = true;
+	} else {
+		pkg = pkg || { pkg: "", pkgShortName: "" };
+		pkgName = pkg.pkg;
+		pkgShortName = pkg.pkgShortName;
+		needScope = pkg.needScope;
+	}
+
+	const opts = pkgName
+		? {
+				versionPrefix: (pkgShortName || pkgName) + "-",
+				normalizeCommitMsg: (item: GroupedCommitsItem, remoteUrl?: string) =>
+					!item.scope || pkgName === item.scope || item.scope === pkgShortName
+						? normalizeChangeLogInlineMsg(
+								needScope ? item : ({ ...item, scope: null } as GroupedCommitsItem),
+								remoteUrl
+						  )
+						: ""
+		  }
+		: {};
+
+	const newLog = await getNewChangedLog(version, opts);
 
 	if (isDryRun) return newLog;
 

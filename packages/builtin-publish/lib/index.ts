@@ -39,9 +39,27 @@ export interface ReleaseChangelogHookArgs extends ReleaseHookArgs {
 export interface ReleaseHooks {
 	lint?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
 	build?: (opts: { cwd: string; dryRun?: boolean }) => Promise<void>;
-	changelog?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
-	commit?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
-	addGitTag?: (opts: { cwd: string; version: string; dryRun?: boolean; pkg?: string }) => Promise<void>;
+	changelog?: (opts: {
+		cwd: string;
+		version: string;
+		dryRun?: boolean;
+		pkg?: string;
+		pkgShortName?: string;
+	}) => Promise<void>;
+	commit?: (opts: {
+		cwd: string;
+		version: string;
+		dryRun?: boolean;
+		pkg?: string;
+		pkgShortName?: string;
+	}) => Promise<void>;
+	addGitTag?: (opts: {
+		cwd: string;
+		version: string;
+		dryRun?: boolean;
+		pkg?: string;
+		pkgShortName?: string;
+	}) => Promise<void>;
 	publish?: (opts: { cwd: string; repo: string; dryRun?: boolean }) => Promise<void>;
 }
 
@@ -62,6 +80,10 @@ export interface ReleaseOptions {
 	 *
 	 */
 	pkg?: string;
+	/**
+	 * Get abbreviation of pkg
+	 */
+	pkgShortName?: (pkg: string) => string;
 	/**
 	 * Whether dry run
 	 */
@@ -101,33 +123,38 @@ export interface ReleaseOptions {
 }
 
 const DEFAULT_HOOKS = {
-	async lint({ cwd, dryRun }: { cwd: string; dryRun?: boolean }) {
+	async lint({ cwd, dryRun }) {
 		await runWhetherDry(dryRun)("yarn", ["lint"], { cwd });
 	},
-	async build({ cwd, dryRun }: { cwd: string; dryRun?: boolean }) {
+	async build({ cwd, dryRun }) {
 		await runWhetherDry(dryRun)("yarn", ["build"], { cwd });
 	},
-	async changelog({ cwd, version, pkg, dryRun }: { cwd: string; version: string; pkg?: string; dryRun?: boolean }) {
-		const content = await updateChangelog(version, cwd, pkg, dryRun);
+	async changelog({ cwd, version, pkg, pkgShortName, dryRun }) {
+		const content = await updateChangelog(
+			version,
+			cwd,
+			pkgShortName ? { pkg, pkgShortName, needScope: false } : pkg,
+			dryRun
+		);
 		if (dryRun) {
 			log(chalk`{yellow [dryrun] New ChangeLog}: \n ${content}`);
 		}
 	},
-	async commit({ cwd, version, pkg, dryRun }) {
+	async commit({ cwd, version, pkg, pkgShortName, dryRun }) {
 		if (pkg) {
-			await commitChangesOfPackage(version, cwd, dryRun);
+			await commitChangesOfPackage(version, pkgShortName ? { cwd, pkgShortName } : cwd, dryRun);
 		} else {
 			await commitChanges(version, cwd, dryRun);
 		}
 	},
-	async addGitTag({ cwd, version, pkg, dryRun }) {
+	async addGitTag({ cwd, version, pkg, pkgShortName, dryRun }) {
 		if (pkg) {
-			await addGitTagOfPackage(version, cwd, dryRun);
+			await addGitTagOfPackage(version, pkgShortName ? { cwd, pkgShortName } : cwd, dryRun);
 		} else {
 			await addGitTag(version, cwd, dryRun);
 		}
 	},
-	async publish({ cwd, repo, dryRun }: { cwd: string; repo: string; dryRun?: boolean }) {
+	async publish({ cwd, repo, dryRun }) {
 		await npmPublish(cwd, repo, dryRun);
 	}
 } as ReleaseHooks;
@@ -137,6 +164,7 @@ const officalNpmRepo = "https://registry.npmjs.org";
 const DEFAULT_OPTIONS = {
 	workspace: "packages",
 	pkg: "",
+	pkgShortName: (pkg: string) => pkg,
 	dryRun: false,
 	repo: officalNpmRepo,
 	hooks: DEFAULT_HOOKS,
@@ -170,7 +198,9 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 		}
 	}
 
-	const tag = await getPreTag(`${pkg}-`);
+	const pkgShortName = opts.pkgShortName ? opts.pkgShortName(pkg) : pkg;
+
+	const tag = await getPreTag(`${pkgShortName}-`);
 
 	let targetVersion: string;
 
@@ -201,24 +231,25 @@ export async function releasePackage(pkg: string, opts: Omit<ReleaseOptions, "ve
 		? log(chalk`{yellow [dryrun] update ${pkg} version}: Updating package(${pkg}) version to \`${targetVersion}\``)
 		: await updatePkgVersion(targetVersion, cwd);
 
-	!opts.skipPublish &&
-		opts.hooks &&
-		opts.hooks.publish &&
-		(await opts.hooks.publish({ cwd, repo: opts.repo, dryRun: opts.dryRun }));
+	if (opts.hooks) {
+		!opts.skipPublish &&
+			opts.hooks.publish &&
+			(await opts.hooks.publish({ cwd, repo: opts.repo, dryRun: opts.dryRun }));
 
-	opts.hooks &&
-		opts.hooks.changelog &&
-		(await opts.hooks.changelog({ cwd, version: targetVersion, dryRun: opts.dryRun, pkg }));
+		const args = {
+			cwd,
+			version: targetVersion,
+			dryRun: opts.dryRun,
+			pkg,
+			[`pkgShortName`]: pkg !== pkgShortName && pkgShortName
+		};
 
-	!opts.skipCommit &&
-		opts.hooks &&
-		opts.hooks.commit &&
-		(await opts.hooks.commit({ version: targetVersion, cwd, dryRun: opts.dryRun, pkg }));
+		opts.hooks.changelog && (await opts.hooks.changelog(args));
 
-	!opts.skipPush &&
-		opts.hooks &&
-		opts.hooks.addGitTag &&
-		(await opts.hooks.addGitTag({ version: targetVersion, cwd, dryRun: opts.dryRun, pkg }));
+		!opts.skipCommit && opts.hooks.commit && (await opts.hooks.commit(args));
+
+		!opts.skipPush && opts.hooks.addGitTag && (await opts.hooks.addGitTag(args));
+	}
 
 	log(chalk.green(`Successfully publish package(${pkg}) version:\`${targetVersion}\`!`));
 

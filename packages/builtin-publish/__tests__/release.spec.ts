@@ -157,7 +157,7 @@ describe(" test 'release' and 'releasePackage' ", () => {
 			jest.clearAllMocks();
 		});
 		it("should be called 'execa' 40 times when use version:independent and dryRun", async done => {
-			await release({ version: "independent", dryRun: true });
+			await release({ version: "independent", dryRun: true, pkgShortName: (pkg: string) => "a" + pkg });
 			/**
 			 *  valid can release package: 1
 			 * 	changelog: 4
