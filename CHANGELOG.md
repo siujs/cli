@@ -1,5 +1,20 @@
 # siu ChangeLog
 
+## [v1.0.0-beta.13](https://github.com/siujs/cli/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2021-01-20)
+
+### Features
+
+-  **builtin-publish**: add `pkgShortName` ([505ace5](https://github.com/siujs/cli/commit/505ace59c15ff8a69913154a170581acc984ed14))
+-  **core**: support `defaultValue` in `ctx.opts` ([a1d7d8d](https://github.com/siujs/cli/commit/a1d7d8db69e464ad7f2d768f62655d69ab175aea))
+
+### Performance Improvements
+
+-  **core**: adjust layout of console.log ([60ed774](https://github.com/siujs/cli/commit/60ed7744344885fb40e8436857d0a84f67a5eb80))
+
+### Bug Fixes
+
+-  **core**: miss reset `lifecycle` to `start` ([07a48d6](https://github.com/siujs/cli/commit/07a48d6d7b6c21a37d5cfe59795500e68721a5bb))
+
 ## [v1.0.0-beta.12](https://github.com/siujs/cli/compare/v1.0.0-beta.11...v1.0.0-beta.12) (2021-01-19)
 
 ### BREAKING CHANGES
