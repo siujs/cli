@@ -270,10 +270,10 @@ export class SiuPlugin {
 
 		const hasProcessHook = this.hasHook(getHookId(cmd, "process"));
 
-		if (!hasStartHook) {
-			if (!hasProcessHook) return;
-			this.lifecycle = "process";
-		}
+		if (!hasStartHook && !hasProcessHook) return;
+
+		// each process must be reset lifecycle
+		this.lifecycle = hasStartHook ? "start" : "process";
 
 		this._cmd = cmd;
 
